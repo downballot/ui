@@ -1,0 +1,43 @@
+all: binaries
+
+SHELL := /bin/bash
+
+ALL_GO_FILES := $(shell find ./ -name '*.go')
+
+.PHONY: binaries
+binaries: bin/ui bin/web/app.wasm
+
+bin:
+	mkdir -p $@
+
+bin/ui: bin $(ALL_GO_FILES)
+	go build -o $@ ./cmd/ui/...
+
+bin/web: bin
+	mkdir -p $@
+
+bin/web/app.wasm: bin/web $(ALL_GO_FILES)
+	GOARCH=wasm GOOS=js go build -o $@ ./cmd/ui/...
+
+.PHONY: run
+run: binaries
+	cd bin && ./ui
+
+.PHONY: watch-run
+watch-run:
+	@while true; do \
+		$(MAKE) binaries; \
+		pushd bin; \
+		./ui & PID=$$!; \
+		popd; \
+		inotifywait -qre close_write .; \
+		kill $$PID; \
+	done
+
+
+.PHONY: clean
+clean:
+	rm -f bin/ui
+	rm -f bin/web/app.wasm
+	rm -rf bin/web
+	rm -rf 
