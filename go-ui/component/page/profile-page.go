@@ -1,4 +1,4 @@
-package component
+package page
 
 import (
 	"log/slog"
@@ -6,6 +6,7 @@ import (
 
 	"github.com/downballot/downballot/downballotapi"
 	"github.com/downballot/ui/go-ui/api"
+	"github.com/downballot/ui/go-ui/component/customlayout"
 	"github.com/maxence-charriere/go-app/v10/pkg/app"
 )
 
@@ -23,18 +24,20 @@ func (c *ProfilePage) OnNav(ctx app.Context) {
 }
 
 func (c *ProfilePage) Render() app.UI {
-	return app.If(c.authenticatedUser.User == nil, func() app.UI {
-		return app.Div().Body(
-			app.Span().Text("Not logged in."),
-		)
-	}).Else(func() app.UI {
-		return app.Div().Body(
-			app.Span().Text("Username: "),
-			app.Span().Text(c.authenticatedUser.User.Email),
-			app.Br(),
-			app.Span().Text("Name: "),
-			app.Span().Text(c.authenticatedUser.User.Name),
-			app.Br(),
-		)
-	})
+	return &customlayout.DownballotLayout{
+		Content: app.If(c.authenticatedUser.User == nil, func() app.UI {
+			return app.Div().Body(
+				app.Span().Text("Not logged in."),
+			)
+		}).Else(func() app.UI {
+			return app.Div().Body(
+				app.Span().Text("Username: "),
+				app.Span().Text(c.authenticatedUser.User.Email),
+				app.Br(),
+				app.Span().Text("Name: "),
+				app.Span().Text(c.authenticatedUser.User.Name),
+				app.Br(),
+			)
+		}),
+	}
 }
