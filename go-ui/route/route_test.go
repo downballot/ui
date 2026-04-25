@@ -12,6 +12,7 @@ func TestRoute(t *testing.T) {
 		r, err := Parse("/")
 		require.NoError(t, err)
 		require.NotNil(t, r)
+		assert.Equal(t, "^/$", r.Regexp())
 
 		t.Run("Does not match empty path", func(t *testing.T) {
 			match, variables := r.Match("")
@@ -38,6 +39,7 @@ func TestRoute(t *testing.T) {
 		r, err := Parse("/home/user1")
 		require.NoError(t, err)
 		require.NotNil(t, r)
+		assert.Equal(t, "^/home/user1$", r.Regexp())
 
 		t.Run("Does not match empty path", func(t *testing.T) {
 			match, variables := r.Match("")
@@ -64,6 +66,7 @@ func TestRoute(t *testing.T) {
 		r, err := Parse("/home/:user")
 		require.NoError(t, err)
 		require.NotNil(t, r)
+		assert.Equal(t, "^/home/([^/]+)$", r.Regexp())
 
 		t.Run("Does not match empty path", func(t *testing.T) {
 			match, variables := r.Match("")
@@ -90,6 +93,7 @@ func TestRoute(t *testing.T) {
 		r, err := Parse("/home/:user/:folder")
 		require.NoError(t, err)
 		require.NotNil(t, r)
+		assert.Equal(t, "^/home/([^/]+)/([^/]+)$", r.Regexp())
 
 		t.Run("Does not match empty path", func(t *testing.T) {
 			match, variables := r.Match("")

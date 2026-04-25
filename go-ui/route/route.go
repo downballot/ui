@@ -49,3 +49,19 @@ func (r Route) Match(path string) (matched bool, variableMap map[string]string) 
 
 	return true, variableMap
 }
+
+func (r Route) Regexp() string {
+	output := "^"
+	for i, part := range r.pathParts {
+		if i > 0 {
+			output += "/"
+		}
+		if variableName := r.indexToVariableMap[i]; variableName != "" {
+			output += "([^/]+)"
+		} else {
+			output += part
+		}
+	}
+	output += "$"
+	return output
+}
