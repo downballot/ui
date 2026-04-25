@@ -36,7 +36,14 @@ func (h *hello) OnNav(ctx app.Context) {
 func (h *hello) Render() app.UI {
 	return app.Div().Body(
 		app.H1().Text("Hello, world 1!"),
-		app.A().Href("/login").Text("Login"),
+		app.Ul().Body(
+			app.Li().Body(
+				app.A().Href("/login").Text("Login"),
+			),
+			app.Li().Body(
+				app.A().Href("/profile").Text("Profile"),
+			),
+		),
 	)
 }
 
@@ -84,6 +91,7 @@ func main() {
 	// component to display for a given path, on both client and server-side.
 	app.Route("/", func() app.Composer { return &hello{} })
 	app.Route("/login", func() app.Composer { return &component.LoginPage{} })
+	app.Route("/profile", func() app.Composer { return &component.ProfilePage{} })
 
 	// Once the routes set up, the next thing to do is to either launch the app
 	// or the server that serves the app.
