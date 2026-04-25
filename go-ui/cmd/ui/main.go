@@ -11,7 +11,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/downballot/ui/go-ui/component/customlayout"
 	"github.com/downballot/ui/go-ui/component/page"
 	"github.com/maxence-charriere/go-app/v10/pkg/app"
 )
@@ -59,15 +58,7 @@ func main() {
 		)))
 	}
 
-	// The first thing to do is to associate the hello component with a path.
-	//
-	// This is done by calling the Route() function,  which tells go-app what
-	// component to display for a given path, on both client and server-side.
-	app.Route("/", func() app.Composer { return &customlayout.DownballotLayout{} })
-	app.Route("/login", func() app.Composer { return &page.LoginPage{} })
-	app.Route("/organization", func() app.Composer { return &page.OrganizationPage{} })
-	app.RouteWithRegexp("^/organization/([^/]+)$", func() app.Composer { return &page.OrganizationIDPage{} })
-	app.Route("/profile", func() app.Composer { return &page.ProfilePage{} })
+	page.Setup()
 
 	// Once the routes set up, the next thing to do is to either launch the app
 	// or the server that serves the app.

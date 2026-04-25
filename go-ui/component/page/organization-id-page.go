@@ -12,6 +12,10 @@ import (
 	"github.com/maxence-charriere/go-app/v10/pkg/app"
 )
 
+func init() {
+	app.RouteWithRegexp("^/organization/([^/]+)$", func() app.Composer { return &OrganizationIDPage{} })
+}
+
 type OrganizationIDPage struct {
 	app.Compo
 
