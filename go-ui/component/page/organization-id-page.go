@@ -20,6 +20,12 @@ type OrganizationIDPage struct {
 }
 
 func (c *OrganizationIDPage) OnNav(ctx app.Context) {
+	slog.InfoContext(ctx.Context, "OrganizationIDPage: OnNav")
+
+	var variables map[string]string
+	ctx.GetState("route", &variables)
+	slog.InfoContext(ctx.Context, "OrganizationIDPage: OnNav", "variables", variables)
+
 	r := regexp.MustCompile("^/organization/([^/]+)$")
 	matches := r.FindStringSubmatch(ctx.Page().URL().Path)
 	slog.InfoContext(ctx.Context, "Matched regex", "matches", matches)
@@ -43,7 +49,7 @@ func (c *OrganizationIDPage) OnMount(ctx app.Context) {
 	slog.InfoContext(ctx.Context, "OrganizationIDPage: OnMount")
 
 	var variables map[string]string
-	ctx.GetState("meta", &variables)
+	ctx.GetState("route", &variables)
 	slog.InfoContext(ctx.Context, "OrganizationIDPage: OnMount", "variables", variables)
 }
 
