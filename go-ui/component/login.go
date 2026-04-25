@@ -15,6 +15,15 @@ type LoginPage struct {
 	password string
 }
 
+func (c *LoginPage) OnNav(ctx app.Context) {
+	var apiToken string
+	ctx.GetState("api-token", &apiToken)
+	slog.InfoContext(ctx.Context, "State", "api-token", apiToken)
+	if apiToken != "" {
+		ctx.Navigate("/")
+	}
+}
+
 func (c *LoginPage) Render() app.UI {
 	return app.Div().Body(
 		app.Span().Text("Username"),
@@ -49,6 +58,8 @@ func (c *LoginPage) Render() app.UI {
 					}
 
 					app.Logf("request response: %+v", output)
+					ctx.SetState("api-token", output.Token).Persist()
+					ctx.Navigate("/")
 				})
 			}),
 	)

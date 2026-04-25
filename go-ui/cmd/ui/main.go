@@ -22,6 +22,15 @@ type hello struct {
 	app.Compo
 }
 
+func (h *hello) OnNav(ctx app.Context) {
+	var apiToken string
+	ctx.GetState("api-token", &apiToken)
+	slog.InfoContext(ctx.Context, "State", "api-token", apiToken)
+	if apiToken == "" {
+		ctx.Navigate("/login")
+	}
+}
+
 // The Render method is where the component appearance is defined. Here, a
 // "Hello World!" is displayed as a heading.
 func (h *hello) Render() app.UI {
