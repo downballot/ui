@@ -10,10 +10,6 @@ import (
 	"github.com/maxence-charriere/go-app/v10/pkg/app"
 )
 
-func init() {
-	app.Route("/profile", func() app.Composer { return &ProfilePage{} })
-}
-
 type ProfilePage struct {
 	app.Compo
 

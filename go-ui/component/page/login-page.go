@@ -9,10 +9,6 @@ import (
 	"github.com/maxence-charriere/go-app/v10/pkg/app"
 )
 
-func init() {
-	app.Route("/login", func() app.Composer { return &LoginPage{} })
-}
-
 type LoginPage struct {
 	app.Compo
 

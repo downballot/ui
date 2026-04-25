@@ -20,3 +20,9 @@ func (c *CenterLayout) Render() app.UI {
 			c.Content,
 		)
 }
+
+func (c *CenterLayout) WithComponent(component app.Composer) app.Composer {
+	var output CenterLayout
+	output.Content = component
+	return &output
+}

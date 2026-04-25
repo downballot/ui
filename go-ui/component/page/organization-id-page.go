@@ -12,10 +12,6 @@ import (
 	"github.com/maxence-charriere/go-app/v10/pkg/app"
 )
 
-func init() {
-	app.RouteWithRegexp("^/organization/([^/]+)$", func() app.Composer { return &OrganizationIDPage{} })
-}
-
 type OrganizationIDPage struct {
 	app.Compo
 
@@ -44,6 +40,11 @@ func (c *OrganizationIDPage) OnNav(ctx app.Context) {
 }
 
 func (c *OrganizationIDPage) OnMount(ctx app.Context) {
+	slog.InfoContext(ctx.Context, "OrganizationIDPage: OnMount")
+
+	var variables map[string]string
+	ctx.GetState("meta", &variables)
+	slog.InfoContext(ctx.Context, "OrganizationIDPage: OnMount", "variables", variables)
 }
 
 func (c *OrganizationIDPage) Render() app.UI {

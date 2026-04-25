@@ -11,14 +11,27 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/downballot/ui/go-ui/component/customlayout"
+	"github.com/downballot/ui/go-ui/component/layout"
 	"github.com/downballot/ui/go-ui/component/page"
+	"github.com/downballot/ui/go-ui/routelayout"
 	"github.com/maxence-charriere/go-app/v10/pkg/app"
 )
+
+type SimpleElement struct {
+	app.Compo
+}
+
+func (e *SimpleElement) Render() app.UI {
+	return app.Div().Text("SimpleElement")
+}
 
 // The main function is the entry point where the app is configured and started.
 // It is executed in 2 different environments: A client (the web browser) and a
 // server.
 func main() {
+	ctx := context.Background()
+
 	{
 		logLevel := "info"
 		if value, ok := os.LookupEnv("LOG_LEVEL"); ok {
@@ -58,7 +71,54 @@ func main() {
 		)))
 	}
 
-	page.Setup()
+	routelayout.Apply(ctx,
+		routelayout.RouteLayout{
+			Path: "/",
+			Component: func() routelayout.Layout {
+				return &layout.MainLayout{}
+			},
+			Children: []routelayout.RoutePage{
+				{
+					Path: "/test/1",
+					Component: func() app.Composer {
+						return &SimpleElement{}
+					},
+				},
+			},
+		},
+		routelayout.RouteLayout{
+			Path: "/",
+			Component: func() routelayout.Layout {
+				return &layout.MainLayout{}
+			},
+			Children: []routelayout.RoutePage{
+				{
+					Path: "/",
+					Component: func() app.Composer {
+						return &customlayout.DownballotLayout{}
+					},
+				},
+				{
+					Path: "/organization",
+					Component: func() app.Composer {
+						return &page.OrganizationPage{}
+					},
+				},
+				{
+					Path: "/organization/:organization_id",
+					Component: func() app.Composer {
+						return &page.OrganizationIDPage{}
+					},
+				},
+				{
+					Path: "/profile",
+					Component: func() app.Composer {
+						return &page.ProfilePage{}
+					},
+				},
+			},
+		},
+	)
 
 	// Once the routes set up, the next thing to do is to either launch the app
 	// or the server that serves the app.

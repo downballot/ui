@@ -26,3 +26,9 @@ func (c *MainLayout) Render() app.UI {
 				Body(c.Content),
 		)
 }
+
+func (c *MainLayout) WithComponent(component app.Composer) app.Composer {
+	var output MainLayout
+	output.Content = component
+	return &output
+}
