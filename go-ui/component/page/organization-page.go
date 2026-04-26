@@ -13,23 +13,28 @@ import (
 type OrganizationPage struct {
 	app.Compo
 
-	organizations []*downballotapi.Organization
+	Organizations []*downballotapi.Organization
 }
 
-func (c *OrganizationPage) OnMount(ctx app.Context) {
-	var output downballotapi.ListOrganizationsResponse
-	err := api.Do(ctx, http.MethodGet, "/api/v1/organization", nil, &output)
-	if err != nil {
-		slog.ErrorContext(ctx.Context, "Could not get organizations", "err", err)
-		return
-	}
-	c.organizations = output.Organizations
+func (c *OrganizationPage) OnUpdate(ctx app.Context) {
+	ctx.Async(func() {
+		var output downballotapi.ListOrganizationsResponse
+		err := api.Do(ctx, http.MethodGet, "/api/v1/organization", nil, &output)
+		if err != nil {
+			slog.ErrorContext(ctx.Context, "Could not get organizations", "err", err)
+			return
+		}
+
+		ctx.Dispatch(func(ctx app.Context) {
+			c.Organizations = output.Organizations
+		})
+	})
 }
 
 func (c *OrganizationPage) Render() app.UI {
 	return app.Div().Body(
-		app.Range(c.organizations).Slice(func(i int) app.UI {
-			organization := *c.organizations[i]
+		app.Range(c.Organizations).Slice(func(i int) app.UI {
+			organization := *c.Organizations[i]
 
 			return app.Div().Body(
 				app.A().

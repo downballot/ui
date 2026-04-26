@@ -1,6 +1,7 @@
 package customlayout
 
 import (
+	"context"
 	"log/slog"
 
 	"github.com/downballot/ui/go-ui/component/layout"
@@ -10,7 +11,7 @@ import (
 type DownballotLayout struct {
 	app.Compo
 
-	Content app.UI
+	Content app.Composer
 }
 
 func (c *DownballotLayout) OnNav(ctx app.Context) {
@@ -23,8 +24,10 @@ func (c *DownballotLayout) OnNav(ctx app.Context) {
 }
 
 func (c *DownballotLayout) Render() app.UI {
+	slog.InfoContext(context.TODO(), "DownballotLayout: Render")
+
 	return &layout.MainLayout{
-		Content: c.Content,
+		Content: c.Content.Render(),
 		Header: app.Div().Body(
 			app.H1().Text("Downballot"),
 			app.A().Href("/organization/1").Text("Org1"),

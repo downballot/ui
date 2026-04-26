@@ -12,29 +12,36 @@ import (
 type ProfilePage struct {
 	app.Compo
 
-	authenticatedUser downballotapi.AuthenticationStatusResponse
+	AuthenticatedUser *downballotapi.AuthenticationStatusUser
 }
 
-func (c *ProfilePage) OnNav(ctx app.Context) {
-	err := api.Do(ctx, http.MethodGet, "/api/v1/authentication/status", nil, &c.authenticatedUser)
-	if err != nil {
-		slog.InfoContext(ctx.Context, "Could not get authenticated user", "err", err)
-	}
+func (c *ProfilePage) OnUpdate(ctx app.Context) {
+	ctx.Async(func() {
+		var output downballotapi.AuthenticationStatusResponse
+		err := api.Do(ctx, http.MethodGet, "/api/v1/authentication/status", nil, &output)
+		if err != nil {
+			slog.InfoContext(ctx.Context, "Could not get authenticated user", "err", err)
+		}
+
+		ctx.Dispatch(func(ctx app.Context) {
+			c.AuthenticatedUser = output.User
+		})
+	})
 }
 
 func (c *ProfilePage) Render() app.UI {
 	return app.Div().Body(
-		app.If(c.authenticatedUser.User == nil, func() app.UI {
+		app.If(c.AuthenticatedUser == nil, func() app.UI {
 			return app.Div().Body(
 				app.Span().Text("Not logged in."),
 			)
 		}).Else(func() app.UI {
 			return app.Div().Body(
 				app.Span().Text("Username: "),
-				app.Span().Text(c.authenticatedUser.User.Email),
+				app.Span().Text(c.AuthenticatedUser.Email),
 				app.Br(),
 				app.Span().Text("Name: "),
-				app.Span().Text(c.authenticatedUser.User.Name),
+				app.Span().Text(c.AuthenticatedUser.Name),
 				app.Br(),
 			)
 		}),

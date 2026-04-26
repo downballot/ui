@@ -1,6 +1,11 @@
 package layout
 
-import "github.com/maxence-charriere/go-app/v10/pkg/app"
+import (
+	"context"
+	"log/slog"
+
+	"github.com/maxence-charriere/go-app/v10/pkg/app"
+)
 
 type CenterLayout struct {
 	app.Compo
@@ -9,6 +14,8 @@ type CenterLayout struct {
 }
 
 func (c *CenterLayout) Render() app.UI {
+	slog.InfoContext(context.TODO(), "CenterLayout: Render")
+
 	return app.Div().
 		Class("center-layout-content").
 		Style("display", "flex").

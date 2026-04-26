@@ -1,6 +1,7 @@
 package page
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -13,46 +14,46 @@ import (
 type OrganizationIDPage struct {
 	app.Compo
 
-	OrganizationID string
-	organization   *downballotapi.Organization
+	OrganizationID string `route:"organization_id"`
+	Organization   *downballotapi.Organization
 }
 
-func (c *OrganizationIDPage) OnNav(ctx app.Context) {
-	slog.InfoContext(ctx.Context, "OrganizationIDPage: OnNav")
+func (c *OrganizationIDPage) OnUpdate(ctx app.Context) {
+	slog.InfoContext(ctx.Context, "OrganizationIDPage: OnUpdate")
+	slog.InfoContext(ctx.Context, "OrganizationIDPage: OnUpdate", "OrganizationID", c.OrganizationID)
 
-	var variables map[string]string
-	ctx.GetState("route", &variables)
-	slog.InfoContext(ctx.Context, "OrganizationIDPage: OnNav", "variables", variables)
-
-	c.OrganizationID = variables["organization_id"]
-	slog.InfoContext(ctx.Context, "Organization ID", "id", c.OrganizationID)
 	if c.OrganizationID == "" {
 		return
 	}
 
-	var output downballotapi.GetOrganizationResponse
-	err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.OrganizationID, nil, &output)
-	if err != nil {
-		slog.ErrorContext(ctx.Context, "Could not get organizations", "err", err)
-		return
-	}
-	c.organization = &output.Organization
-}
+	ctx.Async(func() {
+		var output downballotapi.GetOrganizationResponse
+		err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.OrganizationID, nil, &output)
+		if err != nil {
+			slog.ErrorContext(ctx.Context, "Could not get organizations", "err", err)
+			return
+		}
 
-func (c *OrganizationIDPage) OnMount(ctx app.Context) {
-	slog.InfoContext(ctx.Context, "OrganizationIDPage: OnMount")
+		ctx.Dispatch(func(ctx app.Context) {
+			slog.InfoContext(ctx.Context, "Dispatch: Setting organization", "organization", output.Organization)
+			c.Organization = &output.Organization
+		})
+		ctx.Defer(func(ctx app.Context) {
+			slog.InfoContext(ctx.Context, "Defer: Organization should be set", "organization", c.Organization)
 
-	var variables map[string]string
-	ctx.GetState("route", &variables)
-	slog.InfoContext(ctx.Context, "OrganizationIDPage: OnMount", "variables", variables)
+			ctx.Update()
+		})
+	})
 }
 
 func (c *OrganizationIDPage) Render() app.UI {
+	slog.InfoContext(context.TODO(), "OrganizationIDPage: Render")
+
 	return app.Div().Body(
-		app.If(c.organization == nil, func() app.UI {
+		app.If(c.Organization == nil, func() app.UI {
 			return app.Div().Text("Not found")
 		}).Else(func() app.UI {
-			return app.Div().Text(fmt.Sprintf("%+v", *c.organization))
+			return app.Div().Text(fmt.Sprintf("%+v", *c.Organization))
 		}),
 	)
 }

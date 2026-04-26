@@ -1,6 +1,11 @@
 package layout
 
-import "github.com/maxence-charriere/go-app/v10/pkg/app"
+import (
+	"context"
+	"log/slog"
+
+	"github.com/maxence-charriere/go-app/v10/pkg/app"
+)
 
 type MainLayout struct {
 	app.Compo
@@ -11,6 +16,8 @@ type MainLayout struct {
 }
 
 func (c *MainLayout) Render() app.UI {
+	slog.InfoContext(context.TODO(), "MainLayout: Render")
+
 	return app.Div().
 		Style("height", "100vh").
 		Style("width", "100%").
