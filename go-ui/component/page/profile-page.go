@@ -43,6 +43,16 @@ func (c *ProfilePage) Render() app.UI {
 				app.Span().Text("Name: "),
 				app.Span().Text(c.AuthenticatedUser.Name),
 				app.Br(),
+				app.Button().
+					Text("Log out").
+					OnClick(func(ctx app.Context, e app.Event) {
+						ctx.DelState("api-token")
+
+						err := api.Do(ctx, http.MethodGet, "/api/v1/authentication/status", nil, nil)
+						if err != nil {
+							slog.InfoContext(ctx.Context, "Could not get (un)authenticated user", "err", err)
+						}
+					}),
 			)
 		}),
 	)
