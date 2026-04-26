@@ -89,13 +89,27 @@ func main() {
 		routelayout.RouteLayout{
 			Path: "/",
 			Component: func() routelayout.Layout {
-				return &layout.MainLayout{}
+				return &layout.CenterLayout{}
+			},
+			Children: []routelayout.RoutePage{
+				{
+					Path: "/login",
+					Component: func() app.Composer {
+						return &page.LoginPage{}
+					},
+				},
+			},
+		},
+		routelayout.RouteLayout{
+			Path: "/",
+			Component: func() routelayout.Layout {
+				return &customlayout.DownballotLayout{}
 			},
 			Children: []routelayout.RoutePage{
 				{
 					Path: "/",
 					Component: func() app.Composer {
-						return &customlayout.DownballotLayout{}
+						return &SimpleElement{}
 					},
 				},
 				{
@@ -220,7 +234,7 @@ func (h *JavascriptConsoleLogger) Handle(ctx context.Context, record slog.Record
 	var variables []any
 	variables = append(variables, record.Message)
 	record.Attrs(func(a slog.Attr) bool {
-		variables = append(variables, a.Key, a.Value)
+		variables = append(variables, a.Key, "=", a.Value)
 		return true
 	})
 	app.Log(variables...)

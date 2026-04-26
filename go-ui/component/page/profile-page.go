@@ -6,7 +6,6 @@ import (
 
 	"github.com/downballot/downballot/downballotapi"
 	"github.com/downballot/ui/go-ui/api"
-	"github.com/downballot/ui/go-ui/component/customlayout"
 	"github.com/maxence-charriere/go-app/v10/pkg/app"
 )
 
@@ -24,8 +23,8 @@ func (c *ProfilePage) OnNav(ctx app.Context) {
 }
 
 func (c *ProfilePage) Render() app.UI {
-	return &customlayout.DownballotLayout{
-		Content: app.If(c.authenticatedUser.User == nil, func() app.UI {
+	return app.Div().Body(
+		app.If(c.authenticatedUser.User == nil, func() app.UI {
 			return app.Div().Body(
 				app.Span().Text("Not logged in."),
 			)
@@ -39,5 +38,5 @@ func (c *ProfilePage) Render() app.UI {
 				app.Br(),
 			)
 		}),
-	}
+	)
 }

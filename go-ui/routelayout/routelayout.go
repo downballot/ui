@@ -45,6 +45,7 @@ func Apply(ctx context.Context, routeLayouts ...RouteLayout) error {
 			}
 			slog.InfoContext(ctx, "Registering route.", "path", path)
 			app.RouteWithRegexp(route.Regexp(), func() app.Composer {
+				slog.InfoContext(ctx, "RouteLayout: creating component for route.", "route", route)
 				routeComponent := routeLayout.Component()
 				pageComponent := routePage.Component()
 				component := routeComponent.WithComponent(pageComponent)
@@ -69,8 +70,12 @@ type LayoutWrapper struct {
 	Route     route.Route
 }
 
-type HasOnNav interface {
-	OnNav(ctx app.Context)
+func (c *LayoutWrapper) OnMount(ctx app.Context) {
+	slog.InfoContext(ctx.Context, "LayoutWrapper: OnMount")
+
+	if v, ok := c.Component.(app.Mounter); ok {
+		v.OnMount(ctx)
+	}
 }
 
 func (c *LayoutWrapper) OnNav(ctx app.Context) {
@@ -87,10 +92,21 @@ func (c *LayoutWrapper) OnNav(ctx app.Context) {
 	slog.InfoContext(ctx.Context, "LayoutWrapper: OnNav", "variables", variables)
 	slog.InfoContext(ctx.Context, "LayoutWrapper: OnNav", "Component", fmt.Sprintf("%T", c.Component))
 
-	if v, ok := c.Component.(HasOnNav); ok {
+	if v, ok := c.Component.(app.Navigator); ok {
 		v.OnNav(ctx)
 	}
 }
+
+func (c *LayoutWrapper) OnUpdate(ctx app.Context) {
+	slog.InfoContext(ctx.Context, "LayoutWrapper: OnUpdate")
+
+	if v, ok := c.Component.(app.Updater); ok {
+		v.OnUpdate(ctx)
+	}
+}
+
+// TODO: It looks like we want to leverage OnMount (first time) and OnUpdate (subsequent times) to tell our components that something has changed.
+// TODO: Or, consider adding a public Route property to the pages that need routes so that this info can automatically do what it needs to.
 
 func (c *LayoutWrapper) Render() app.UI {
 	return c.Component.Render()

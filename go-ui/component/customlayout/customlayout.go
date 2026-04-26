@@ -27,6 +27,9 @@ func (c *DownballotLayout) Render() app.UI {
 		Content: c.Content,
 		Header: app.Div().Body(
 			app.H1().Text("Downballot"),
+			app.A().Href("/organization/1").Text("Org1"),
+			app.A().Href("/organization/2").Text("Org2"),
+			app.A().Href("/organization/3").Text("Org3"),
 		),
 		Drawer: app.Div().Body(
 			app.Ul().Body(
@@ -42,4 +45,10 @@ func (c *DownballotLayout) Render() app.UI {
 			),
 		),
 	}
+}
+
+func (c *DownballotLayout) WithComponent(component app.Composer) app.Composer {
+	var output DownballotLayout
+	output.Content = component
+	return &output
 }

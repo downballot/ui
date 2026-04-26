@@ -7,7 +7,6 @@ import (
 
 	"github.com/downballot/downballot/downballotapi"
 	"github.com/downballot/ui/go-ui/api"
-	"github.com/downballot/ui/go-ui/component/customlayout"
 	"github.com/maxence-charriere/go-app/v10/pkg/app"
 )
 
@@ -28,8 +27,8 @@ func (c *OrganizationPage) OnMount(ctx app.Context) {
 }
 
 func (c *OrganizationPage) Render() app.UI {
-	return &customlayout.DownballotLayout{
-		Content: app.Range(c.organizations).Slice(func(i int) app.UI {
+	return app.Div().Body(
+		app.Range(c.organizations).Slice(func(i int) app.UI {
 			organization := *c.organizations[i]
 
 			return app.Div().Body(
@@ -38,5 +37,5 @@ func (c *OrganizationPage) Render() app.UI {
 					Text(fmt.Sprintf("%+v", organization)),
 			)
 		}),
-	}
+	)
 }
