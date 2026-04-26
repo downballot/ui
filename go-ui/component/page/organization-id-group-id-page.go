@@ -75,6 +75,40 @@ func (c *OrganizationIDGroupIDPage) OnUpdate(ctx app.Context) {
 func (c *OrganizationIDGroupIDPage) Render() app.UI {
 	slog.InfoContext(context.TODO(), "OrganizationIDGroupIDPage: Render")
 
+	columns := []myui.TableColumn[*downballotapi.Person]{
+		{
+			Name: "ID",
+			Value: func(row *downballotapi.Person) any {
+				return row.ID
+			},
+		},
+		{
+			Name: "Voter ID",
+			Value: func(row *downballotapi.Person) any {
+				return row.VoterID
+			},
+			To: func(row *downballotapi.Person) string {
+				return fmt.Sprintf("/organization/%s/person/%s", c.OrganizationID, row.VoterID)
+			},
+		},
+	}
+
+	usedFields := map[string]bool{}
+	for _, person := range c.Persons {
+		for name := range person.Fields {
+			usedFields[name] = true
+		}
+	}
+
+	for name := range usedFields {
+		columns = append(columns, myui.TableColumn[*downballotapi.Person]{
+			Name: name,
+			Value: func(row *downballotapi.Person) any {
+				return row.Fields[name]
+			},
+		})
+	}
+
 	return app.Div().Body(
 		app.If(c.Organization == nil || c.Group == nil, func() app.UI {
 			return app.Div().Text("Not found")
@@ -118,29 +152,8 @@ func (c *OrganizationIDGroupIDPage) Render() app.UI {
 				),
 				myui.NewTable[*downballotapi.Person]().
 					Rows(c.Persons).
-					Columns([]myui.TableColumn[*downballotapi.Person]{
-						{
-							Name: "ID",
-							Value: func(row *downballotapi.Person) any {
-								return row.ID
-							},
-						},
-						{
-							Name: "Voter ID",
-							Value: func(row *downballotapi.Person) any {
-								return row.VoterID
-							},
-							To: func(row *downballotapi.Person) string {
-								return fmt.Sprintf("/organization/%s/person/%s", c.OrganizationID, row.VoterID)
-							},
-						},
-						{
-							Name: "Fields",
-							Value: func(row *downballotapi.Person) any {
-								return fmt.Sprintf("%v", row.Fields)
-							},
-						},
-					}).Render(),
+					Columns(columns).
+					Render(),
 			)
 		}),
 	)
