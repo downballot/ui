@@ -31,3 +31,39 @@ h1, h2, h3, h4, h5, h6 {
 .main-layout-content {
     padding: 1em;
 }
+
+table.myui-table {
+    border-collapse: collapse; /* Removes space between cell borders */
+    margin: 25px 0;
+    font-size: 0.9em;
+    font-family: sans-serif;
+    min-width: 400px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.15); /* Adds a modern elevation effect */
+}
+
+table.myui-table thead tr {
+    background-color: #009879; /* Brand color for the header */
+    color: #ffffff;
+    text-align: left;
+}
+
+table.myui-table th,
+table.myui-table td {
+    padding: 12px 15px; /* Spacing for readability */
+}
+
+table.myui-table tbody tr {
+    border-bottom: 1px solid #dddddd; /* Subtle row separation */
+}
+
+table.myui-table tbody tr:nth-of-type(even) {
+    background-color: #f3f3f3; /* Zebra-striping for easier scanning */
+}
+
+table.myui-table tbody tr:last-of-type {
+    border-bottom: 2px solid #009879; /* Indicates end of table */
+}
+
+table.myui-table tbody tr:hover {
+    background-color: #f1f1f1; /* Visual cue when interacting with rows */
+}

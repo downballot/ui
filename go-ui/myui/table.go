@@ -37,6 +37,7 @@ func (t *Table[T]) Columns(columns []TableColumn[T]) *Table[T] {
 
 func (t *Table[T]) Render() app.UI {
 	return app.Table().
+		Class("myui-table").
 		Body(
 			app.THead().
 				Body(
