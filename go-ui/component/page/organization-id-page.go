@@ -53,7 +53,14 @@ func (c *OrganizationIDPage) Render() app.UI {
 		app.If(c.Organization == nil, func() app.UI {
 			return app.Div().Text("Not found")
 		}).Else(func() app.UI {
-			return app.Div().Text(fmt.Sprintf("%+v", *c.Organization))
+			return app.Div().Body(
+				app.Div().Text(fmt.Sprintf("%+v", *c.Organization)),
+				app.Ul().Body(
+					app.Li().Body(
+						app.A().Href("/organization/"+c.OrganizationID+"/group").Text("Groups"),
+					),
+				),
+			)
 		}),
 	)
 }

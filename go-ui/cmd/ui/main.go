@@ -125,6 +125,18 @@ func main() {
 					},
 				},
 				{
+					Path: "/organization/:organization_id/group",
+					Component: func() app.Composer {
+						return &page.OrganizationIDGroupPage{}
+					},
+				},
+				{
+					Path: "/organization/:organization_id/group/:group_id",
+					Component: func() app.Composer {
+						return &page.OrganizationIDGroupIDPage{}
+					},
+				},
+				{
 					Path: "/profile",
 					Component: func() app.Composer {
 						return &page.ProfilePage{}
