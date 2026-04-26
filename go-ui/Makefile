@@ -5,7 +5,7 @@ SHELL := /bin/bash
 ALL_GO_FILES := $(shell find ./ -name '*.go')
 
 .PHONY: binaries
-binaries: bin/ui bin/web/app.wasm
+binaries: bin/ui bin/web/app.wasm bin/web/main.css
 
 bin:
 	mkdir -p $@
@@ -18,6 +18,9 @@ bin/web: bin
 
 bin/web/app.wasm: bin/web $(ALL_GO_FILES)
 	GOARCH=wasm GOOS=js go build -o $@ ./cmd/ui/...
+
+bin/web/main.css: bin/web static/main.css
+	cp static/main.css $@
 
 .PHONY: run
 run: binaries

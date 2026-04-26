@@ -19,11 +19,15 @@ func (c *MainLayout) Render() app.UI {
 				Class("main-layout-header").
 				Body(c.Header),
 			app.Div().
-				Class("main-layout-drawer").
-				Body(c.Drawer),
-			app.Div().
-				Class("main-layout-content").
-				Body(c.Content),
+				Class("main-layout-body").
+				Body(
+					app.Div().
+						Class("main-layout-drawer").
+						Body(c.Drawer),
+					app.Div().
+						Class("main-layout-content").
+						Body(c.Content),
+				),
 		)
 }
 

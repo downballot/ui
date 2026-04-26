@@ -156,8 +156,12 @@ func main() {
 	// required resources to make it work into a web browser. Here it is
 	// configured to handle requests with a path that starts with "/".
 	mux.Handle("/", &app.Handler{
-		Name:        "Hello",
-		Description: "An Hello World! example",
+		Name:        "Downballot",
+		Description: "The official Downballot UI",
+		Title:       "Downballot",
+		Styles: []string{
+			"/web/main.css",
+		},
 	})
 	mux.HandleFunc("/api/", func(w http.ResponseWriter, r *http.Request) {
 		reverseProxy := &httputil.ReverseProxy{

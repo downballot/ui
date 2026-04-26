@@ -65,9 +65,10 @@ func Apply(ctx context.Context, routeLayouts ...RouteLayout) error {
 type LayoutWrapper struct {
 	app.Compo
 
-	Component app.Composer
-	Meta      map[string]string
-	Route     route.Route
+	Component      app.Composer
+	Meta           map[string]string
+	Route          route.Route
+	RouteVariables map[string]string
 }
 
 func (c *LayoutWrapper) OnMount(ctx app.Context) {
@@ -86,6 +87,8 @@ func (c *LayoutWrapper) OnNav(ctx app.Context) {
 	if !matched {
 		slog.WarnContext(ctx.Context, "Could not match route somehow: %s", ctx.Page().URL().Path)
 	} else {
+		c.RouteVariables = variables
+		//c.Route.Apply(c.Component)
 		ctx.SetState("route", variables)
 	}
 	slog.InfoContext(ctx.Context, "LayoutWrapper: OnNav", "matched", matched)
@@ -109,5 +112,7 @@ func (c *LayoutWrapper) OnUpdate(ctx app.Context) {
 // TODO: Or, consider adding a public Route property to the pages that need routes so that this info can automatically do what it needs to.
 
 func (c *LayoutWrapper) Render() app.UI {
+	slog.InfoContext(context.TODO(), "LayoutWrapper: Render")
+
 	return c.Component.Render()
 }
