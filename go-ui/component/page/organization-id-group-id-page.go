@@ -4,8 +4,11 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"maps"
 	"net/http"
 	"net/url"
+	"slices"
+	"strings"
 
 	"github.com/downballot/downballot/downballotapi"
 	"github.com/downballot/ui/go-ui/api"
@@ -21,8 +24,10 @@ type OrganizationIDGroupIDPage struct {
 	GroupID        string `route:"group_id"`
 	Group          *downballotapi.Group
 
-	Filter  string
-	Persons []*downballotapi.Person
+	Filter         string
+	PossibleFields []string
+	SelectedFields []string
+	Persons        []*downballotapi.Person
 }
 
 func (c *OrganizationIDGroupIDPage) OnUpdate(ctx app.Context) {
@@ -70,6 +75,37 @@ func (c *OrganizationIDGroupIDPage) OnUpdate(ctx app.Context) {
 			ctx.Update()
 		})
 	})
+
+	c.PossibleFields = []string{
+		"birthday_year",
+		"candidate.donated",
+		"candidate.support",
+		"coordinates",
+		"county",
+		"district_representative",
+		"district_school",
+		"district_senate",
+		"mailing_address",
+		"name_first",
+		"name_last",
+		"name_middle",
+		"name_suffix",
+		"name",
+		"phone_number",
+		"political_party",
+		"residential_address_development",
+		"residential_address",
+		"voter_id",
+		"voting_history",
+	}
+	slices.Sort(c.PossibleFields)
+
+	c.SelectedFields = []string{
+		"name",
+		"phone_number",
+		"residential_address_development",
+	}
+	slices.Sort(c.SelectedFields)
 }
 
 func (c *OrganizationIDGroupIDPage) Render() app.UI {
@@ -93,14 +129,16 @@ func (c *OrganizationIDGroupIDPage) Render() app.UI {
 		},
 	}
 
-	usedFields := map[string]bool{}
+	usedFieldMap := map[string]bool{}
 	for _, person := range c.Persons {
 		for name := range person.Fields {
-			usedFields[name] = true
+			usedFieldMap[name] = true
 		}
 	}
+	usedFields := slices.Collect(maps.Keys(usedFieldMap))
+	slices.Sort(usedFields)
 
-	for name := range usedFields {
+	for _, name := range usedFields {
 		columns = append(columns, myui.TableColumn[*downballotapi.Person]{
 			Name: name,
 			Value: func(row *downballotapi.Person) any {
@@ -126,11 +164,33 @@ func (c *OrganizationIDGroupIDPage) Render() app.UI {
 							OnChange(c.ValueTo(&c.Filter)),
 					),
 					app.Div().Body(
+						app.Range(c.PossibleFields).Slice(func(i int) app.UI {
+							possibleField := c.PossibleFields[i]
+
+							return app.Label().Body(
+								app.Input().
+									Type("checkbox").
+									Checked(slices.Contains(c.SelectedFields, possibleField)).
+									OnChange(func(ctx app.Context, e app.Event) {
+										checked := e.Value.Get("target").Get("checked").Bool()
+										if checked {
+											c.SelectedFields = append(c.SelectedFields, possibleField)
+										} else {
+											c.SelectedFields = slices.DeleteFunc(c.SelectedFields, func(item string) bool { return item == possibleField })
+										}
+										slices.Sort(c.SelectedFields)
+									}),
+								app.Text(possibleField),
+							)
+						}),
+					),
+					app.Div().Body(
 						app.Button().
 							Text("Search").
 							OnClick(func(ctx app.Context, e app.Event) {
 								queryParameters := url.Values{}
 								queryParameters.Set("filter", c.Filter)
+								queryParameters.Set("fields", strings.Join(c.SelectedFields, ","))
 								var output downballotapi.ListPersonsResponse
 								err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.OrganizationID+"/group/"+c.GroupID+"/person?"+queryParameters.Encode(), nil, &output)
 								if err != nil {
