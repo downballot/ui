@@ -87,7 +87,7 @@ func (c *LayoutWrapper) OnNav(ctx app.Context) {
 
 	matched, variables := c.Route.Match(ctx.Page().URL().Path)
 	if !matched {
-		slog.WarnContext(ctx.Context, "Could not match route somehow: %s", ctx.Page().URL().Path)
+		slog.WarnContext(ctx.Context, "Could not match route somehow.", "route", c.Route, "path", ctx.Page().URL().Path)
 	} else {
 		c.RouteVariables = variables
 		err := route.ApplyVariables(c.PageComponent, variables)

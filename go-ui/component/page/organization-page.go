@@ -7,6 +7,7 @@ import (
 
 	"github.com/downballot/downballot/downballotapi"
 	"github.com/downballot/ui/go-ui/api"
+	"github.com/downballot/ui/go-ui/myui"
 	"github.com/maxence-charriere/go-app/v10/pkg/app"
 )
 
@@ -33,14 +34,27 @@ func (c *OrganizationPage) OnUpdate(ctx app.Context) {
 
 func (c *OrganizationPage) Render() app.UI {
 	return app.Div().Body(
-		app.Range(c.Organizations).Slice(func(i int) app.UI {
-			organization := *c.Organizations[i]
-
-			return app.Div().Body(
-				app.A().
-					Href("/organization/" + organization.ID).
-					Text(fmt.Sprintf("%+v", organization)),
-			)
-		}),
+		app.Div().Text(
+			"These are the organizations that you are a part of.",
+		),
+		myui.NewTable[*downballotapi.Organization]().
+			Rows(c.Organizations).
+			Columns([]myui.TableColumn[*downballotapi.Organization]{
+				{
+					Name: "ID",
+					Value: func(row *downballotapi.Organization) any {
+						return row.ID
+					},
+				},
+				{
+					Name: "Name",
+					Value: func(row *downballotapi.Organization) any {
+						return row.Name
+					},
+					To: func(row *downballotapi.Organization) string {
+						return fmt.Sprintf("/organization/%s", row.ID)
+					},
+				},
+			}).Render(),
 	)
 }
