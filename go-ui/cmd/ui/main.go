@@ -199,7 +199,11 @@ func main() {
 		slog.InfoContext(r.Context(), "[out] Request", "method", r.Method, "url", r.URL.String(), "code", wrappedResponseWriter.Info.StatusCode)
 	})
 
-	if err := http.ListenAndServe(":8000", wrapper); err != nil {
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8000"
+	}
+	if err := http.ListenAndServe(":"+port, wrapper); err != nil {
 		log.Fatal(err)
 	}
 }

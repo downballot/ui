@@ -2,6 +2,15 @@ html {
     border: 0;
     padding: 0;
     margin: 0;
+
+    font-family: sans-serif;
+
+    --material-theme-primary: #20a4f3;
+    --material-theme-secondary: #2ec4b6;
+    --material-theme-background: #ffffff;
+    --material-theme-on-primary: #ffffff;
+    --material-theme-on-secondary: #000000;
+    --material-theme-on-background: #000000;
 }
 
 body {
@@ -15,8 +24,6 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .main-layout-header {
-    padding: 1em;
-    background-color: rgb(200,200,200);
 }
 
 .main-layout-body {
@@ -42,28 +49,63 @@ table.myui-table {
 }
 
 table.myui-table thead tr {
-    background-color: #009879; /* Brand color for the header */
-    color: #ffffff;
+    background-color: var(--material-theme-secondary);
+    color: var(--material-theme-on-secondary); 
     text-align: left;
 }
 
 table.myui-table th,
 table.myui-table td {
-    padding: 12px 15px; /* Spacing for readability */
+    padding: 12px 15px; 
 }
 
 table.myui-table tbody tr {
-    border-bottom: 1px solid #dddddd; /* Subtle row separation */
+    border-bottom: 1px solid #dddddd;
 }
 
 table.myui-table tbody tr:nth-of-type(even) {
-    background-color: #f3f3f3; /* Zebra-striping for easier scanning */
+    background-color: #f7f7f7; /* Zebra-striping for easier scanning */
 }
 
 table.myui-table tbody tr:last-of-type {
-    border-bottom: 2px solid #009879; /* Indicates end of table */
 }
 
 table.myui-table tbody tr:hover {
     background-color: #f1f1f1; /* Visual cue when interacting with rows */
+}
+
+.material-app-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: left;
+    width: 100%;
+    padding: 1em;
+    background-color: var(--material-theme-primary);
+    color: var(--material-theme-on-primary);
+}
+
+.material-app-bar-leading {
+}
+
+.material-app-bar-content {
+    flex: 1;
+}
+
+.material-app-bar-headline {
+}
+
+.material-app-bar-headline-text {
+    font-size: 1.5em;
+    font-weight: bold;
+}
+
+.material-app-bar-subtitle {
+}
+
+.material-app-bar-subtitle-text {
+    font-size: 1em;
+    font-weight: normal;
+}
+
+.material-app-bar-trailer {
 }

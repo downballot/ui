@@ -5,6 +5,7 @@ import (
 	"log/slog"
 
 	"github.com/downballot/ui/go-ui/component/layout"
+	"github.com/downballot/ui/go-ui/material"
 	"github.com/maxence-charriere/go-app/v10/pkg/app"
 )
 
@@ -29,10 +30,9 @@ func (c *DownballotLayout) Render() app.UI {
 	return &layout.MainLayout{
 		Content: c.Content.Render(),
 		Header: app.Div().Body(
-			app.H1().Text("Downballot"),
-			app.A().Href("/organization/1").Text("Org1"),
-			app.A().Href("/organization/2").Text("Org2"),
-			app.A().Href("/organization/3").Text("Org3"),
+			&material.AppBar{
+				Headline: "Downballot",
+			},
 		),
 		Drawer: app.Div().Body(
 			app.Ul().Body(

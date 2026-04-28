@@ -41,10 +41,13 @@ func (t *Table[T]) Render() app.UI {
 		Body(
 			app.THead().
 				Body(
-					app.Range(t.columns).Slice(func(i int) app.UI {
-						return app.Th().
-							Text(t.columns[i].Name)
-					}),
+					app.Tr().
+						Body(
+							app.Range(t.columns).Slice(func(i int) app.UI {
+								return app.Th().
+									Text(t.columns[i].Name)
+							}),
+						),
 				),
 			app.TBody().
 				Body(
