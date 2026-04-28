@@ -7,7 +7,7 @@ import (
 	"net/http"
 
 	"github.com/downballot/downballot/downballotapi"
-	"github.com/downballot/ui/go-ui/api"
+	"github.com/downballot/ui/api"
 	"github.com/maxence-charriere/go-app/v10/pkg/app"
 )
 

@@ -11,10 +11,10 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/downballot/ui/go-ui/component/customlayout"
-	"github.com/downballot/ui/go-ui/component/layout"
-	"github.com/downballot/ui/go-ui/component/page"
-	"github.com/downballot/ui/go-ui/routelayout"
+	"github.com/downballot/ui/component/customlayout"
+	"github.com/downballot/ui/component/layout"
+	"github.com/downballot/ui/component/page"
+	"github.com/downballot/ui/routelayout"
 	"github.com/maxence-charriere/go-app/v10/pkg/app"
 )
 

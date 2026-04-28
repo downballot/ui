@@ -4,8 +4,8 @@ import (
 	"context"
 	"log/slog"
 
-	"github.com/downballot/ui/go-ui/component/layout"
-	"github.com/downballot/ui/go-ui/material"
+	"github.com/downballot/ui/component/layout"
+	"github.com/downballot/ui/material"
 	"github.com/maxence-charriere/go-app/v10/pkg/app"
 )
 

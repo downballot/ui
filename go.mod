@@ -1,4 +1,4 @@
-module github.com/downballot/ui/go-ui
+module github.com/downballot/ui
 
 go 1.26.2
 
@@ -18,4 +18,4 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
-replace github.com/downballot/downballot => ../../downballot
+replace github.com/downballot/downballot => ../downballot

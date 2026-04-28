@@ -6,7 +6,7 @@ import (
 	"log/slog"
 	"strings"
 
-	"github.com/downballot/ui/go-ui/route"
+	"github.com/downballot/ui/route"
 	"github.com/maxence-charriere/go-app/v10/pkg/app"
 )
 
