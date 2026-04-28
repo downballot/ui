@@ -54,7 +54,7 @@ func (c *OrganizationIDGroupIDPage) OnUpdate(ctx app.Context) {
 		ctx.Defer(func(ctx app.Context) {
 			slog.InfoContext(ctx.Context, "Defer: Organization should be set", "organization", c.Organization)
 
-			ctx.Update()
+			//ctx.Update()
 		})
 	})
 	ctx.Async(func() {
@@ -72,7 +72,7 @@ func (c *OrganizationIDGroupIDPage) OnUpdate(ctx app.Context) {
 		ctx.Defer(func(ctx app.Context) {
 			slog.InfoContext(ctx.Context, "Defer: Group should be set", "group", c.Group)
 
-			ctx.Update()
+			//ctx.Update()
 		})
 	})
 
@@ -205,7 +205,7 @@ func (c *OrganizationIDGroupIDPage) Render() app.UI {
 								ctx.Defer(func(ctx app.Context) {
 									slog.InfoContext(ctx.Context, "Defer: Persons should be set", "persons", c.Persons)
 
-									ctx.Update()
+									//ctx.Update()
 								})
 							}),
 					),

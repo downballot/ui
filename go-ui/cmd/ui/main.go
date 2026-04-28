@@ -137,6 +137,12 @@ func main() {
 					},
 				},
 				{
+					Path: "/organization/:organization_id/person/:voter_id",
+					Component: func() app.Composer {
+						return &page.OrganizationIDPersonIDPage{}
+					},
+				},
+				{
 					Path: "/profile",
 					Component: func() app.Composer {
 						return &page.ProfilePage{}

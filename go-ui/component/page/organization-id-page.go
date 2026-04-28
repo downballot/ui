@@ -41,7 +41,7 @@ func (c *OrganizationIDPage) OnUpdate(ctx app.Context) {
 		ctx.Defer(func(ctx app.Context) {
 			slog.InfoContext(ctx.Context, "Defer: Organization should be set", "organization", c.Organization)
 
-			ctx.Update()
+			//ctx.Update()
 		})
 	})
 }
