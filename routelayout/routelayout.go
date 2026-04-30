@@ -12,14 +12,16 @@ import (
 )
 
 type Route struct {
-	Path      string
-	Component func() app.Composer
-	Meta      map[string]string
-	Children  []Route
+	Path          string
+	PathVariables func(ctx app.Context, variables map[string]string)
+	Component     func() app.Composer
+	Meta          map[string]string
+	Children      []Route
 }
 
 type internalRoute struct {
 	Path               string
+	PathVariables      []func(ctx app.Context, variables map[string]string)
 	ComponentFunctions []func() app.Composer
 	Meta               map[string]string
 }
@@ -46,6 +48,7 @@ func Apply(ctx context.Context, routes ...Route) error {
 				LayoutComponent: routeComponent,
 				Meta:            r.Meta,
 				Route:           *route,
+				PathVariables:   r.PathVariables,
 			}
 			return &wrapper
 		})
@@ -98,10 +101,12 @@ func flattenRoutes(ctx context.Context, parentRoute internalRoute, routes ...Rou
 			newRoute.Path += "/" + newPath
 		}
 		newRoute.ComponentFunctions = append(newRoute.ComponentFunctions, parentRoute.ComponentFunctions...)
+		newRoute.PathVariables = append(newRoute.PathVariables, parentRoute.PathVariables...)
 		for key, value := range parentRoute.Meta {
 			newRoute.Meta[key] = value
 		}
 		newRoute.ComponentFunctions = append(newRoute.ComponentFunctions, route.Component)
+		newRoute.PathVariables = append(newRoute.PathVariables, route.PathVariables)
 		for key, value := range route.Meta {
 			newRoute.Meta[key] = value
 		}
@@ -131,6 +136,7 @@ type LayoutWrapper struct {
 	Meta            map[string]string
 	Route           route.Route
 	RouteVariables  map[string]string
+	PathVariables   []func(ctx app.Context, variables map[string]string)
 }
 
 func (c *LayoutWrapper) OnMount(ctx app.Context) {
@@ -150,6 +156,13 @@ func (c *LayoutWrapper) OnNav(ctx app.Context) {
 		slog.WarnContext(ctx.Context, "Could not match route somehow.", "route", c.Route, "path", ctx.Page().URL().Path)
 	} else {
 		c.RouteVariables = variables
+
+		for _, f := range c.PathVariables {
+			if f == nil {
+				continue
+			}
+			f(ctx, c.RouteVariables)
+		}
 
 		if v, ok := c.LayoutComponent.(RouterViewInterface); ok {
 			slog.DebugContext(ctx, "LayoutWrapper: OnNav: Applying variables.", "LayoutComponent", fmt.Sprintf("%T", c.LayoutComponent))

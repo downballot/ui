@@ -13,7 +13,8 @@ type OrganizationLayout struct {
 	app.Compo
 	routelayout.RouterViewComponent
 
-	OrganizationID string `route:"organization_id"`
+	OrganizationID   string `route:"organization_id"`
+	OrganizationName string `route:"organization_name"`
 }
 
 var _ routelayout.RouterViewInterface = (*OrganizationLayout)(nil)
@@ -24,7 +25,7 @@ func (c *OrganizationLayout) Render() app.UI {
 	return app.Div().
 		Body(
 			&material.AppBar{
-				Headline: "Organization #" + c.OrganizationID,
+				Headline: c.OrganizationName,
 			},
 			app.Ul().Body(
 				app.Li().Body(

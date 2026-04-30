@@ -11,6 +11,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/downballot/downballot/downballotapi"
+	"github.com/downballot/ui/api"
 	"github.com/downballot/ui/component/customlayout"
 	"github.com/downballot/ui/component/layout"
 	"github.com/downballot/ui/component/page"
@@ -130,6 +132,18 @@ func main() {
 				},
 				{
 					Path: "/organization/:organization_id",
+					PathVariables: func(ctx app.Context, variables map[string]string) {
+						//ctx.Dispatch(func(ctx app.Context) {
+						var output downballotapi.GetOrganizationResponse
+						err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+variables["organization_id"], nil, &output)
+						if err != nil {
+							slog.ErrorContext(ctx.Context, "Could not get organization", "err", err)
+							return
+						}
+
+						variables["organization_name"] = output.Organization.Name
+						//})
+					},
 					Component: func() app.Composer {
 						return &customlayout.OrganizationLayout{}
 					},
