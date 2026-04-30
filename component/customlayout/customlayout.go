@@ -6,14 +6,16 @@ import (
 
 	"github.com/downballot/ui/component/layout"
 	"github.com/downballot/ui/material"
+	"github.com/downballot/ui/routelayout"
 	"github.com/maxence-charriere/go-app/v10/pkg/app"
 )
 
 type DownballotLayout struct {
 	app.Compo
-
-	Content app.Composer
+	routelayout.RouterViewComponent
 }
+
+var _ routelayout.RouterViewInterface = (*DownballotLayout)(nil)
 
 func (c *DownballotLayout) OnNav(ctx app.Context) {
 	var apiToken string
@@ -27,8 +29,7 @@ func (c *DownballotLayout) OnNav(ctx app.Context) {
 func (c *DownballotLayout) Render() app.UI {
 	slog.InfoContext(context.TODO(), "DownballotLayout: Render")
 
-	return &layout.MainLayout{
-		Content: c.Content.Render(),
+	mainLayout := &layout.MainLayout{
 		Header: app.Div().Body(
 			&material.AppBar{
 				Headline: "Downballot",
@@ -48,10 +49,6 @@ func (c *DownballotLayout) Render() app.UI {
 			),
 		),
 	}
-}
-
-func (c *DownballotLayout) WithComponent(component app.Composer) app.Composer {
-	var output DownballotLayout
-	output.Content = component
-	return &output
+	mainLayout.SetRouterView(c.RouterView())
+	return mainLayout.Render()
 }

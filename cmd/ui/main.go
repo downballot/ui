@@ -15,6 +15,8 @@ import (
 	"github.com/downballot/ui/component/layout"
 	"github.com/downballot/ui/component/page"
 	"github.com/downballot/ui/routelayout"
+	"github.com/lmittmann/tint"
+	"github.com/mattn/go-isatty"
 	"github.com/maxence-charriere/go-app/v10/pkg/app"
 )
 
@@ -62,7 +64,12 @@ func main() {
 		}
 		var handler slog.Handler
 		if app.IsServer {
-			handler = slog.NewTextHandler(os.Stderr, &slogConfig)
+			//handler = slog.NewTextHandler(os.Stderr, &slogConfig)
+			w := os.Stderr
+			handler =
+				tint.NewHandler(w, &tint.Options{
+					NoColor: !isatty.IsTerminal(w.Fd()),
+				})
 		} else {
 			handler = &JavascriptConsoleLogger{}
 		}
@@ -74,7 +81,7 @@ func main() {
 	routelayout.Apply(ctx,
 		routelayout.RouteLayout{
 			Path: "/",
-			Component: func() routelayout.Layout {
+			Component: func() app.Composer {
 				return &layout.MainLayout{}
 			},
 			Children: []routelayout.RoutePage{
@@ -88,7 +95,7 @@ func main() {
 		},
 		routelayout.RouteLayout{
 			Path: "/",
-			Component: func() routelayout.Layout {
+			Component: func() app.Composer {
 				return &layout.CenterLayout{}
 			},
 			Children: []routelayout.RoutePage{
@@ -102,7 +109,7 @@ func main() {
 		},
 		routelayout.RouteLayout{
 			Path: "/",
-			Component: func() routelayout.Layout {
+			Component: func() app.Composer {
 				return &customlayout.DownballotLayout{}
 			},
 			Children: []routelayout.RoutePage{
@@ -181,6 +188,8 @@ func main() {
 			"/web/main.css",
 		},
 	})
+
+	// Send all API requests to the API server.
 	mux.HandleFunc("/api/", func(w http.ResponseWriter, r *http.Request) {
 		reverseProxy := &httputil.ReverseProxy{
 			Rewrite: func(r *httputil.ProxyRequest) {
@@ -192,6 +201,12 @@ func main() {
 		}
 		slog.InfoContext(r.Context(), "Reverse proxy request", "method", r.Method, "url", r.URL.String())
 		reverseProxy.ServeHTTP(w, r)
+	})
+
+	// Disable the service worker by replacing it with an empty one.
+	mux.HandleFunc("/app-worker.js", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/javascript")
+		w.Write([]byte(""))
 	})
 
 	wrapper := http.NewServeMux()

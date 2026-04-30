@@ -10,13 +10,9 @@ import (
 	"github.com/maxence-charriere/go-app/v10/pkg/app"
 )
 
-type Layout interface {
-	WithComponent(app.Composer) app.Composer
-}
-
 type RouteLayout struct {
 	Path      string
-	Component func() Layout
+	Component func() app.Composer
 	Meta      map[string]string
 	Children  []RoutePage
 }
@@ -27,6 +23,7 @@ type RoutePage struct {
 	Meta      map[string]string
 }
 
+// Apply the various route layouts.
 func Apply(ctx context.Context, routeLayouts ...RouteLayout) error {
 	for _, routeLayout := range routeLayouts {
 		for _, routePage := range routeLayout.Children {
@@ -48,10 +45,17 @@ func Apply(ctx context.Context, routeLayouts ...RouteLayout) error {
 				slog.InfoContext(ctx, "RouteLayout: creating component for route.", "route", route)
 				routeComponent := routeLayout.Component()
 				pageComponent := routePage.Component()
-				component := routeComponent.WithComponent(pageComponent)
+				slog.InfoContext(ctx, "RouteLayout:", "routeComponent", routeComponent, "type", fmt.Sprintf("%T", routeComponent))
+				slog.InfoContext(ctx, "RouteLayout:", "pageComponent", pageComponent, "type", fmt.Sprintf("%T", pageComponent))
+
+				if hasRouterView, ok := routeComponent.(RouterViewInterface); ok {
+					slog.InfoContext(ctx, "RouteLayout: routeComponent is a RouterViewInterface.")
+					hasRouterView.SetRouterView(pageComponent)
+					slog.InfoContext(ctx, "RouteLayout:", "routeComponent", routeComponent)
+				}
 
 				wrapper := LayoutWrapper{
-					LayoutComponent: component,
+					LayoutComponent: routeComponent,
 					PageComponent:   pageComponent,
 					Meta:            pageMeta,
 					Route:           *route,
@@ -61,6 +65,13 @@ func Apply(ctx context.Context, routeLayouts ...RouteLayout) error {
 		}
 	}
 	return nil
+}
+
+// flattenRoutes flattens a list of potentially nested routes.
+func flattenRoutes(ctx context.Context, routeLayouts ...RouteLayout) ([]RouteLayout, error) {
+	var output []RouteLayout
+
+	return output, nil
 }
 
 type LayoutWrapper struct {

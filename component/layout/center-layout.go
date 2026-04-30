@@ -4,14 +4,16 @@ import (
 	"context"
 	"log/slog"
 
+	"github.com/downballot/ui/routelayout"
 	"github.com/maxence-charriere/go-app/v10/pkg/app"
 )
 
 type CenterLayout struct {
 	app.Compo
-
-	Content app.UI
+	routelayout.RouterViewComponent
 }
+
+var _ routelayout.RouterViewInterface = (*CenterLayout)(nil)
 
 func (c *CenterLayout) Render() app.UI {
 	slog.InfoContext(context.TODO(), "CenterLayout: Render")
@@ -24,12 +26,6 @@ func (c *CenterLayout) Render() app.UI {
 		Style("height", "100vh").
 		Style("width", "100%").
 		Body(
-			c.Content,
+			c.RouterViewComponent.RouterView(),
 		)
-}
-
-func (c *CenterLayout) WithComponent(component app.Composer) app.Composer {
-	var output CenterLayout
-	output.Content = component
-	return &output
 }

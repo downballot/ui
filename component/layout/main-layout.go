@@ -4,19 +4,23 @@ import (
 	"context"
 	"log/slog"
 
+	"github.com/downballot/ui/routelayout"
 	"github.com/maxence-charriere/go-app/v10/pkg/app"
 )
 
 type MainLayout struct {
 	app.Compo
+	routelayout.RouterViewComponent
 
-	Header  app.UI
-	Drawer  app.UI
-	Content app.UI
+	Header app.UI
+	Drawer app.UI
 }
+
+var _ routelayout.RouterViewInterface = (*MainLayout)(nil)
 
 func (c *MainLayout) Render() app.UI {
 	slog.InfoContext(context.TODO(), "MainLayout: Render")
+	slog.InfoContext(context.TODO(), "MainLayout:", "c", c)
 
 	return app.Div().
 		Style("height", "100vh").
@@ -33,13 +37,11 @@ func (c *MainLayout) Render() app.UI {
 						Body(c.Drawer),
 					app.Div().
 						Class("main-layout-content").
-						Body(c.Content),
+						Body(
+							app.If(c.RouterViewComponent.RouterView() != nil, func() app.UI {
+								return c.RouterViewComponent.RouterView().Render()
+							}),
+						),
 				),
 		)
-}
-
-func (c *MainLayout) WithComponent(component app.Composer) app.Composer {
-	var output MainLayout
-	output.Content = component
-	return &output
 }
