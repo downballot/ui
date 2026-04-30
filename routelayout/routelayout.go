@@ -40,9 +40,9 @@ func Apply(ctx context.Context, routes ...Route) error {
 		}
 		slog.InfoContext(ctx, "Registering route.", "path", r.Path)
 		app.RouteWithRegexp(route.Regexp(), func() app.Composer {
-			slog.InfoContext(ctx, "RouteLayout: creating component for route.", "route", route)
+			slog.InfoContext(ctx, "RouteLayout: func(): creating component for route.", "route", route)
 			routeComponent := composeRoute(ctx, r.ComponentFunctions...)
-			slog.InfoContext(ctx, "RouteLayout:", "routeComponent", routeComponent, "type", fmt.Sprintf("%T", routeComponent))
+			slog.InfoContext(ctx, "RouteLayout: func()", "routeComponent", routeComponent, "type", fmt.Sprintf("%T", routeComponent))
 
 			wrapper := LayoutWrapper{
 				LayoutComponent: routeComponent,
@@ -77,7 +77,7 @@ func composeRoute(ctx context.Context, fs ...func() app.Composer) app.Composer {
 		slog.DebugContext(ctx, "composeRoute: Created component", "type", fmt.Sprintf("%T", component))
 		if component != nil {
 			if hasRouterView, ok := component.(RouterViewInterface); ok {
-				slog.InfoContext(ctx, "RouteLayout: component is a RouterViewInterface.", "component", fmt.Sprintf("%T", component))
+				slog.InfoContext(ctx, "composeRoute: component is a RouterViewInterface.", "component", fmt.Sprintf("%T", component))
 				hasRouterView.SetRouterView(output)
 			}
 		}
@@ -140,7 +140,7 @@ type LayoutWrapper struct {
 }
 
 func (c *LayoutWrapper) OnMount(ctx app.Context) {
-	slog.InfoContext(ctx.Context, "LayoutWrapper: OnMount")
+	slog.InfoContext(ctx.Context, "LayoutWrapper: OnMount", "url", ctx.Page().URL())
 
 	if v, ok := c.LayoutComponent.(app.Mounter); ok {
 		v.OnMount(ctx)
@@ -148,7 +148,7 @@ func (c *LayoutWrapper) OnMount(ctx app.Context) {
 }
 
 func (c *LayoutWrapper) OnNav(ctx app.Context) {
-	slog.InfoContext(ctx.Context, "LayoutWrapper: OnNav")
+	slog.InfoContext(ctx.Context, "LayoutWrapper: OnNav", "url", ctx.Page().URL())
 	ctx.SetState("meta", c.Meta)
 
 	matched, variables := c.Route.Match(ctx.Page().URL().Path)
@@ -185,7 +185,7 @@ func (c *LayoutWrapper) OnNav(ctx app.Context) {
 }
 
 func (c *LayoutWrapper) OnUpdate(ctx app.Context) {
-	slog.InfoContext(ctx.Context, "LayoutWrapper: OnUpdate")
+	slog.InfoContext(ctx.Context, "LayoutWrapper: OnUpdate", "url", ctx.Page().URL())
 
 	if v, ok := c.LayoutComponent.(app.Updater); ok {
 		v.OnUpdate(ctx)
