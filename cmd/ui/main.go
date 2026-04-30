@@ -131,15 +131,15 @@ func main() {
 				{
 					Path: "/organization/:organization_id",
 					Component: func() app.Composer {
-						return &page.OrganizationIDPage{}
-					},
-				},
-				{
-					Path: "/organization/:organization_id",
-					Component: func() app.Composer {
 						return &customlayout.OrganizationLayout{}
 					},
 					Children: []routelayout.Route{
+						{
+							Path: "/",
+							Component: func() app.Composer {
+								return &page.OrganizationIDPage{}
+							},
+						},
 						{
 							Path: "/group",
 							Component: func() app.Composer {

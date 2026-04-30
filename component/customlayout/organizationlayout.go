@@ -4,6 +4,7 @@ import (
 	"context"
 	"log/slog"
 
+	"github.com/downballot/ui/material"
 	"github.com/downballot/ui/routelayout"
 	"github.com/maxence-charriere/go-app/v10/pkg/app"
 )
@@ -22,6 +23,9 @@ func (c *OrganizationLayout) Render() app.UI {
 
 	return app.Div().
 		Body(
+			&material.AppBar{
+				Headline: "Organization #" + c.OrganizationID,
+			},
 			app.Ul().Body(
 				app.Li().Body(
 					app.A().Href("/organization/"+c.OrganizationID).Text("Organization"),

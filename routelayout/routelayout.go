@@ -88,10 +88,14 @@ func flattenRoutes(ctx context.Context, parentRoute internalRoute, routes ...Rou
 	var output []internalRoute
 
 	for _, route := range routes {
+		newPath := strings.TrimLeft(strings.TrimRight(route.Path, "/"), "/")
 		newRoute := internalRoute{
-			Path:               strings.TrimRight(parentRoute.Path, "/") + "/" + strings.TrimLeft(route.Path, "/"),
+			Path:               strings.TrimRight(parentRoute.Path, "/"),
 			ComponentFunctions: []func() app.Composer{},
 			Meta:               map[string]string{},
+		}
+		if newPath != "" {
+			newRoute.Path += "/" + newPath
 		}
 		newRoute.ComponentFunctions = append(newRoute.ComponentFunctions, parentRoute.ComponentFunctions...)
 		for key, value := range parentRoute.Meta {
