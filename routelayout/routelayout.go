@@ -153,27 +153,30 @@ func (c *LayoutWrapper) OnNav(ctx app.Context) {
 
 	matched, variables := c.Route.Match(ctx.Page().URL().Path)
 	if !matched {
-		slog.WarnContext(ctx.Context, "Could not match route somehow.", "route", c.Route, "path", ctx.Page().URL().Path)
+		slog.WarnContext(ctx.Context, "LayoutWrapper: OnNav: Could not match route somehow.", "route", c.Route, "path", ctx.Page().URL().Path)
 	} else {
 		c.RouteVariables = variables
 
+		//ctx.Dispatch(func(ctx app.Context) {
 		for _, f := range c.PathVariables {
 			if f == nil {
 				continue
 			}
 			f(ctx, c.RouteVariables)
 		}
+		ctx.Update()
 
 		if v, ok := c.LayoutComponent.(RouterViewInterface); ok {
 			slog.DebugContext(ctx, "LayoutWrapper: OnNav: Applying variables.", "LayoutComponent", fmt.Sprintf("%T", c.LayoutComponent))
 			err := v.ApplyVariables(variables)
 			if err != nil {
-				slog.WarnContext(ctx.Context, "Could not apply variables.", "err", err)
+				slog.WarnContext(ctx.Context, "LayoutWrapper: OnNav: Could not apply variables.", "err", err)
 			}
 		}
 		if v, ok := c.LayoutComponent.(app.Updater); ok {
 			v.OnUpdate(ctx)
 		}
+		//})
 	}
 	slog.InfoContext(ctx.Context, "LayoutWrapper: OnNav", "matched", matched)
 	slog.InfoContext(ctx.Context, "LayoutWrapper: OnNav", "variables", variables)
