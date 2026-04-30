@@ -33,28 +33,29 @@ func (c *OrganizationPage) OnUpdate(ctx app.Context) {
 }
 
 func (c *OrganizationPage) Render() app.UI {
-	return app.Div().Body(
-		app.Div().Text(
-			"These are the organizations that you are a part of.",
-		),
-		myui.NewTable[*downballotapi.Organization]().
-			Rows(c.Organizations).
-			Columns([]myui.TableColumn[*downballotapi.Organization]{
-				{
-					Name: "ID",
-					Value: func(row *downballotapi.Organization) any {
-						return row.ID
+	return myui.Page().
+		Body(
+			app.Div().Text(
+				"These are the organizations that you are a part of.",
+			),
+			myui.NewTable[*downballotapi.Organization]().
+				Rows(c.Organizations).
+				Columns([]myui.TableColumn[*downballotapi.Organization]{
+					{
+						Name: "ID",
+						Value: func(row *downballotapi.Organization) any {
+							return row.ID
+						},
 					},
-				},
-				{
-					Name: "Name",
-					Value: func(row *downballotapi.Organization) any {
-						return row.Name
+					{
+						Name: "Name",
+						Value: func(row *downballotapi.Organization) any {
+							return row.Name
+						},
+						To: func(row *downballotapi.Organization) string {
+							return fmt.Sprintf("/organization/%s", row.ID)
+						},
 					},
-					To: func(row *downballotapi.Organization) string {
-						return fmt.Sprintf("/organization/%s", row.ID)
-					},
-				},
-			}).Render(),
-	)
+				}).Render(),
+		)
 }
