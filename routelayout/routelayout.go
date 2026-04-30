@@ -100,6 +100,9 @@ func flattenRoutes(ctx context.Context, parentRoute internalRoute, routes ...Rou
 		if newPath != "" {
 			newRoute.Path += "/" + strings.TrimLeft(newPath, "/")
 		}
+		if newRoute.Path != "/" {
+			newRoute.Path = strings.TrimRight(newRoute.Path, "/")
+		}
 		newRoute.ComponentFunctions = append(newRoute.ComponentFunctions, parentRoute.ComponentFunctions...)
 		newRoute.PathVariables = append(newRoute.PathVariables, parentRoute.PathVariables...)
 		for key, value := range parentRoute.Meta {
