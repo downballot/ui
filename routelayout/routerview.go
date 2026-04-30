@@ -1,6 +1,13 @@
 package routelayout
 
-import "github.com/maxence-charriere/go-app/v10/pkg/app"
+import (
+	"context"
+	"fmt"
+	"log/slog"
+
+	"github.com/downballot/ui/route"
+	"github.com/maxence-charriere/go-app/v10/pkg/app"
+)
 
 // RouterViewInterface is the interface that must be implemented in order for a component to be
 // properly used in a route as a layout.
@@ -9,6 +16,7 @@ import "github.com/maxence-charriere/go-app/v10/pkg/app"
 type RouterViewInterface interface {
 	RouterView() app.Composer
 	SetRouterView(app.Composer)
+	ApplyVariables(map[string]string) error
 }
 
 // RouterViewComponent can be embedded in a layout component.
@@ -21,6 +29,7 @@ type RouterViewComponent struct {
 }
 
 var _ RouterViewInterface = (*RouterViewComponent)(nil)
+var _ app.Updater = (*RouterViewComponent)(nil)
 
 // RouterView returns the router view comonent.  Put this where you wan the route component
 // to be rendered.
@@ -35,4 +44,28 @@ func (v *RouterViewComponent) RouterView() app.Composer {
 // This should not be called by anything but the router.
 func (v *RouterViewComponent) SetRouterView(component app.Composer) {
 	v.component = component
+}
+
+func (v *RouterViewComponent) ApplyVariables(variables map[string]string) error {
+	if v.component != nil {
+		slog.DebugContext(context.TODO(), "RouterViewComponent: ApplyVariables: Applying variables.", "component", fmt.Sprintf("%T", v.component))
+		err := route.ApplyVariables(v.component, variables)
+		if err != nil {
+			return err
+		}
+
+		if child, ok := v.component.(RouterViewInterface); ok {
+			child.ApplyVariables(variables)
+		}
+	}
+	return nil
+}
+
+func (v *RouterViewComponent) OnUpdate(ctx app.Context) {
+	slog.DebugContext(context.TODO(), "RouterViewComponent: Update.", "component", fmt.Sprintf("%T", v.component))
+	if v.component != nil {
+		if updater, ok := v.component.(app.Updater); ok {
+			updater.OnUpdate(ctx)
+		}
+	}
 }

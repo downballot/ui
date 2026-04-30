@@ -71,7 +71,7 @@ func (c *OrganizationIDPersonIDPage) OnUpdate(ctx app.Context) {
 }
 
 func (c *OrganizationIDPersonIDPage) Render() app.UI {
-	slog.InfoContext(context.TODO(), "OrganizationIDPersonIDPage: Render")
+	slog.InfoContext(context.TODO(), "OrganizationIDPersonIDPage: Render", "OrganizationID", c.OrganizationID, "Organization", c.Organization, "VoterID", c.VoterID, "Person", c.Person)
 
 	return app.Div().Body(
 		app.If(c.Organization == nil || c.Person == nil, func() app.UI {

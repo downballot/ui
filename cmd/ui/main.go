@@ -79,12 +79,12 @@ func main() {
 	}
 
 	routelayout.Apply(ctx,
-		routelayout.RouteLayout{
+		routelayout.Route{
 			Path: "/",
 			Component: func() app.Composer {
 				return &layout.MainLayout{}
 			},
-			Children: []routelayout.RoutePage{
+			Children: []routelayout.Route{
 				{
 					Path: "/test/1",
 					Component: func() app.Composer {
@@ -93,12 +93,12 @@ func main() {
 				},
 			},
 		},
-		routelayout.RouteLayout{
+		routelayout.Route{
 			Path: "/",
 			Component: func() app.Composer {
 				return &layout.CenterLayout{}
 			},
-			Children: []routelayout.RoutePage{
+			Children: []routelayout.Route{
 				{
 					Path: "/login",
 					Component: func() app.Composer {
@@ -107,12 +107,12 @@ func main() {
 				},
 			},
 		},
-		routelayout.RouteLayout{
+		routelayout.Route{
 			Path: "/",
 			Component: func() app.Composer {
 				return &customlayout.DownballotLayout{}
 			},
-			Children: []routelayout.RoutePage{
+			Children: []routelayout.Route{
 				{
 					Path: "/",
 					Component: func() app.Composer {
