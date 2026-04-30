@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"slices"
 	"strings"
 
 	"github.com/downballot/ui/route"
@@ -17,9 +18,15 @@ type Route struct {
 	Children  []Route
 }
 
+type internalRoute struct {
+	Path               string
+	ComponentFunctions []func() app.Composer
+	Meta               map[string]string
+}
+
 // Apply the various routes.
 func Apply(ctx context.Context, routes ...Route) error {
-	flatRoutes, err := flattenRoutes(ctx, Route{}, routes...)
+	flatRoutes, err := flattenRoutes(ctx, internalRoute{}, routes...)
 	if err != nil {
 		return fmt.Errorf("could not flatten routes: %w", err)
 	}
@@ -32,7 +39,7 @@ func Apply(ctx context.Context, routes ...Route) error {
 		slog.InfoContext(ctx, "Registering route.", "path", r.Path)
 		app.RouteWithRegexp(route.Regexp(), func() app.Composer {
 			slog.InfoContext(ctx, "RouteLayout: creating component for route.", "route", route)
-			routeComponent := r.Component()
+			routeComponent := composeRoute(ctx, r.ComponentFunctions...)
 			slog.InfoContext(ctx, "RouteLayout:", "routeComponent", routeComponent, "type", fmt.Sprintf("%T", routeComponent))
 
 			wrapper := LayoutWrapper{
@@ -46,7 +53,7 @@ func Apply(ctx context.Context, routes ...Route) error {
 	return nil
 }
 
-func composeRoute(ctx context.Context, fs ...func() app.Composer) func() app.Composer {
+func composeRoute(ctx context.Context, fs ...func() app.Composer) app.Composer {
 	goodFunctions := []func() app.Composer{}
 	for _, f := range fs {
 		if f == nil {
@@ -56,55 +63,47 @@ func composeRoute(ctx context.Context, fs ...func() app.Composer) func() app.Com
 	}
 
 	if len(goodFunctions) == 0 {
-		return func() app.Composer {
-			return nil
-		}
+		return nil
 	}
 
-	firstFunction := goodFunctions[0]
-	remainingFunctions := goodFunctions[1:]
-	if len(remainingFunctions) == 0 {
-		return firstFunction
+	slices.Reverse(goodFunctions)
+
+	var output app.Composer
+	for _, f := range goodFunctions {
+		component := f()
+		slog.DebugContext(ctx, "composeRoute: Created component", "type", fmt.Sprintf("%T", component))
+		if component != nil {
+			if hasRouterView, ok := component.(RouterViewInterface); ok {
+				slog.InfoContext(ctx, "RouteLayout: component is a RouterViewInterface.", "component", fmt.Sprintf("%T", component))
+				hasRouterView.SetRouterView(output)
+			}
+		}
+		output = component
 	}
-	secondFunction := composeRoute(ctx, remainingFunctions...)
-
-	return func() app.Composer {
-		firstComponent := firstFunction()
-		secondComponent := secondFunction()
-		slog.DebugContext(ctx, "composeRoute: Generated new component.", "firstComponent", fmt.Sprintf("%T", firstComponent))
-		slog.DebugContext(ctx, "composeRoute: Generated new component.", "secondComponent", fmt.Sprintf("%T", secondComponent))
-
-		if firstComponent == nil {
-			return secondComponent
-		}
-		if secondComponent == nil {
-			return firstComponent
-		}
-
-		if hasRouterView, ok := firstComponent.(RouterViewInterface); ok {
-			slog.InfoContext(ctx, "RouteLayout: firstComponent is a RouterViewInterface.")
-			hasRouterView.SetRouterView(secondComponent)
-		}
-		return firstComponent
-	}
+	return output
 }
 
 // flattenRoutes flattens a list of potentially nested routes.
-func flattenRoutes(ctx context.Context, parentRoute Route, routes ...Route) ([]Route, error) {
-	var output []Route
+func flattenRoutes(ctx context.Context, parentRoute internalRoute, routes ...Route) ([]internalRoute, error) {
+	var output []internalRoute
 
 	for _, route := range routes {
-		newRoute := Route{
-			Path:      strings.TrimRight(parentRoute.Path, "/") + "/" + strings.TrimLeft(route.Path, "/"),
-			Component: composeRoute(ctx, parentRoute.Component, route.Component),
-			Meta:      map[string]string{},
+		newRoute := internalRoute{
+			Path:               strings.TrimRight(parentRoute.Path, "/") + "/" + strings.TrimLeft(route.Path, "/"),
+			ComponentFunctions: []func() app.Composer{},
+			Meta:               map[string]string{},
 		}
+		newRoute.ComponentFunctions = append(newRoute.ComponentFunctions, parentRoute.ComponentFunctions...)
 		for key, value := range parentRoute.Meta {
 			newRoute.Meta[key] = value
 		}
+		newRoute.ComponentFunctions = append(newRoute.ComponentFunctions, route.Component)
 		for key, value := range route.Meta {
 			newRoute.Meta[key] = value
 		}
+		//slog.DebugContext(ctx, "flattenRoutes", "parentRoute", parentRoute)
+		//slog.DebugContext(ctx, "flattenRoutes", "parentRoute.Path", parentRoute.Path, "route.Path", route.Path)
+		//slog.DebugContext(ctx, "flattenRoutes", "newRoute", newRoute)
 
 		if len(route.Children) == 0 {
 			output = append(output, newRoute)

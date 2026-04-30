@@ -68,7 +68,10 @@ func main() {
 			w := os.Stderr
 			handler =
 				tint.NewHandler(w, &tint.Options{
-					NoColor: !isatty.IsTerminal(w.Fd()),
+					NoColor:     !isatty.IsTerminal(w.Fd()),
+					AddSource:   slogConfig.AddSource,
+					Level:       slogConfig.Level,
+					ReplaceAttr: slogConfig.ReplaceAttr,
 				})
 		} else {
 			handler = &JavascriptConsoleLogger{}
@@ -132,21 +135,29 @@ func main() {
 					},
 				},
 				{
-					Path: "/organization/:organization_id/group",
+					Path: "/organization/:organization_id",
 					Component: func() app.Composer {
-						return &page.OrganizationIDGroupPage{}
+						return &customlayout.OrganizationLayout{}
 					},
-				},
-				{
-					Path: "/organization/:organization_id/group/:group_id",
-					Component: func() app.Composer {
-						return &page.OrganizationIDGroupIDPage{}
-					},
-				},
-				{
-					Path: "/organization/:organization_id/person/:voter_id",
-					Component: func() app.Composer {
-						return &page.OrganizationIDPersonIDPage{}
+					Children: []routelayout.Route{
+						{
+							Path: "/group",
+							Component: func() app.Composer {
+								return &page.OrganizationIDGroupPage{}
+							},
+						},
+						{
+							Path: "/group/:group_id",
+							Component: func() app.Composer {
+								return &page.OrganizationIDGroupIDPage{}
+							},
+						},
+						{
+							Path: "/person/:voter_id",
+							Component: func() app.Composer {
+								return &page.OrganizationIDPersonIDPage{}
+							},
+						},
 					},
 				},
 				{
