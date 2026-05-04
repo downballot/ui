@@ -4,7 +4,7 @@ import (
 	"github.com/maxence-charriere/go-app/v10/pkg/app"
 )
 
-type Table[T any] struct {
+type MyUITable[T any] struct {
 	app.Compo
 
 	columns []TableColumn[T]
@@ -17,25 +17,25 @@ type TableColumn[T any] struct {
 	Value func(row T) any
 }
 
-func NewTable[T any]() *Table[T] {
-	table := Table[T]{}
+func Table[T any]() *MyUITable[T] {
+	table := MyUITable[T]{}
 
 	return &table
 }
 
-func (t *Table[T]) Rows(rows []T) *Table[T] {
+func (t *MyUITable[T]) Rows(rows []T) *MyUITable[T] {
 	t.rows = rows
 
 	return t
 }
 
-func (t *Table[T]) Columns(columns []TableColumn[T]) *Table[T] {
+func (t *MyUITable[T]) Columns(columns []TableColumn[T]) *MyUITable[T] {
 	t.columns = columns
 
 	return t
 }
 
-func (t *Table[T]) Render() app.UI {
+func (t *MyUITable[T]) Render() app.UI {
 	return app.Table().
 		Class("myui-table").
 		Body(

@@ -38,7 +38,7 @@ func (c *OrganizationPage) Render() app.UI {
 			app.Div().Text(
 				"These are the organizations that you are a part of.",
 			),
-			myui.NewTable[*downballotapi.Organization]().
+			myui.Table[*downballotapi.Organization]().
 				Rows(c.Organizations).
 				Columns([]myui.TableColumn[*downballotapi.Organization]{
 					{

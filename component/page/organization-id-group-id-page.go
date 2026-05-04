@@ -23,6 +23,7 @@ type OrganizationIDGroupIDPage struct {
 	Organization   *downballotapi.Organization
 	GroupID        string `route:"group_id"`
 	Group          *downballotapi.Group
+	Children       []*downballotapi.Group
 
 	Filter         string
 	PossibleFields []string
@@ -75,37 +76,55 @@ func (c *OrganizationIDGroupIDPage) OnUpdate(ctx app.Context) {
 			//ctx.Update()
 		})
 	})
+	ctx.Async(func() {
+		var output downballotapi.ListGroupsResponse
+		err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.OrganizationID+"/group?parent_id="+c.GroupID, nil, &output)
+		if err != nil {
+			slog.ErrorContext(ctx.Context, "Could not get groups", "err", err)
+			return
+		}
 
-	c.PossibleFields = []string{
-		"birthday_year",
-		"candidate.donated",
-		"candidate.support",
-		"coordinates",
-		"county",
-		"district_representative",
-		"district_school",
-		"district_senate",
-		"mailing_address",
-		"name_first",
-		"name_last",
-		"name_middle",
-		"name_suffix",
-		"name",
-		"phone_number",
-		"political_party",
-		"residential_address_development",
-		"residential_address",
-		"voter_id",
-		"voting_history",
-	}
-	slices.Sort(c.PossibleFields)
+		ctx.Dispatch(func(ctx app.Context) {
+			slog.InfoContext(ctx.Context, "Dispatch: Setting children", "groups", output.Groups)
+			c.Children = output.Groups
+		})
+		ctx.Defer(func(ctx app.Context) {
+			slog.InfoContext(ctx.Context, "Defer: Children should be set", "groups", c.Children)
 
-	c.SelectedFields = []string{
-		"name",
-		"phone_number",
-		"residential_address_development",
-	}
-	slices.Sort(c.SelectedFields)
+			//ctx.Update()
+		})
+	})
+	ctx.Async(func() {
+		var output downballotapi.ListPersonFieldsResponse
+		err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.OrganizationID+"/person-field", nil, &output)
+		if err != nil {
+			slog.ErrorContext(ctx.Context, "Could not get person fields", "err", err)
+			return
+		}
+
+		var possibleFields []string
+		for _, personField := range output.PersonFields {
+			possibleFields = append(possibleFields, personField.Name)
+		}
+		slices.Sort(possibleFields)
+
+		ctx.Dispatch(func(ctx app.Context) {
+			slog.InfoContext(ctx.Context, "Dispatch: Setting person fields", "person fields", output.PersonFields)
+			c.PossibleFields = possibleFields
+
+			c.SelectedFields = []string{
+				"name",
+				"phone_number",
+				"residential_address_development",
+			}
+			slices.Sort(c.SelectedFields)
+		})
+		ctx.Defer(func(ctx app.Context) {
+			slog.InfoContext(ctx.Context, "Defer: Children should be set", "groups", c.Children)
+
+			//ctx.Update()
+		})
+	})
 }
 
 func (c *OrganizationIDGroupIDPage) Render() app.UI {
@@ -155,6 +174,25 @@ func (c *OrganizationIDGroupIDPage) Render() app.UI {
 				app.Div().Text(fmt.Sprintf("%+v", *c.Organization)),
 				app.Div().Text(fmt.Sprintf("%+v", *c.Group)),
 				app.Hr(),
+				myui.Table[*downballotapi.Group]().
+					Rows(c.Children).
+					Columns([]myui.TableColumn[*downballotapi.Group]{
+						{
+							Name: "ID",
+							Value: func(row *downballotapi.Group) any {
+								return row.ID
+							},
+						},
+						{
+							Name: "Name",
+							Value: func(row *downballotapi.Group) any {
+								return row.Name
+							},
+							To: func(row *downballotapi.Group) string {
+								return fmt.Sprintf("/organization/%s/group/%s", c.OrganizationID, row.ID)
+							},
+						},
+					}).Render(),
 				app.Div().Body(
 					app.Div().Text("Filter:"),
 					app.Div().Body(
@@ -210,7 +248,7 @@ func (c *OrganizationIDGroupIDPage) Render() app.UI {
 							}),
 					),
 				),
-				myui.NewTable[*downballotapi.Person]().
+				myui.Table[*downballotapi.Person]().
 					Rows(c.Persons).
 					Columns(columns).
 					Render(),

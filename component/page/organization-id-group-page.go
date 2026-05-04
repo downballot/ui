@@ -75,7 +75,7 @@ func (c *OrganizationIDGroupPage) Render() app.UI {
 		}).Else(func() app.UI {
 			return app.Div().Body(
 				app.Div().Text(fmt.Sprintf("%+v", *c.Organization)),
-				myui.NewTable[*downballotapi.Group]().
+				myui.Table[*downballotapi.Group]().
 					Rows(c.Groups).
 					Columns([]myui.TableColumn[*downballotapi.Group]{
 						{

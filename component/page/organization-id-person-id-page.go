@@ -108,7 +108,7 @@ func (c *OrganizationIDPersonIDPage) Render() app.UI {
 			return app.Div().Body(
 				app.Div().Text(fmt.Sprintf("%+v", *c.Organization)),
 				app.Hr(),
-				myui.NewTable[Record]().
+				myui.Table[Record]().
 					Rows(rows).
 					Columns(columns).
 					Render(),
