@@ -27,6 +27,7 @@ type OrganizationIDGroupIDPage struct {
 	Children       []*downballotapi.Group
 
 	Filter         string
+	Limit          uint
 	PossibleFields []string
 	SelectedFields []string
 	Persons        []*downballotapi.Person
@@ -40,6 +41,8 @@ func (c *OrganizationIDGroupIDPage) OnUpdate(ctx app.Context) {
 	if c.OrganizationID == "" {
 		return
 	}
+
+	c.Limit = 1000
 
 	ctx.Async(func() {
 		var output downballotapi.GetOrganizationResponse
@@ -202,6 +205,14 @@ func (c *OrganizationIDGroupIDPage) Render() app.UI {
 							Value(c.Filter).
 							OnChange(c.ValueTo(&c.Filter)),
 					),
+					app.Div().Text("Limit:"),
+					app.Div().Body(
+						app.Input().
+							Type("number").
+							Value(c.Limit).
+							OnChange(c.ValueTo(&c.Limit)),
+					),
+
 					app.Div().Body(
 						app.Range(c.PossibleFields).Slice(func(i int) app.UI {
 							possibleField := c.PossibleFields[i]
@@ -229,6 +240,7 @@ func (c *OrganizationIDGroupIDPage) Render() app.UI {
 							OnClick(func(ctx app.Context, e app.Event) {
 								queryParameters := url.Values{}
 								queryParameters.Set("filter", c.Filter)
+								queryParameters.Set("limit", fmt.Sprintf("%d", c.Limit))
 								queryParameters.Set("fields", strings.Join(c.SelectedFields, ","))
 								var output downballotapi.ListPersonsResponse
 								err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.OrganizationID+"/group/"+c.GroupID+"/person?"+queryParameters.Encode(), nil, &output)
@@ -252,6 +264,7 @@ func (c *OrganizationIDGroupIDPage) Render() app.UI {
 							OnClick(func(ctx app.Context, e app.Event) {
 								queryParameters := url.Values{}
 								queryParameters.Set("filter", c.Filter)
+								queryParameters.Set("limit", fmt.Sprintf("%d", c.Limit))
 								queryParameters.Set("fields", strings.Join(c.SelectedFields, ","))
 								var output restapiclient.RawBytes
 								err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.OrganizationID+"/group/"+c.GroupID+"/person?"+queryParameters.Encode(), nil, &output, restapiclient.OptionHeader("Accept", "text/csv"))
