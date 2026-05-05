@@ -172,6 +172,18 @@ func main() {
 								return &page.OrganizationIDPersonIDPage{}
 							},
 						},
+						{
+							Path: "/person-field",
+							Component: func() app.Composer {
+								return &page.OrganizationIDPersonFieldPage{}
+							},
+						},
+						{
+							Path: "/person-field/:person_field_id",
+							Component: func() app.Composer {
+								return &page.OrganizationIDPersonFieldIDPage{}
+							},
+						},
 					},
 				},
 				{

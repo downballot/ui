@@ -34,6 +34,9 @@ func (c *OrganizationLayout) Render() app.UI {
 				app.Li().Body(
 					app.A().Href("/organization/"+c.OrganizationID+"/group").Text("Groups"),
 				),
+				app.Li().Body(
+					app.A().Href("/organization/"+c.OrganizationID+"/person-field").Text("Person Fields"),
+				),
 			),
 			c.RouterView().Render(),
 		)
