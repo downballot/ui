@@ -12,7 +12,7 @@ import (
 
 // Do an API request, navigating to the login page if the user is not logged in
 // or if her token is invalid.
-func Do(ctx app.Context, method string, path string, input any, output any) error {
+func Do(ctx app.Context, method string, path string, input any, output any, options ...restapiclient.Option) error {
 	var apiToken string
 	ctx.GetState("api-token", &apiToken)
 	slog.InfoContext(ctx.Context, "API wrapper; state", "api-token", apiToken)
@@ -22,7 +22,7 @@ func Do(ctx app.Context, method string, path string, input any, output any) erro
 	}
 
 	client := downballotapi.New("/", restapiclient.OptionHeader("Authorization", "Bearer "+apiToken))
-	err := client.Do(ctx.Context, method, path, input, output)
+	err := client.Do(ctx.Context, method, path, input, output, options...)
 	if err != nil {
 		if errors.Is(err, httperror.ErrStatusUnauthorized) {
 			slog.InfoContext(ctx.Context, "API wrapper; user is not logged in", "err", err)

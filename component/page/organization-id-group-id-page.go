@@ -14,6 +14,7 @@ import (
 	"github.com/downballot/ui/api"
 	"github.com/downballot/ui/myui"
 	"github.com/maxence-charriere/go-app/v10/pkg/app"
+	"github.com/tekkamanendless/restapiclient"
 )
 
 type OrganizationIDGroupIDPage struct {
@@ -244,6 +245,36 @@ func (c *OrganizationIDGroupIDPage) Render() app.UI {
 									slog.InfoContext(ctx.Context, "Defer: Persons should be set", "persons", c.Persons)
 
 									//ctx.Update()
+								})
+							}),
+						app.Button().
+							Text("CSV").
+							OnClick(func(ctx app.Context, e app.Event) {
+								queryParameters := url.Values{}
+								queryParameters.Set("filter", c.Filter)
+								queryParameters.Set("fields", strings.Join(c.SelectedFields, ","))
+								var output restapiclient.RawBytes
+								err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.OrganizationID+"/group/"+c.GroupID+"/person?"+queryParameters.Encode(), nil, &output, restapiclient.OptionHeader("Accept", "text/csv"))
+								if err != nil {
+									slog.ErrorContext(ctx.Context, "Could not get persons", "err", err)
+									return
+								}
+
+								ctx.Dispatch(func(ctx app.Context) {
+									slog.InfoContext(ctx.Context, "Dispatch: Saving CSV")
+									blobConstructor := app.Window().Get("Blob")
+									arrayConstructor := app.Window().Get("Array")
+									array := arrayConstructor.New(string(output))
+									blob := blobConstructor.New(array, map[string]any{"type": "text/csv"})
+
+									aElement := app.Window().Get("document").Call("createElement", "a")
+									aElement.Set("style", "display: none;")
+									aElement.Set("href", app.Window().Get("URL").Call("createObjectURL", blob))
+									aElement.Set("download", "persons.csv")
+
+									app.Window().Get("document").Get("body").Call("appendChild", aElement)
+									aElement.Call("click")
+									app.Window().Get("document").Get("body").Call("removeChild", aElement)
 								})
 							}),
 					),
