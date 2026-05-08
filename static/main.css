@@ -103,12 +103,14 @@ table.myui-table tbody tr:hover {
     padding: 1em;
     background-color: var(--material-theme-primary);
     color: var(--material-theme-on-primary);
+    font-size: 1.5em;
 }
 
 .material-app-bar-leading {
     display: flex;
     align-items: center;
     justify-content: center;
+    margin-right: 0.5em;
 }
 
 .material-app-bar-content {
@@ -119,11 +121,11 @@ table.myui-table tbody tr:hover {
 }
 
 .material-app-bar-headline-text {
-    font-size: 1.5em;
     font-weight: bold;
 }
 
 .material-app-bar-subtitle {
+    font-size: 0.8em;
 }
 
 .material-app-bar-subtitle-text {
