@@ -224,6 +224,9 @@ func main() {
 		Styles: []string{
 			"/web/main.css",
 		},
+		RawHeaders: []string{
+			`<script src="https://kit.fontawesome.com/a71e001119.js" crossorigin="anonymous"></script>`,
+		},
 	})
 
 	// Send all API requests to the API server.
