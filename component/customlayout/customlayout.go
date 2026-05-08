@@ -51,7 +51,7 @@ func (c *DownballotLayout) Render() app.UI {
 				To("/login"),
 			myui.Item().
 				Icon("building").
-				Name("Organization").
+				Name("Organizations").
 				To("/organization"),
 			myui.Item().
 				Icon("user").
