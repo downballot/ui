@@ -120,6 +120,7 @@ func (c *OrganizationIDGroupIDPage) OnUpdate(ctx app.Context) {
 				"name",
 				"phone_number",
 				"residential_address_development",
+				"candidate.notes",
 			}
 			slices.Sort(c.SelectedFields)
 		})
