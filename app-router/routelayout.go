@@ -44,9 +44,9 @@ func Register(ctx context.Context, routes ...Route) error {
 		}
 		slog.InfoContext(ctx, "Registering route.", "path", r.Path)
 		app.RouteWithRegexp(route.Regexp(), func() app.Composer {
-			slog.InfoContext(ctx, "RouteLayout: func(): creating component for route.", "route", route)
+			slog.InfoContext(ctx, "Register: func(): creating component for route.", "route", route)
 			routeComponent := composeRoute(ctx, r.ComponentFunctions...)
-			slog.InfoContext(ctx, "RouteLayout: func()", "routeComponent", routeComponent, "type", fmt.Sprintf("%T", routeComponent))
+			slog.InfoContext(ctx, "Register: func()", "routeComponent", routeComponent, "type", fmt.Sprintf("%T", routeComponent))
 
 			wrapper := LayoutWrapper{
 				LayoutComponent:        routeComponent,
