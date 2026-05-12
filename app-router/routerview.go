@@ -31,7 +31,7 @@ type RouterViewComponent struct {
 var _ RouterViewInterface = (*RouterViewComponent)(nil)
 var _ app.Updater = (*RouterViewComponent)(nil)
 
-// RouterView returns the router view comonent.  Put this where you wan the route component
+// RouterView returns the router view comonent.  Put this where you want the route component
 // to be rendered.
 //
 // In Vue, this would be the `<router-view>` component.

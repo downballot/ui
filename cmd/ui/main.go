@@ -83,7 +83,7 @@ func main() {
 		)))
 	}
 
-	router.Apply(ctx,
+	router.Register(ctx,
 		router.Route{
 			Path: "/",
 			Component: func() app.Composer {

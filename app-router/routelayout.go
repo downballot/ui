@@ -30,8 +30,8 @@ type internalRoute struct {
 	Meta                   map[string]string
 }
 
-// Apply the various routes.
-func Apply(ctx context.Context, routes ...Route) error {
+// Register the various routes.
+func Register(ctx context.Context, routes ...Route) error {
 	flatRoutes, err := flattenRoutes(ctx, internalRoute{}, routes...)
 	if err != nil {
 		return fmt.Errorf("could not flatten routes: %w", err)
