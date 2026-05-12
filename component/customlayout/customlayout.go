@@ -4,19 +4,19 @@ import (
 	"context"
 	"log/slog"
 
+	router "github.com/downballot/ui/app-router"
 	"github.com/downballot/ui/component/layout"
 	"github.com/downballot/ui/material"
 	"github.com/downballot/ui/myui"
-	"github.com/downballot/ui/routelayout"
 	"github.com/maxence-charriere/go-app/v10/pkg/app"
 )
 
 type DownballotLayout struct {
 	app.Compo
-	routelayout.RouterViewComponent
+	router.RouterViewComponent
 }
 
-var _ routelayout.RouterViewInterface = (*DownballotLayout)(nil)
+var _ router.RouterViewInterface = (*DownballotLayout)(nil)
 
 func (c *DownballotLayout) OnNav(ctx app.Context) {
 	var apiToken string

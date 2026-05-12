@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"slices"
 	"strings"
+	"time"
 
 	"github.com/downballot/downballot/downballotapi"
 	"github.com/downballot/ui/api"
@@ -21,6 +22,7 @@ type OrganizationIDPersonIDPage struct {
 	Organization   *downballotapi.Organization
 	VoterID        string `route:"voter_id"`
 	Person         *downballotapi.Person
+	Audits         []*downballotapi.PersonAudit
 }
 
 func (c *OrganizationIDPersonIDPage) OnUpdate(ctx app.Context) {
@@ -64,6 +66,24 @@ func (c *OrganizationIDPersonIDPage) OnUpdate(ctx app.Context) {
 		})
 		ctx.Defer(func(ctx app.Context) {
 			slog.InfoContext(ctx.Context, "Defer: Person should be set", "person", c.Person)
+
+			//ctx.Update()
+		})
+	})
+	ctx.Async(func() {
+		var output downballotapi.ListPersonAuditsResponse
+		err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.OrganizationID+"/person/"+c.VoterID+"/audit", nil, &output)
+		if err != nil {
+			slog.ErrorContext(ctx.Context, "Could not get person audits", "err", err)
+			return
+		}
+
+		ctx.Dispatch(func(ctx app.Context) {
+			slog.InfoContext(ctx.Context, "Dispatch: Setting person audits", "Audits", output.Audits)
+			c.Audits = output.Audits
+		})
+		ctx.Defer(func(ctx app.Context) {
+			slog.InfoContext(ctx.Context, "Defer: Person audits should be set", "Audits", c.Audits)
 
 			//ctx.Update()
 		})
@@ -112,6 +132,46 @@ func (c *OrganizationIDPersonIDPage) Render() app.UI {
 					Rows(rows).
 					Columns(columns).
 					Render(),
+				myui.Table[*downballotapi.PersonAudit]().
+					Rows(c.Audits).
+					Columns([]myui.TableColumn[*downballotapi.PersonAudit]{
+						{
+							Name: "ID",
+							Value: func(row *downballotapi.PersonAudit) any {
+								return row.ID
+							},
+						},
+						{
+							Name: "Timestamp",
+							Value: func(row *downballotapi.PersonAudit) any {
+								return time.Time(row.Timestamp).Format(time.RFC3339)
+							},
+						},
+						{
+							Name: "Field",
+							Value: func(row *downballotapi.PersonAudit) any {
+								return row.Field
+							},
+						},
+						{
+							Name: "Old Value",
+							Value: func(row *downballotapi.PersonAudit) any {
+								if row.OldValue == nil {
+									return ""
+								}
+								return *row.OldValue
+							},
+						},
+						{
+							Name: "New Value",
+							Value: func(row *downballotapi.PersonAudit) any {
+								if row.NewValue == nil {
+									return ""
+								}
+								return *row.NewValue
+							},
+						},
+					}).Render(),
 			)
 		}),
 	)

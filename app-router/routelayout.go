@@ -1,4 +1,4 @@
-package routelayout
+package router
 
 import (
 	"context"
@@ -7,23 +7,27 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/downballot/ui/route"
+	"github.com/downballot/ui/app-router/route"
 	"github.com/maxence-charriere/go-app/v10/pkg/app"
 )
 
+// Route is a route that can be applied to the application.
+//
+// This is analogous to a Vue router route.
 type Route struct {
-	Path          string
-	PathVariables func(ctx app.Context, variables map[string]string)
-	Component     func() app.Composer
-	Meta          map[string]string
-	Children      []Route
+	Path          string                                             // The path of the route.  This may optionally start with "/", and variables are of the form ":variable_name".
+	PathVariables func(ctx app.Context, variables map[string]string) // A function that will be called with the current path variables; additional work can be done to set others.
+	Component     func() app.Composer                                // A function that will be called to create the component for the route.
+	Meta          map[string]string                                  // Metadata for the route.
+	Children      []Route                                            // Children routes (if any).
 }
 
+// internalRoute is a route that is used internally to flatten the routes.
 type internalRoute struct {
-	Path               string
-	PathVariables      []func(ctx app.Context, variables map[string]string)
-	ComponentFunctions []func() app.Composer
-	Meta               map[string]string
+	Path                   string
+	PathVariablesFunctions []func(ctx app.Context, variables map[string]string)
+	ComponentFunctions     []func() app.Composer
+	Meta                   map[string]string
 }
 
 // Apply the various routes.
@@ -45,10 +49,10 @@ func Apply(ctx context.Context, routes ...Route) error {
 			slog.InfoContext(ctx, "RouteLayout: func()", "routeComponent", routeComponent, "type", fmt.Sprintf("%T", routeComponent))
 
 			wrapper := LayoutWrapper{
-				LayoutComponent: routeComponent,
-				Meta:            r.Meta,
-				Route:           *route,
-				PathVariables:   r.PathVariables,
+				layoutComponent:        routeComponent,
+				meta:                   r.Meta,
+				route:                  *route,
+				pathVariablesFunctions: r.PathVariablesFunctions,
 			}
 			return &wrapper
 		})
@@ -104,12 +108,12 @@ func flattenRoutes(ctx context.Context, parentRoute internalRoute, routes ...Rou
 			newRoute.Path = strings.TrimRight(newRoute.Path, "/")
 		}
 		newRoute.ComponentFunctions = append(newRoute.ComponentFunctions, parentRoute.ComponentFunctions...)
-		newRoute.PathVariables = append(newRoute.PathVariables, parentRoute.PathVariables...)
+		newRoute.PathVariablesFunctions = append(newRoute.PathVariablesFunctions, parentRoute.PathVariablesFunctions...)
 		for key, value := range parentRoute.Meta {
 			newRoute.Meta[key] = value
 		}
 		newRoute.ComponentFunctions = append(newRoute.ComponentFunctions, route.Component)
-		newRoute.PathVariables = append(newRoute.PathVariables, route.PathVariables)
+		newRoute.PathVariablesFunctions = append(newRoute.PathVariablesFunctions, route.PathVariables)
 		for key, value := range route.Meta {
 			newRoute.Meta[key] = value
 		}
@@ -132,60 +136,68 @@ func flattenRoutes(ctx context.Context, parentRoute internalRoute, routes ...Rou
 	return output, nil
 }
 
+// LayoutWrapper is a wrapper around the desired component that handles top-level events to ensure that the component is properly updated.
 type LayoutWrapper struct {
 	app.Compo
 
-	LayoutComponent app.Composer
-	Meta            map[string]string
-	Route           route.Route
-	RouteVariables  map[string]string
-	PathVariables   []func(ctx app.Context, variables map[string]string)
+	layoutComponent        app.Composer
+	meta                   map[string]string
+	route                  route.Route
+	routeVariables         map[string]string
+	pathVariablesFunctions []func(ctx app.Context, variables map[string]string)
 }
 
 func (c *LayoutWrapper) OnMount(ctx app.Context) {
 	slog.InfoContext(ctx.Context, "LayoutWrapper: OnMount", "url", ctx.Page().URL())
 
-	if v, ok := c.LayoutComponent.(app.Mounter); ok {
+	if v, ok := c.layoutComponent.(app.Mounter); ok {
 		v.OnMount(ctx)
 	}
 }
 
 func (c *LayoutWrapper) OnNav(ctx app.Context) {
 	slog.InfoContext(ctx.Context, "LayoutWrapper: OnNav", "url", ctx.Page().URL())
-	ctx.SetState("meta", c.Meta)
 
-	matched, variables := c.Route.Match(ctx.Page().URL().Path)
+	matched, variables := c.route.Match(ctx.Page().URL().Path)
 	if !matched {
-		slog.WarnContext(ctx.Context, "LayoutWrapper: OnNav: Could not match route somehow.", "route", c.Route, "path", ctx.Page().URL().Path)
+		slog.WarnContext(ctx.Context, "LayoutWrapper: OnNav: Could not match route somehow.", "route", c.route, "path", ctx.Page().URL().Path)
 	} else {
-		c.RouteVariables = variables
+		c.routeVariables = variables
 
 		//ctx.Dispatch(func(ctx app.Context) {
-		for _, f := range c.PathVariables {
+		for _, f := range c.pathVariablesFunctions {
 			if f == nil {
 				continue
 			}
-			f(ctx, c.RouteVariables)
+			f(ctx, c.routeVariables)
 		}
+
+		activeRoute := ActiveRoute{
+			Meta:      c.meta,
+			Variables: c.routeVariables,
+		}
+		slog.InfoContext(ctx.Context, "LayoutWrapper: OnNav: Setting active route.", "activeRoute", activeRoute)
+		ctx.SetState(StateRoute, activeRoute)
+
 		ctx.Update()
 
-		if v, ok := c.LayoutComponent.(RouterViewInterface); ok {
-			slog.DebugContext(ctx, "LayoutWrapper: OnNav: Applying variables.", "LayoutComponent", fmt.Sprintf("%T", c.LayoutComponent))
+		if v, ok := c.layoutComponent.(RouterViewInterface); ok {
+			slog.DebugContext(ctx, "LayoutWrapper: OnNav: Applying variables.", "LayoutComponent", fmt.Sprintf("%T", c.layoutComponent))
 			err := v.ApplyVariables(variables)
 			if err != nil {
 				slog.WarnContext(ctx.Context, "LayoutWrapper: OnNav: Could not apply variables.", "err", err)
 			}
 		}
-		if v, ok := c.LayoutComponent.(app.Updater); ok {
+		if v, ok := c.layoutComponent.(app.Updater); ok {
 			v.OnUpdate(ctx)
 		}
 		//})
 	}
 	slog.InfoContext(ctx.Context, "LayoutWrapper: OnNav", "matched", matched)
 	slog.InfoContext(ctx.Context, "LayoutWrapper: OnNav", "variables", variables)
-	slog.InfoContext(ctx.Context, "LayoutWrapper: OnNav", "Component", fmt.Sprintf("%T", c.LayoutComponent))
+	slog.InfoContext(ctx.Context, "LayoutWrapper: OnNav", "Component", fmt.Sprintf("%T", c.layoutComponent))
 
-	if v, ok := c.LayoutComponent.(app.Navigator); ok {
+	if v, ok := c.layoutComponent.(app.Navigator); ok {
 		v.OnNav(ctx)
 	}
 }
@@ -193,7 +205,7 @@ func (c *LayoutWrapper) OnNav(ctx app.Context) {
 func (c *LayoutWrapper) OnUpdate(ctx app.Context) {
 	slog.InfoContext(ctx.Context, "LayoutWrapper: OnUpdate", "url", ctx.Page().URL())
 
-	if v, ok := c.LayoutComponent.(app.Updater); ok {
+	if v, ok := c.layoutComponent.(app.Updater); ok {
 		v.OnUpdate(ctx)
 	}
 }
@@ -204,5 +216,5 @@ func (c *LayoutWrapper) OnUpdate(ctx app.Context) {
 func (c *LayoutWrapper) Render() app.UI {
 	slog.InfoContext(context.TODO(), "LayoutWrapper: Render")
 
-	return c.LayoutComponent.Render()
+	return c.layoutComponent.Render()
 }

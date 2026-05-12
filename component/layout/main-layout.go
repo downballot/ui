@@ -4,19 +4,19 @@ import (
 	"context"
 	"log/slog"
 
-	"github.com/downballot/ui/routelayout"
+	router "github.com/downballot/ui/app-router"
 	"github.com/maxence-charriere/go-app/v10/pkg/app"
 )
 
 type MainLayout struct {
 	app.Compo
-	routelayout.RouterViewComponent
+	router.RouterViewComponent
 
 	Header app.UI
 	Drawer app.UI
 }
 
-var _ routelayout.RouterViewInterface = (*MainLayout)(nil)
+var _ router.RouterViewInterface = (*MainLayout)(nil)
 
 func (c *MainLayout) Render() app.UI {
 	slog.InfoContext(context.TODO(), "MainLayout: Render")

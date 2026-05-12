@@ -1,11 +1,11 @@
-package routelayout
+package router
 
 import (
 	"context"
 	"fmt"
 	"log/slog"
 
-	"github.com/downballot/ui/route"
+	"github.com/downballot/ui/app-router/route"
 	"github.com/maxence-charriere/go-app/v10/pkg/app"
 )
 

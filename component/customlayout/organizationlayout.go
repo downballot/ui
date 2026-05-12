@@ -4,20 +4,30 @@ import (
 	"context"
 	"log/slog"
 
+	router "github.com/downballot/ui/app-router"
 	"github.com/downballot/ui/material"
-	"github.com/downballot/ui/routelayout"
 	"github.com/maxence-charriere/go-app/v10/pkg/app"
 )
 
 type OrganizationLayout struct {
 	app.Compo
-	routelayout.RouterViewComponent
+	router.RouterViewComponent
 
 	OrganizationID   string `route:"organization_id"`
 	OrganizationName string `route:"organization_name"`
 }
 
-var _ routelayout.RouterViewInterface = (*OrganizationLayout)(nil)
+var _ router.RouterViewInterface = (*OrganizationLayout)(nil)
+
+/*var _ app.Navigator = (*OrganizationLayout)(nil)
+
+func (c *OrganizationLayout) OnNav(ctx app.Context) {
+	slog.InfoContext(ctx.Context, "OrganizationLayout: OnNav", "url", ctx.Page().URL())
+
+	activeRoute := router.GetActiveRoute(ctx)
+	slog.InfoContext(ctx.Context, "OrganizationLayout: OnNav", "activeRoute", activeRoute)
+}
+*/
 
 func (c *OrganizationLayout) Render() app.UI {
 	slog.InfoContext(context.TODO(), "OrganizationLayout: Render")

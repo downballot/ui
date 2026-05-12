@@ -13,10 +13,10 @@ import (
 
 	"github.com/downballot/downballot/downballotapi"
 	"github.com/downballot/ui/api"
+	router "github.com/downballot/ui/app-router"
 	"github.com/downballot/ui/component/customlayout"
 	"github.com/downballot/ui/component/layout"
 	"github.com/downballot/ui/component/page"
-	"github.com/downballot/ui/routelayout"
 	"github.com/lmittmann/tint"
 	"github.com/mattn/go-isatty"
 	"github.com/maxence-charriere/go-app/v10/pkg/app"
@@ -83,13 +83,13 @@ func main() {
 		)))
 	}
 
-	routelayout.Apply(ctx,
-		routelayout.Route{
+	router.Apply(ctx,
+		router.Route{
 			Path: "/",
 			Component: func() app.Composer {
 				return &layout.MainLayout{}
 			},
-			Children: []routelayout.Route{
+			Children: []router.Route{
 				{
 					Path: "/test/1",
 					Component: func() app.Composer {
@@ -98,12 +98,15 @@ func main() {
 				},
 			},
 		},
-		routelayout.Route{
+		router.Route{
 			Path: "/",
 			Component: func() app.Composer {
 				return &layout.CenterLayout{}
 			},
-			Children: []routelayout.Route{
+			Meta: map[string]string{
+				"require-login": "false",
+			},
+			Children: []router.Route{
 				{
 					Path: "/login",
 					Component: func() app.Composer {
@@ -112,22 +115,31 @@ func main() {
 				},
 			},
 		},
-		routelayout.Route{
+		router.Route{
 			Path: "/",
 			Component: func() app.Composer {
 				return &customlayout.DownballotLayout{}
 			},
-			Children: []routelayout.Route{
+			Meta: map[string]string{
+				"require-login": "true",
+			},
+			Children: []router.Route{
 				{
 					Path: "/",
 					Component: func() app.Composer {
 						return &SimpleElement{}
+					},
+					Meta: map[string]string{
+						"title": "Home",
 					},
 				},
 				{
 					Path: "/organization",
 					Component: func() app.Composer {
 						return &page.OrganizationPage{}
+					},
+					Meta: map[string]string{
+						"title": "Organizations",
 					},
 				},
 				{
@@ -147,11 +159,14 @@ func main() {
 					Component: func() app.Composer {
 						return &customlayout.OrganizationLayout{}
 					},
-					Children: []routelayout.Route{
+					Children: []router.Route{
 						{
 							Path: "/",
 							Component: func() app.Composer {
 								return &page.OrganizationIDPage{}
+							},
+							Meta: map[string]string{
+								"title": ":organization_name",
 							},
 						},
 						{
@@ -159,11 +174,17 @@ func main() {
 							Component: func() app.Composer {
 								return &page.OrganizationIDGroupPage{}
 							},
+							Meta: map[string]string{
+								"title": "Groups",
+							},
 						},
 						{
 							Path: "/group/:group_id",
 							Component: func() app.Composer {
 								return &page.OrganizationIDGroupIDPage{}
+							},
+							Meta: map[string]string{
+								"title": ":group_name",
 							},
 						},
 						{
@@ -171,17 +192,26 @@ func main() {
 							Component: func() app.Composer {
 								return &page.OrganizationIDPersonIDPage{}
 							},
+							Meta: map[string]string{
+								"title": ":voter_id",
+							},
 						},
 						{
 							Path: "/person-field",
 							Component: func() app.Composer {
 								return &page.OrganizationIDPersonFieldPage{}
 							},
+							Meta: map[string]string{
+								"title": "Person Fields",
+							},
 						},
 						{
 							Path: "/person-field/:person_field_id",
 							Component: func() app.Composer {
 								return &page.OrganizationIDPersonFieldIDPage{}
+							},
+							Meta: map[string]string{
+								"title": ":person_field_name",
 							},
 						},
 					},
@@ -190,6 +220,9 @@ func main() {
 					Path: "/profile",
 					Component: func() app.Composer {
 						return &page.ProfilePage{}
+					},
+					Meta: map[string]string{
+						"title": "Profile",
 					},
 				},
 			},
