@@ -24,6 +24,13 @@ func (c *DownballotLayout) OnNav(ctx app.Context) {
 	slog.InfoContext(ctx.Context, "State", "api-token", apiToken)
 	if apiToken == "" {
 		ctx.Navigate("/login")
+		return
+	}
+
+	if component := c.RouterViewComponent.RouterView(); component != nil {
+		if v, ok := component.(app.Navigator); ok {
+			v.OnNav(ctx)
+		}
 	}
 }
 

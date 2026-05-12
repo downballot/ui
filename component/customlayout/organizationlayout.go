@@ -18,8 +18,7 @@ type OrganizationLayout struct {
 }
 
 var _ router.RouterViewInterface = (*OrganizationLayout)(nil)
-
-/*var _ app.Navigator = (*OrganizationLayout)(nil)
+var _ app.Navigator = (*OrganizationLayout)(nil)
 
 func (c *OrganizationLayout) OnNav(ctx app.Context) {
 	slog.InfoContext(ctx.Context, "OrganizationLayout: OnNav", "url", ctx.Page().URL())
@@ -27,7 +26,6 @@ func (c *OrganizationLayout) OnNav(ctx app.Context) {
 	activeRoute := router.GetActiveRoute(ctx)
 	slog.InfoContext(ctx.Context, "OrganizationLayout: OnNav", "activeRoute", activeRoute)
 }
-*/
 
 func (c *OrganizationLayout) Render() app.UI {
 	slog.InfoContext(context.TODO(), "OrganizationLayout: Render")

@@ -180,6 +180,11 @@ func (c *LayoutWrapper) OnNav(ctx app.Context) {
 		slog.InfoContext(ctx.Context, "LayoutWrapper: OnNav: Setting active route.", "activeRoute", activeRoute)
 		ctx.SetState(StateRoute, activeRoute)
 
+		if v, ok := c.LayoutComponent.(app.Navigator); ok {
+			slog.DebugContext(ctx, "LayoutWrapper: OnNav: Calling OnNav on layout component.", "LayoutComponent", fmt.Sprintf("%T", c.LayoutComponent))
+			v.OnNav(ctx)
+		}
+
 		ctx.Update()
 
 		if v, ok := c.LayoutComponent.(RouterViewInterface); ok {
