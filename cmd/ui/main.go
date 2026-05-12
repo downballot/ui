@@ -183,6 +183,18 @@ func main() {
 							Component: func() app.Composer {
 								return &page.OrganizationIDGroupIDPage{}
 							},
+							PathVariables: func(ctx app.Context, variables map[string]string) {
+								//ctx.Dispatch(func(ctx app.Context) {
+								var output downballotapi.GetGroupResponse
+								err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+variables["organization_id"]+"/group/"+variables["group_id"], nil, &output)
+								if err != nil {
+									slog.ErrorContext(ctx.Context, "Could not get group", "err", err)
+									return
+								}
+
+								variables["group_name"] = output.Group.Name
+								//})
+							},
 							Meta: map[string]string{
 								"title": ":group_name",
 							},

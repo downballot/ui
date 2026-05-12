@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"regexp"
 	"slices"
 	"strings"
 
@@ -30,6 +31,14 @@ type internalRoute struct {
 	Meta                   map[string]string
 }
 
+type registeredRoute struct {
+	Regexp    *regexp.Regexp
+	Component func() app.Composer
+	Meta      map[string]string
+}
+
+var registeredRoutes []registeredRoute
+
 // Register the various routes.
 func Register(ctx context.Context, routes ...Route) error {
 	flatRoutes, err := flattenRoutes(ctx, internalRoute{}, routes...)
@@ -43,19 +52,29 @@ func Register(ctx context.Context, routes ...Route) error {
 			return fmt.Errorf("could not parse route %q: %w", r.Path, err)
 		}
 		slog.InfoContext(ctx, "Registering route.", "path", r.Path)
-		app.RouteWithRegexp(route.Regexp(), func() app.Composer {
-			slog.InfoContext(ctx, "Register: func(): creating component for route.", "route", route)
-			routeComponent := composeRoute(ctx, r.ComponentFunctions...)
-			slog.InfoContext(ctx, "Register: func()", "routeComponent", routeComponent, "type", fmt.Sprintf("%T", routeComponent))
+		compiledRegexp, err := regexp.Compile(route.Regexp())
+		if err != nil {
+			return fmt.Errorf("could not compile route %q: %w", r.Path, err)
+		}
+		newRegisteredRoute := registeredRoute{
+			Regexp: compiledRegexp,
+			Component: func() app.Composer {
+				slog.InfoContext(ctx, "Register: func(): creating component for route.", "route", route)
+				routeComponent := composeRoute(ctx, r.ComponentFunctions...)
+				slog.InfoContext(ctx, "Register: func()", "routeComponent", routeComponent, "type", fmt.Sprintf("%T", routeComponent))
 
-			wrapper := LayoutWrapper{
-				LayoutComponent:        routeComponent,
-				Meta:                   r.Meta,
-				Route:                  *route,
-				PathVariablesFunctions: r.PathVariablesFunctions,
-			}
-			return &wrapper
-		})
+				wrapper := LayoutWrapper{
+					LayoutComponent:        routeComponent,
+					Meta:                   r.Meta,
+					Route:                  *route,
+					PathVariablesFunctions: r.PathVariablesFunctions,
+				}
+				return &wrapper
+			},
+			Meta: r.Meta,
+		}
+		registeredRoutes = append(registeredRoutes, newRegisteredRoute)
+		app.RouteWithRegexp(route.Regexp(), newRegisteredRoute.Component)
 	}
 	return nil
 }
@@ -134,93 +153,4 @@ func flattenRoutes(ctx context.Context, parentRoute internalRoute, routes ...Rou
 	}
 
 	return output, nil
-}
-
-// LayoutWrapper is a wrapper around the desired component that handles top-level events to ensure that the component is properly updated.
-type LayoutWrapper struct {
-	app.Compo
-
-	// These need to be public so that the component is properly re-rendered.
-	LayoutComponent        app.Composer
-	Meta                   map[string]string
-	Route                  route.Route
-	RouteVariables         map[string]string
-	PathVariablesFunctions []func(ctx app.Context, variables map[string]string)
-}
-
-func (c *LayoutWrapper) OnMount(ctx app.Context) {
-	slog.InfoContext(ctx.Context, "LayoutWrapper: OnMount", "url", ctx.Page().URL())
-
-	if v, ok := c.LayoutComponent.(app.Mounter); ok {
-		v.OnMount(ctx)
-	}
-}
-
-func (c *LayoutWrapper) OnNav(ctx app.Context) {
-	slog.InfoContext(ctx.Context, "LayoutWrapper: OnNav", "url", ctx.Page().URL())
-
-	matched, variables := c.Route.Match(ctx.Page().URL().Path)
-	if !matched {
-		slog.WarnContext(ctx.Context, "LayoutWrapper: OnNav: Could not match route somehow.", "route", c.Route, "path", ctx.Page().URL().Path)
-	} else {
-		c.RouteVariables = variables
-
-		//ctx.Dispatch(func(ctx app.Context) {
-		for _, f := range c.PathVariablesFunctions {
-			if f == nil {
-				continue
-			}
-			f(ctx, c.RouteVariables)
-		}
-
-		activeRoute := ActiveRoute{
-			Meta:      c.Meta,
-			Variables: c.RouteVariables,
-		}
-		slog.InfoContext(ctx.Context, "LayoutWrapper: OnNav: Setting active route.", "activeRoute", activeRoute)
-		ctx.SetState(StateRoute, activeRoute)
-
-		if v, ok := c.LayoutComponent.(app.Navigator); ok {
-			slog.DebugContext(ctx, "LayoutWrapper: OnNav: Calling OnNav on layout component.", "LayoutComponent", fmt.Sprintf("%T", c.LayoutComponent))
-			v.OnNav(ctx)
-		}
-
-		ctx.Update()
-
-		if v, ok := c.LayoutComponent.(RouterViewInterface); ok {
-			slog.DebugContext(ctx, "LayoutWrapper: OnNav: Applying variables.", "LayoutComponent", fmt.Sprintf("%T", c.LayoutComponent))
-			err := v.ApplyVariables(variables)
-			if err != nil {
-				slog.WarnContext(ctx.Context, "LayoutWrapper: OnNav: Could not apply variables.", "err", err)
-			}
-		}
-		if v, ok := c.LayoutComponent.(app.Updater); ok {
-			v.OnUpdate(ctx)
-		}
-		//})
-	}
-	slog.InfoContext(ctx.Context, "LayoutWrapper: OnNav", "matched", matched)
-	slog.InfoContext(ctx.Context, "LayoutWrapper: OnNav", "variables", variables)
-	slog.InfoContext(ctx.Context, "LayoutWrapper: OnNav", "Component", fmt.Sprintf("%T", c.LayoutComponent))
-
-	if v, ok := c.LayoutComponent.(app.Navigator); ok {
-		v.OnNav(ctx)
-	}
-}
-
-func (c *LayoutWrapper) OnUpdate(ctx app.Context) {
-	slog.InfoContext(ctx.Context, "LayoutWrapper: OnUpdate", "url", ctx.Page().URL())
-
-	if v, ok := c.LayoutComponent.(app.Updater); ok {
-		v.OnUpdate(ctx)
-	}
-}
-
-// TODO: It looks like we want to leverage OnMount (first time) and OnUpdate (subsequent times) to tell our components that something has changed.
-// TODO: Or, consider adding a public Route property to the pages that need routes so that this info can automatically do what it needs to.
-
-func (c *LayoutWrapper) Render() app.UI {
-	slog.InfoContext(context.TODO(), "LayoutWrapper: Render")
-
-	return c.LayoutComponent.Render()
 }
