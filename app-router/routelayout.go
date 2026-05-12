@@ -49,10 +49,10 @@ func Apply(ctx context.Context, routes ...Route) error {
 			slog.InfoContext(ctx, "RouteLayout: func()", "routeComponent", routeComponent, "type", fmt.Sprintf("%T", routeComponent))
 
 			wrapper := LayoutWrapper{
-				layoutComponent:        routeComponent,
-				meta:                   r.Meta,
-				route:                  *route,
-				pathVariablesFunctions: r.PathVariablesFunctions,
+				LayoutComponent:        routeComponent,
+				Meta:                   r.Meta,
+				Route:                  *route,
+				PathVariablesFunctions: r.PathVariablesFunctions,
 			}
 			return &wrapper
 		})
@@ -140,17 +140,18 @@ func flattenRoutes(ctx context.Context, parentRoute internalRoute, routes ...Rou
 type LayoutWrapper struct {
 	app.Compo
 
-	layoutComponent        app.Composer
-	meta                   map[string]string
-	route                  route.Route
-	routeVariables         map[string]string
-	pathVariablesFunctions []func(ctx app.Context, variables map[string]string)
+	// These need to be public so that the component is properly re-rendered.
+	LayoutComponent        app.Composer
+	Meta                   map[string]string
+	Route                  route.Route
+	RouteVariables         map[string]string
+	PathVariablesFunctions []func(ctx app.Context, variables map[string]string)
 }
 
 func (c *LayoutWrapper) OnMount(ctx app.Context) {
 	slog.InfoContext(ctx.Context, "LayoutWrapper: OnMount", "url", ctx.Page().URL())
 
-	if v, ok := c.layoutComponent.(app.Mounter); ok {
+	if v, ok := c.LayoutComponent.(app.Mounter); ok {
 		v.OnMount(ctx)
 	}
 }
@@ -158,46 +159,46 @@ func (c *LayoutWrapper) OnMount(ctx app.Context) {
 func (c *LayoutWrapper) OnNav(ctx app.Context) {
 	slog.InfoContext(ctx.Context, "LayoutWrapper: OnNav", "url", ctx.Page().URL())
 
-	matched, variables := c.route.Match(ctx.Page().URL().Path)
+	matched, variables := c.Route.Match(ctx.Page().URL().Path)
 	if !matched {
-		slog.WarnContext(ctx.Context, "LayoutWrapper: OnNav: Could not match route somehow.", "route", c.route, "path", ctx.Page().URL().Path)
+		slog.WarnContext(ctx.Context, "LayoutWrapper: OnNav: Could not match route somehow.", "route", c.Route, "path", ctx.Page().URL().Path)
 	} else {
-		c.routeVariables = variables
+		c.RouteVariables = variables
 
 		//ctx.Dispatch(func(ctx app.Context) {
-		for _, f := range c.pathVariablesFunctions {
+		for _, f := range c.PathVariablesFunctions {
 			if f == nil {
 				continue
 			}
-			f(ctx, c.routeVariables)
+			f(ctx, c.RouteVariables)
 		}
 
 		activeRoute := ActiveRoute{
-			Meta:      c.meta,
-			Variables: c.routeVariables,
+			Meta:      c.Meta,
+			Variables: c.RouteVariables,
 		}
 		slog.InfoContext(ctx.Context, "LayoutWrapper: OnNav: Setting active route.", "activeRoute", activeRoute)
 		ctx.SetState(StateRoute, activeRoute)
 
 		ctx.Update()
 
-		if v, ok := c.layoutComponent.(RouterViewInterface); ok {
-			slog.DebugContext(ctx, "LayoutWrapper: OnNav: Applying variables.", "LayoutComponent", fmt.Sprintf("%T", c.layoutComponent))
+		if v, ok := c.LayoutComponent.(RouterViewInterface); ok {
+			slog.DebugContext(ctx, "LayoutWrapper: OnNav: Applying variables.", "LayoutComponent", fmt.Sprintf("%T", c.LayoutComponent))
 			err := v.ApplyVariables(variables)
 			if err != nil {
 				slog.WarnContext(ctx.Context, "LayoutWrapper: OnNav: Could not apply variables.", "err", err)
 			}
 		}
-		if v, ok := c.layoutComponent.(app.Updater); ok {
+		if v, ok := c.LayoutComponent.(app.Updater); ok {
 			v.OnUpdate(ctx)
 		}
 		//})
 	}
 	slog.InfoContext(ctx.Context, "LayoutWrapper: OnNav", "matched", matched)
 	slog.InfoContext(ctx.Context, "LayoutWrapper: OnNav", "variables", variables)
-	slog.InfoContext(ctx.Context, "LayoutWrapper: OnNav", "Component", fmt.Sprintf("%T", c.layoutComponent))
+	slog.InfoContext(ctx.Context, "LayoutWrapper: OnNav", "Component", fmt.Sprintf("%T", c.LayoutComponent))
 
-	if v, ok := c.layoutComponent.(app.Navigator); ok {
+	if v, ok := c.LayoutComponent.(app.Navigator); ok {
 		v.OnNav(ctx)
 	}
 }
@@ -205,7 +206,7 @@ func (c *LayoutWrapper) OnNav(ctx app.Context) {
 func (c *LayoutWrapper) OnUpdate(ctx app.Context) {
 	slog.InfoContext(ctx.Context, "LayoutWrapper: OnUpdate", "url", ctx.Page().URL())
 
-	if v, ok := c.layoutComponent.(app.Updater); ok {
+	if v, ok := c.LayoutComponent.(app.Updater); ok {
 		v.OnUpdate(ctx)
 	}
 }
@@ -216,5 +217,5 @@ func (c *LayoutWrapper) OnUpdate(ctx app.Context) {
 func (c *LayoutWrapper) Render() app.UI {
 	slog.InfoContext(context.TODO(), "LayoutWrapper: Render")
 
-	return c.layoutComponent.Render()
+	return c.LayoutComponent.Render()
 }
