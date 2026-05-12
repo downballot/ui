@@ -16,7 +16,6 @@ type OrganizationIDGroupPage struct {
 	app.Compo
 
 	OrganizationID string `route:"organization_id"`
-	Organization   *downballotapi.Organization
 	Groups         []*downballotapi.Group
 }
 
@@ -35,16 +34,6 @@ func (c *OrganizationIDGroupPage) OnUpdate(ctx app.Context) {
 			slog.ErrorContext(ctx.Context, "Could not get organizations", "err", err)
 			return
 		}
-
-		ctx.Dispatch(func(ctx app.Context) {
-			slog.InfoContext(ctx.Context, "Dispatch: Setting organization", "organization", output.Organization)
-			c.Organization = &output.Organization
-		})
-		ctx.Defer(func(ctx app.Context) {
-			slog.InfoContext(ctx.Context, "Defer: Organization should be set", "organization", c.Organization)
-
-			//ctx.Update()
-		})
 	})
 	ctx.Async(func() {
 		var output downballotapi.ListGroupsResponse
@@ -70,49 +59,42 @@ func (c *OrganizationIDGroupPage) Render() app.UI {
 	slog.InfoContext(context.TODO(), "OrganizationIDGroupPage: Render")
 
 	return app.Div().Body(
-		app.If(c.Organization == nil, func() app.UI {
-			return app.Div().Text("Not found")
-		}).Else(func() app.UI {
-			return app.Div().Body(
-				app.Div().Text(fmt.Sprintf("%+v", *c.Organization)),
-				myui.Table[*downballotapi.Group]().
-					Rows(c.Groups).
-					Columns([]myui.TableColumn[*downballotapi.Group]{
-						{
-							Name: "ID",
-							Value: func(row *downballotapi.Group) any {
-								return row.ID
-							},
-						},
-						{
-							Name: "Parent ID",
-							Value: func(row *downballotapi.Group) any {
-								return row.ParentID
-							},
-							To: func(row *downballotapi.Group) string {
-								if row.ParentID == "" {
-									return ""
-								}
-								return fmt.Sprintf("/organization/%s/group/%s", c.OrganizationID, row.ParentID)
-							},
-						},
-						{
-							Name: "Name",
-							Value: func(row *downballotapi.Group) any {
-								return row.Name
-							},
-							To: func(row *downballotapi.Group) string {
-								return fmt.Sprintf("/organization/%s/group/%s", c.OrganizationID, row.ID)
-							},
-						},
-						{
-							Name: "Filter",
-							Value: func(row *downballotapi.Group) any {
-								return row.Filter
-							},
-						},
-					}).Render(),
-			)
-		}),
+		myui.Table[*downballotapi.Group]().
+			Rows(c.Groups).
+			Columns([]myui.TableColumn[*downballotapi.Group]{
+				{
+					Name: "ID",
+					Value: func(row *downballotapi.Group) any {
+						return row.ID
+					},
+				},
+				{
+					Name: "Parent ID",
+					Value: func(row *downballotapi.Group) any {
+						return row.ParentID
+					},
+					To: func(row *downballotapi.Group) string {
+						if row.ParentID == "" {
+							return ""
+						}
+						return fmt.Sprintf("/organization/%s/group/%s", c.OrganizationID, row.ParentID)
+					},
+				},
+				{
+					Name: "Name",
+					Value: func(row *downballotapi.Group) any {
+						return row.Name
+					},
+					To: func(row *downballotapi.Group) string {
+						return fmt.Sprintf("/organization/%s/group/%s", c.OrganizationID, row.ID)
+					},
+				},
+				{
+					Name: "Filter",
+					Value: func(row *downballotapi.Group) any {
+						return row.Filter
+					},
+				},
+			}).Render(),
 	)
 }

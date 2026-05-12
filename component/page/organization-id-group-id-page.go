@@ -51,16 +51,6 @@ func (c *OrganizationIDGroupIDPage) OnUpdate(ctx app.Context) {
 			slog.ErrorContext(ctx.Context, "Could not get organizations", "err", err)
 			return
 		}
-
-		ctx.Dispatch(func(ctx app.Context) {
-			slog.InfoContext(ctx.Context, "Dispatch: Setting organization", "organization", output.Organization)
-			c.Organization = &output.Organization
-		})
-		ctx.Defer(func(ctx app.Context) {
-			slog.InfoContext(ctx.Context, "Defer: Organization should be set", "organization", c.Organization)
-
-			//ctx.Update()
-		})
 	})
 	ctx.Async(func() {
 		var output downballotapi.GetGroupResponse
@@ -172,13 +162,10 @@ func (c *OrganizationIDGroupIDPage) Render() app.UI {
 	}
 
 	return app.Div().Body(
-		app.If(c.Organization == nil || c.Group == nil, func() app.UI {
+		app.If(c.Group == nil, func() app.UI {
 			return app.Div().Text("Not found")
 		}).Else(func() app.UI {
 			return app.Div().Body(
-				app.Div().Text(fmt.Sprintf("%+v", *c.Organization)),
-				app.Div().Text(fmt.Sprintf("%+v", *c.Group)),
-				app.Hr(),
 				myui.Table[*downballotapi.Group]().
 					Rows(c.Children).
 					Columns([]myui.TableColumn[*downballotapi.Group]{

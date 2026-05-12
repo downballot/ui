@@ -16,7 +16,6 @@ type OrganizationIDPersonFieldIDPage struct {
 	app.Compo
 
 	OrganizationID string `route:"organization_id"`
-	Organization   *downballotapi.Organization
 	PersonFieldID  string `route:"person_field_id"`
 	PersonField    *downballotapi.PersonField
 }
@@ -37,16 +36,6 @@ func (c *OrganizationIDPersonFieldIDPage) OnUpdate(ctx app.Context) {
 			slog.ErrorContext(ctx.Context, "Could not get organizations", "err", err)
 			return
 		}
-
-		ctx.Dispatch(func(ctx app.Context) {
-			slog.InfoContext(ctx.Context, "Dispatch: Setting organization", "organization", output.Organization)
-			c.Organization = &output.Organization
-		})
-		ctx.Defer(func(ctx app.Context) {
-			slog.InfoContext(ctx.Context, "Defer: Organization should be set", "organization", c.Organization)
-
-			//ctx.Update()
-		})
 	})
 	ctx.Async(func() {
 		var output downballotapi.GetPersonFieldResponse
@@ -72,13 +61,10 @@ func (c *OrganizationIDPersonFieldIDPage) Render() app.UI {
 	slog.InfoContext(context.TODO(), "OrganizationIDPersonFieldIDPage: Render")
 
 	return app.Div().Body(
-		app.If(c.Organization == nil || c.PersonField == nil, func() app.UI {
+		app.If(c.PersonField == nil, func() app.UI {
 			return app.Div().Text("Not found")
 		}).Else(func() app.UI {
 			return app.Div().Body(
-				app.Div().Text(fmt.Sprintf("%+v", *c.Organization)),
-				app.Div().Text(fmt.Sprintf("%+v", *c.PersonField)),
-				app.Hr(),
 				myui.Table[*downballotapi.PersonField]().
 					Rows([]*downballotapi.PersonField{c.PersonField}).
 					Columns([]myui.TableColumn[*downballotapi.PersonField]{
