@@ -156,6 +156,9 @@ func main() {
 						variables["organization_name"] = output.Organization.Name
 						//})
 					},
+					Meta: map[string]string{
+						"autocrumbs": "true",
+					},
 					Component: func() app.Composer {
 						return &customlayout.OrganizationLayout{}
 					},
@@ -224,6 +227,15 @@ func main() {
 							},
 							Meta: map[string]string{
 								"title": ":person_field_name",
+							},
+							PathVariables: func(ctx app.Context, variables map[string]string) {
+								var output downballotapi.GetPersonFieldResponse
+								err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+variables["organization_id"]+"/person-field/"+variables["person_field_id"], nil, &output)
+								if err != nil {
+									slog.ErrorContext(ctx.Context, "Could not get person field", "err", err)
+									return
+								}
+								variables["person_field_name"] = output.PersonField.Name
 							},
 						},
 					},

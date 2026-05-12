@@ -42,6 +42,10 @@ func (c *OrganizationLayout) OnNav(ctx app.Context) {
 		route := router.GetRoute(ctx, path)
 		if route != nil {
 			slog.InfoContext(ctx.Context, "OrganizationLayout: OnNav", "route", route)
+			if route.Meta["autocrumbs"] != "true" {
+				break
+			}
+
 			crumb := Crumb{
 				Name: route.Meta["title"],
 				To:   path,
