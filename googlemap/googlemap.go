@@ -76,7 +76,12 @@ func (c *HTMLGoogleMap) Render() app.UI {
 					app.Range(c.MarkersValue).Slice(func(i int) app.UI {
 						marker := c.MarkersValue[i]
 						return app.Elem("gmp-advanced-marker").
-							Attr("position", fmt.Sprintf("%f,%f", marker.Latitude, marker.Longitude))
+							Attr("position", fmt.Sprintf("%f,%f", marker.Latitude, marker.Longitude)).
+							Attr("title", marker.Title).
+							Attr("gmp-clickable", "true").
+							On("gmp-click", func(ctx app.Context, event app.Event) {
+								slog.InfoContext(ctx.Context, "GoogleMap: Marker clicked", "marker", marker)
+							})
 					}),
 				),
 			app.Script().Text(`

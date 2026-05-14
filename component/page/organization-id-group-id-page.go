@@ -114,6 +114,7 @@ func (c *OrganizationIDGroupIDPage) OnUpdate(ctx app.Context) {
 				"phone_number",
 				"residential_address_development",
 				"candidate.notes",
+				"coordinates",
 			}
 			slices.Sort(c.SelectedFields)
 		})
@@ -333,7 +334,7 @@ func (c *OrganizationIDGroupIDPage) Render() app.UI {
 					Render(),
 				app.Div().
 					Class("map-container").
-					Style("width", "600px").
+					Style("width", "100%").
 					Style("height", "600px").
 					Body(
 						googlemap.GoogleMap().
