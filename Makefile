@@ -30,8 +30,10 @@ run: binaries
 watch-run:
 	@while true; do \
 		$(MAKE) binaries; \
+		ok=$$?; \
+		command=$$(if [ $$ok -eq 0 ]; then echo "./ui"; else echo "sleep infinity"; fi); \
 		pushd bin; \
-		./ui & PID=$$!; \
+		$$command & PID=$$!; \
 		popd; \
 		inotifywait -qre close_write .; \
 		kill $$PID; \
