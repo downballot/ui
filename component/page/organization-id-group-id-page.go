@@ -30,6 +30,7 @@ type OrganizationIDGroupIDPage struct {
 	Limit          uint
 	PossibleFields []string
 	SelectedFields []string
+	Error          string
 	Persons        []*downballotapi.Person
 }
 
@@ -234,6 +235,7 @@ func (c *OrganizationIDGroupIDPage) Render() app.UI {
 								err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.OrganizationID+"/group/"+c.GroupID+"/person?"+queryParameters.Encode(), nil, &output)
 								if err != nil {
 									slog.ErrorContext(ctx.Context, "Could not get persons", "err", err)
+									c.Error = err.Error()
 									return
 								}
 
@@ -280,6 +282,9 @@ func (c *OrganizationIDGroupIDPage) Render() app.UI {
 							}),
 					),
 				),
+				app.If(c.Error != "", func() app.UI {
+					return app.Div().Text(c.Error)
+				}),
 				myui.Table[*downballotapi.Person]().
 					Rows(c.Persons).
 					Columns(columns).
