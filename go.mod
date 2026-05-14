@@ -4,6 +4,8 @@ go 1.26.2
 
 require (
 	github.com/downballot/downballot v0.0.0-00010101000000-000000000000
+	github.com/google/uuid v1.6.0
+	github.com/joho/godotenv v1.5.1
 	github.com/lmittmann/tint v1.1.3
 	github.com/mattn/go-isatty v0.0.22
 	github.com/maxence-charriere/go-app/v10 v10.1.11
@@ -15,7 +17,6 @@ require (
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/emicklei/go-restful/v3 v3.13.0 // indirect
-	github.com/google/uuid v1.6.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/threatmate/restfulwrapper v0.1.4 // indirect
 	golang.org/x/sys v0.36.0 // indirect

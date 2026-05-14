@@ -7,11 +7,13 @@ import (
 	"maps"
 	"net/http"
 	"net/url"
+	"os"
 	"slices"
 	"strings"
 
 	"github.com/downballot/downballot/downballotapi"
 	"github.com/downballot/ui/api"
+	"github.com/downballot/ui/googlemap"
 	"github.com/downballot/ui/myui"
 	"github.com/maxence-charriere/go-app/v10/pkg/app"
 	"github.com/tekkamanendless/restapiclient"
@@ -288,6 +290,13 @@ func (c *OrganizationIDGroupIDPage) Render() app.UI {
 				myui.Table[*downballotapi.Person]().
 					Rows(c.Persons).
 					Columns(columns).
+					Render(),
+				googlemap.GoogleMap().
+					APIKey(os.Getenv("GOOGLE_MAPS_API_KEY")).
+					Center(&googlemap.Coordinate{
+						Latitude:  37.774929,
+						Longitude: -122.419416,
+					}).
 					Render(),
 			)
 		}),

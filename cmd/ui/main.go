@@ -17,6 +17,7 @@ import (
 	"github.com/downballot/ui/component/customlayout"
 	"github.com/downballot/ui/component/layout"
 	"github.com/downballot/ui/component/page"
+	"github.com/joho/godotenv"
 	"github.com/lmittmann/tint"
 	"github.com/mattn/go-isatty"
 	"github.com/maxence-charriere/go-app/v10/pkg/app"
@@ -35,6 +36,8 @@ func (e *SimpleElement) Render() app.UI {
 // server.
 func main() {
 	ctx := context.Background()
+
+	godotenv.Load()
 
 	{
 		logLevel := "info"
