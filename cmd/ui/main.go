@@ -37,7 +37,7 @@ func (e *SimpleElement) Render() app.UI {
 func main() {
 	ctx := context.Background()
 
-	godotenv.Load()
+	godotenv.Load(".env")
 
 	{
 		logLevel := "info"
@@ -277,6 +277,7 @@ func main() {
 	// The Handler is an HTTP handler that serves the client and all its
 	// required resources to make it work into a web browser. Here it is
 	// configured to handle requests with a path that starts with "/".
+	slog.InfoContext(ctx, "main", "GOOGLE_MAPS_API_KEY", os.Getenv("GOOGLE_MAPS_API_KEY"))
 	mux.Handle("/", &app.Handler{
 		Name:        "Downballot",
 		Description: "The official Downballot UI",
@@ -286,6 +287,9 @@ func main() {
 		},
 		RawHeaders: []string{
 			`<script src="https://kit.fontawesome.com/a71e001119.js" crossorigin="anonymous"></script>`,
+		},
+		Env: map[string]string{
+			"GOOGLE_MAPS_API_KEY": os.Getenv("GOOGLE_MAPS_API_KEY"),
 		},
 	})
 

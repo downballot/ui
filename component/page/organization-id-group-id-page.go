@@ -7,8 +7,8 @@ import (
 	"maps"
 	"net/http"
 	"net/url"
-	"os"
 	"slices"
+	"strconv"
 	"strings"
 
 	"github.com/downballot/downballot/downballotapi"
@@ -164,6 +164,46 @@ func (c *OrganizationIDGroupIDPage) Render() app.UI {
 		})
 	}
 
+	markers := []googlemap.Marker{}
+	{
+		coordinatesField := "coordinates" // TODO: Look this up instead.
+		for _, person := range c.Persons {
+			title := person.Fields["name"]
+			if title == "" {
+				title = person.Fields["residential_address"]
+			}
+
+			coordinates := person.Fields[coordinatesField]
+			if coordinates == "" {
+				continue
+			}
+			parts := strings.SplitN(coordinates, ",", 2)
+			if len(parts) != 2 {
+				continue
+			}
+			latitudeString := parts[0]
+			longitudeString := parts[1]
+			if latitudeString == "" || longitudeString == "" {
+				continue
+			}
+			latitude, err := strconv.ParseFloat(latitudeString, 64)
+			if err != nil {
+				continue
+			}
+			longitude, err := strconv.ParseFloat(longitudeString, 64)
+			if err != nil {
+				continue
+			}
+			markers = append(markers, googlemap.Marker{
+				Coordinate: googlemap.Coordinate{
+					Latitude:  latitude,
+					Longitude: longitude,
+				},
+				Title: title,
+			})
+		}
+	}
+
 	return app.Div().Body(
 		app.If(c.Group == nil, func() app.UI {
 			return app.Div().Text("Not found")
@@ -291,13 +331,20 @@ func (c *OrganizationIDGroupIDPage) Render() app.UI {
 					Rows(c.Persons).
 					Columns(columns).
 					Render(),
-				googlemap.GoogleMap().
-					APIKey(os.Getenv("GOOGLE_MAPS_API_KEY")).
-					Center(&googlemap.Coordinate{
-						Latitude:  37.774929,
-						Longitude: -122.419416,
-					}).
-					Render(),
+				app.Div().
+					Class("map-container").
+					Style("width", "600px").
+					Style("height", "600px").
+					Body(
+						googlemap.GoogleMap().
+							APIKey(app.Getenv("GOOGLE_MAPS_API_KEY")).
+							Center(googlemap.Coordinate{
+								Latitude:  39.713171422509426,
+								Longitude: -75.75937795659787,
+							}).
+							Markers(markers).
+							Render(),
+					),
 			)
 		}),
 	)
