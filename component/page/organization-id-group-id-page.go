@@ -115,6 +115,27 @@ func (c *OrganizationIDGroupIDPage) OnUpdate(ctx app.Context) {
 	})
 }
 
+func streetCanon(address string) string {
+	parts := strings.SplitN(address, " ", 2)
+	addressNumberString := parts[0]
+	remainder := parts[1]
+	{
+		addressNumber, err := strconv.ParseInt(addressNumberString, 10, 64)
+		if err == nil {
+			addressNumberString = fmt.Sprintf("%09d", addressNumber)
+			if addressNumber%2 == 0 {
+				addressNumberString = "e" + addressNumberString
+			} else {
+				addressNumberString = "o" + addressNumberString
+			}
+		}
+	}
+	parts = strings.SplitN(remainder, ",", 2)
+	streetInfo := parts[0]
+	remainder = parts[1]
+	return streetInfo + " " + addressNumberString + "," + remainder
+}
+
 func (c *OrganizationIDGroupIDPage) Render() app.UI {
 	slog.InfoContext(context.TODO(), "OrganizationIDGroupIDPage: Render")
 
@@ -258,6 +279,13 @@ func (c *OrganizationIDGroupIDPage) Render() app.UI {
 								ctx.Dispatch(func(ctx app.Context) {
 									slog.InfoContext(ctx.Context, "Dispatch: Setting persons", "persons", output.Persons)
 									c.Persons = output.Persons
+
+									slices.SortFunc(c.Persons, func(left, right *downballotapi.Person) int {
+										leftAddress := streetCanon(left.Fields["residential_address"])
+										rightAddress := streetCanon(right.Fields["residential_address"])
+
+										return strings.Compare(leftAddress, rightAddress)
+									})
 
 									columns := []myui.TableColumn[*downballotapi.Person]{
 										{

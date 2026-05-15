@@ -105,17 +105,32 @@ func (c *OrganizationLayout) Render() app.UI {
 				Headline:   c.OrganizationName,
 				HeadlineUI: headline,
 			},
-			app.Ul().Body(
-				app.Li().Body(
-					app.A().Href("/organization/"+c.OrganizationID).Text("Organization"),
+			app.Ul().
+				Style("list-style-type", "none").
+				Style("padding", "0").
+				Style("margin", "0").
+				Style("display", "flex").
+				Style("gap", "20px").
+				Body(
+					app.Li().
+						Style("margin-left", "auto").
+						Style("margin-right", "auto").
+						Body(
+							app.A().Href("/organization/"+c.OrganizationID).Text("Organization"),
+						),
+					app.Li().
+						Style("margin-left", "auto").
+						Style("margin-right", "auto").
+						Body(
+							app.A().Href("/organization/"+c.OrganizationID+"/group").Text("Groups"),
+						),
+					app.Li().
+						Style("margin-left", "auto").
+						Style("margin-right", "auto").
+						Body(
+							app.A().Href("/organization/"+c.OrganizationID+"/person-field").Text("Person Fields"),
+						),
 				),
-				app.Li().Body(
-					app.A().Href("/organization/"+c.OrganizationID+"/group").Text("Groups"),
-				),
-				app.Li().Body(
-					app.A().Href("/organization/"+c.OrganizationID+"/person-field").Text("Person Fields"),
-				),
-			),
 			c.RouterView().Render(),
 		)
 }

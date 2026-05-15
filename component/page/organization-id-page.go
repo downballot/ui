@@ -2,7 +2,6 @@ package page
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
 	"net/http"
 
@@ -54,7 +53,8 @@ func (c *OrganizationIDPage) Render() app.UI {
 			return app.Div().Text("Not found")
 		}).Else(func() app.UI {
 			return app.Div().Body(
-				app.Div().Text(fmt.Sprintf("%+v", *c.Organization)),
+				app.Div().Text("ID: "+c.Organization.ID),
+				app.Div().Text("Name: "+c.Organization.Name),
 			)
 		}),
 	)

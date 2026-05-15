@@ -39,6 +39,16 @@ h1, h2, h3, h4, h5, h6 {
     flex: 1;
 }
 
+@media print {
+    .main-layout-header {
+        display: none;
+    }
+
+    .main-layout-drawer {
+        display: none;
+    }
+}
+
 .myui-icon {
     width: 1em;
     height: 1em;

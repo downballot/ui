@@ -23,6 +23,7 @@ func (c *MainLayout) Render() app.UI {
 	slog.InfoContext(context.TODO(), "MainLayout:", "c", c)
 
 	return app.Div().
+		Class("main-layout").
 		Style("height", "100vh").
 		Style("width", "100%").
 		Body(
