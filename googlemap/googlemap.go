@@ -34,7 +34,8 @@ type Coordinate struct {
 
 type Marker struct {
 	Coordinate
-	Title string
+	Title   string
+	OnClick func(ctx app.Context, event app.Event)
 }
 
 //go:embed dynamic-import.js
@@ -130,6 +131,9 @@ func (c *HTMLGoogleMap) Render() app.UI {
 							Attr("gmp-clickable", "true").
 							On("gmp-click", func(ctx app.Context, event app.Event) {
 								slog.InfoContext(ctx.Context, "GoogleMap: Marker clicked", "marker", marker)
+								if marker.OnClick != nil {
+									marker.OnClick(ctx, event)
+								}
 							})
 					}),
 				),

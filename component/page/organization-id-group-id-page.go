@@ -193,6 +193,9 @@ func (c *OrganizationIDGroupIDPage) Render() app.UI {
 					Longitude: longitude,
 				},
 				Title: title,
+				OnClick: func(ctx app.Context, event app.Event) {
+					app.Window().Call("open", fmt.Sprintf("/organization/%s/person/%s", c.OrganizationID, person.VoterID), "_blank")
+				},
 			})
 			totalLatitude += latitude
 			totalLongitude += longitude
@@ -338,6 +341,10 @@ func (c *OrganizationIDGroupIDPage) Render() app.UI {
 							Center(center).
 							Markers(markers),
 						//Render(),
+					),
+				app.Div().
+					Body(
+						app.Text("Total: "+fmt.Sprintf("%d", len(c.Persons))),
 					),
 				myui.Table[*downballotapi.Person]().
 					Rows(c.Persons).
