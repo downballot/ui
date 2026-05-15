@@ -33,6 +33,8 @@ type OrganizationIDGroupIDPage struct {
 	SelectedFields []string
 	Error          string
 	Persons        []*downballotapi.Person
+
+	PersonsTable *myui.MyUITable[*downballotapi.Person]
 }
 
 func (c *OrganizationIDGroupIDPage) OnUpdate(ctx app.Context) {
@@ -45,6 +47,9 @@ func (c *OrganizationIDGroupIDPage) OnUpdate(ctx app.Context) {
 	}
 
 	c.Limit = 1000
+
+	c.PersonsTable = myui.Table[*downballotapi.Person]().
+		PageSize(10)
 
 	ctx.Async(func() {
 		var output downballotapi.GetOrganizationResponse
@@ -66,11 +71,6 @@ func (c *OrganizationIDGroupIDPage) OnUpdate(ctx app.Context) {
 			slog.InfoContext(ctx.Context, "Dispatch: Setting group", "group", output.Group)
 			c.Group = output.Group
 		})
-		ctx.Defer(func(ctx app.Context) {
-			slog.InfoContext(ctx.Context, "Defer: Group should be set", "group", c.Group)
-
-			//ctx.Update()
-		})
 	})
 	ctx.Async(func() {
 		var output downballotapi.ListGroupsResponse
@@ -83,11 +83,6 @@ func (c *OrganizationIDGroupIDPage) OnUpdate(ctx app.Context) {
 		ctx.Dispatch(func(ctx app.Context) {
 			slog.InfoContext(ctx.Context, "Dispatch: Setting children", "groups", output.Groups)
 			c.Children = output.Groups
-		})
-		ctx.Defer(func(ctx app.Context) {
-			slog.InfoContext(ctx.Context, "Defer: Children should be set", "groups", c.Children)
-
-			//ctx.Update()
 		})
 	})
 	ctx.Async(func() {
@@ -111,42 +106,17 @@ func (c *OrganizationIDGroupIDPage) OnUpdate(ctx app.Context) {
 			c.SelectedFields = []string{
 				"name",
 				"phone_number",
+				"residential_address",
 				"residential_address_development",
 				"candidate.notes",
 			}
 			slices.Sort(c.SelectedFields)
-		})
-		ctx.Defer(func(ctx app.Context) {
-			slog.InfoContext(ctx.Context, "Defer: Children should be set", "groups", c.Children)
-
-			//ctx.Update()
 		})
 	})
 }
 
 func (c *OrganizationIDGroupIDPage) Render() app.UI {
 	slog.InfoContext(context.TODO(), "OrganizationIDGroupIDPage: Render")
-
-	columns := []myui.TableColumn[*downballotapi.Person]{
-		{
-			Name: "Voter ID",
-			Value: func(row *downballotapi.Person) any {
-				return row.VoterID
-			},
-			To: func(row *downballotapi.Person) string {
-				return fmt.Sprintf("/organization/%s/person/%s", c.OrganizationID, row.VoterID)
-			},
-		},
-	}
-
-	for _, name := range c.SelectedFields {
-		columns = append(columns, myui.TableColumn[*downballotapi.Person]{
-			Name: name,
-			Value: func(row *downballotapi.Person) any {
-				return row.Fields[name]
-			},
-		})
-	}
 
 	markers := []googlemap.Marker{}
 	center := googlemap.Coordinate{
@@ -288,11 +258,30 @@ func (c *OrganizationIDGroupIDPage) Render() app.UI {
 								ctx.Dispatch(func(ctx app.Context) {
 									slog.InfoContext(ctx.Context, "Dispatch: Setting persons", "persons", output.Persons)
 									c.Persons = output.Persons
-								})
-								ctx.Defer(func(ctx app.Context) {
-									slog.InfoContext(ctx.Context, "Defer: Persons should be set", "persons", c.Persons)
 
-									//ctx.Update()
+									columns := []myui.TableColumn[*downballotapi.Person]{
+										{
+											Name: "Voter ID",
+											Value: func(row *downballotapi.Person) any {
+												return row.VoterID
+											},
+											To: func(row *downballotapi.Person) string {
+												return fmt.Sprintf("/organization/%s/person/%s", c.OrganizationID, row.VoterID)
+											},
+										},
+									}
+
+									for _, name := range c.SelectedFields {
+										columns = append(columns, myui.TableColumn[*downballotapi.Person]{
+											Name: name,
+											Value: func(row *downballotapi.Person) any {
+												return row.Fields[name]
+											},
+										})
+									}
+
+									c.PersonsTable.Columns(columns)
+									c.PersonsTable.Rows(output.Persons)
 								})
 							}),
 						app.Button().
@@ -346,10 +335,7 @@ func (c *OrganizationIDGroupIDPage) Render() app.UI {
 					Body(
 						app.Text("Total: "+fmt.Sprintf("%d", len(c.Persons))),
 					),
-				myui.Table[*downballotapi.Person]().
-					Rows(c.Persons).
-					Columns(columns).
-					Render(),
+				c.PersonsTable.Render(),
 			)
 		}),
 	)

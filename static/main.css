@@ -60,7 +60,7 @@ h1, h2, h3, h4, h5, h6 {
 .myui-item-name {
 }
 
-table.myui-table {
+.myui-table table {
     border-collapse: collapse; /* Removes space between cell borders */
     margin: 25px 0;
     font-size: 0.9em;
@@ -69,29 +69,29 @@ table.myui-table {
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.15); /* Adds a modern elevation effect */
 }
 
-table.myui-table thead tr {
+.myui-table table thead tr {
     background-color: var(--material-theme-secondary);
     color: var(--material-theme-on-secondary); 
     text-align: left;
 }
 
-table.myui-table th,
-table.myui-table td {
+.myui-table table th,
+.myui-table table td {
     padding: 12px 15px; 
 }
 
-table.myui-table tbody tr {
+.myui-table table tbody tr {
     border-bottom: 1px solid #dddddd;
 }
 
-table.myui-table tbody tr:nth-of-type(even) {
+.myui-table table tbody tr:nth-of-type(even) {
     background-color: #f7f7f7; /* Zebra-striping for easier scanning */
 }
 
-table.myui-table tbody tr:last-of-type {
+.myui-table table tbody tr:last-of-type {
 }
 
-table.myui-table tbody tr:hover {
+.myui-table table tbody tr:hover {
     background-color: #f1f1f1; /* Visual cue when interacting with rows */
 }
 
