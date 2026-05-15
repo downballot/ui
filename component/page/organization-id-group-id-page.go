@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
-	"maps"
 	"net/http"
 	"net/url"
 	"slices"
@@ -114,7 +113,6 @@ func (c *OrganizationIDGroupIDPage) OnUpdate(ctx app.Context) {
 				"phone_number",
 				"residential_address_development",
 				"candidate.notes",
-				"coordinates",
 			}
 			slices.Sort(c.SelectedFields)
 		})
@@ -131,12 +129,6 @@ func (c *OrganizationIDGroupIDPage) Render() app.UI {
 
 	columns := []myui.TableColumn[*downballotapi.Person]{
 		{
-			Name: "ID",
-			Value: func(row *downballotapi.Person) any {
-				return row.ID
-			},
-		},
-		{
 			Name: "Voter ID",
 			Value: func(row *downballotapi.Person) any {
 				return row.VoterID
@@ -147,16 +139,7 @@ func (c *OrganizationIDGroupIDPage) Render() app.UI {
 		},
 	}
 
-	usedFieldMap := map[string]bool{}
-	for _, person := range c.Persons {
-		for name := range person.Fields {
-			usedFieldMap[name] = true
-		}
-	}
-	usedFields := slices.Collect(maps.Keys(usedFieldMap))
-	slices.Sort(usedFields)
-
-	for _, name := range usedFields {
+	for _, name := range c.SelectedFields {
 		columns = append(columns, myui.TableColumn[*downballotapi.Person]{
 			Name: name,
 			Value: func(row *downballotapi.Person) any {
@@ -166,12 +149,21 @@ func (c *OrganizationIDGroupIDPage) Render() app.UI {
 	}
 
 	markers := []googlemap.Marker{}
+	center := googlemap.Coordinate{
+		Latitude:  39.713171422509426,
+		Longitude: -75.75937795659787,
+	}
 	{
+		totalLatitude := 0.0
+		totalLongitude := 0.0
+		total := 0
+
 		coordinatesField := "coordinates" // TODO: Look this up instead.
+
 		for _, person := range c.Persons {
 			title := person.Fields["name"]
-			if title == "" {
-				title = person.Fields["residential_address"]
+			if person.Fields["residential_address"] != "" {
+				title += "\n" + person.Fields["residential_address"]
 			}
 
 			coordinates := person.Fields[coordinatesField]
@@ -202,6 +194,14 @@ func (c *OrganizationIDGroupIDPage) Render() app.UI {
 				},
 				Title: title,
 			})
+			totalLatitude += latitude
+			totalLongitude += longitude
+			total++
+		}
+
+		if total > 0 {
+			center.Latitude = totalLatitude / float64(total)
+			center.Longitude = totalLongitude / float64(total)
 		}
 	}
 
@@ -273,7 +273,7 @@ func (c *OrganizationIDGroupIDPage) Render() app.UI {
 								queryParameters := url.Values{}
 								queryParameters.Set("filter", c.Filter)
 								queryParameters.Set("limit", fmt.Sprintf("%d", c.Limit))
-								queryParameters.Set("fields", strings.Join(c.SelectedFields, ","))
+								//queryParameters.Set("fields", strings.Join(c.SelectedFields, ",")) // Always get all fields.
 								var output downballotapi.ListPersonsResponse
 								err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.OrganizationID+"/group/"+c.GroupID+"/person?"+queryParameters.Encode(), nil, &output)
 								if err != nil {
@@ -328,10 +328,6 @@ func (c *OrganizationIDGroupIDPage) Render() app.UI {
 				app.If(c.Error != "", func() app.UI {
 					return app.Div().Text(c.Error)
 				}),
-				myui.Table[*downballotapi.Person]().
-					Rows(c.Persons).
-					Columns(columns).
-					Render(),
 				app.Div().
 					Class("map-container").
 					Style("width", "100%").
@@ -339,13 +335,14 @@ func (c *OrganizationIDGroupIDPage) Render() app.UI {
 					Body(
 						googlemap.GoogleMap().
 							APIKey(app.Getenv("GOOGLE_MAPS_API_KEY")).
-							Center(googlemap.Coordinate{
-								Latitude:  39.713171422509426,
-								Longitude: -75.75937795659787,
-							}).
-							Markers(markers).
-							Render(),
+							Center(center).
+							Markers(markers),
+						//Render(),
 					),
+				myui.Table[*downballotapi.Person]().
+					Rows(c.Persons).
+					Columns(columns).
+					Render(),
 			)
 		}),
 	)

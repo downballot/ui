@@ -55,8 +55,57 @@ func (c *HTMLGoogleMap) Markers(value []Marker) *HTMLGoogleMap {
 	return c
 }
 
+func (c *HTMLGoogleMap) OnUpdate(ctx app.Context) {
+	slog.InfoContext(ctx.Context, "GoogleMap: OnUpdate")
+
+	ctx.Async(func() {
+		slog.InfoContext(context.TODO(), "GoogleMap: OnUpdate")
+		var bounds app.Value
+		if v := app.Window().Get("google"); v.Truthy() {
+			if v = v.Get("maps"); v.Truthy() {
+				if v = v.Get("LatLngBounds"); v.Truthy() {
+					bounds = v.New()
+					slog.InfoContext(context.TODO(), "GoogleMap: OnUpdate", "bounds", bounds)
+					for _, marker := range c.MarkersValue {
+						bounds.Call("extend", app.Window().Get("google").Get("maps").Get("LatLng").New(marker.Latitude, marker.Longitude))
+					}
+
+					mapElement := app.Window().GetElementByID(c.IDValue)
+					if mapElement.Truthy() {
+						if innerMap := mapElement.Get("innerMap"); innerMap.Truthy() {
+							slog.InfoContext(context.TODO(), "GoogleMap: OnUpdate", "innerMap", innerMap)
+							innerMap.Call("fitBounds", bounds)
+						}
+					}
+				}
+			}
+		}
+	})
+}
+
 func (c *HTMLGoogleMap) Render() app.UI {
 	slog.InfoContext(context.TODO(), "GoogleMap: Render")
+
+	var center app.Value
+	var bounds app.Value
+	center = app.ValueOf(fmt.Sprintf("%f,%f", c.CenterValue.Latitude, c.CenterValue.Longitude))
+	if len(c.MarkersValue) > 0 {
+		if v := app.Window().Get("google"); v.Truthy() {
+			if v = v.Get("maps"); v.Truthy() {
+				if v = v.Get("LatLngBounds"); v.Truthy() {
+					bounds = v.New()
+					slog.InfoContext(context.TODO(), "GoogleMap: bounds", "len(c.MarkersValue)", len(c.MarkersValue), "bounds", bounds)
+					for _, marker := range c.MarkersValue {
+						bounds.Call("extend", app.Window().Get("google").Get("maps").Get("LatLng").New(marker.Latitude, marker.Longitude))
+					}
+					newCenter := bounds.Call("getCenter")
+					slog.InfoContext(context.TODO(), "GoogleMap: center", "center", center)
+
+					center = app.ValueOf(fmt.Sprintf("%f,%f", newCenter.Call("lat").Float(), newCenter.Call("lng").Float()))
+				}
+			}
+		}
+	}
 
 	return app.Div().
 		Class("google-map").
@@ -66,7 +115,7 @@ func (c *HTMLGoogleMap) Render() app.UI {
 			app.Script().Text(strings.ReplaceAll(rawDynamicImportCode, "YOUR_API_KEY", c.APIKeyValue)),
 			app.Elem("gmp-map").
 				ID(c.IDValue).
-				Attr("center", fmt.Sprintf("%f,%f", c.CenterValue.Latitude, c.CenterValue.Longitude)).
+				Attr("center", center).
 				Attr("zoom", "13").
 				Attr("map-id", "MY_MAP_ID").
 				Attr("gesture-handling", "none").
