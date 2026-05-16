@@ -13,10 +13,27 @@ import (
 type MyUITable[T any] struct {
 	app.Compo
 
-	columns   []TableColumn[T]
-	rows      []T
-	pageSize  uint
-	pageIndex uint
+	title      string
+	columns    []TableColumn[T]
+	rows       []T
+	pageSize   uint
+	pageIndex  uint
+	actions    []TableAction
+	rowActions []RowAction[T]
+}
+
+type TableAction struct {
+	Name     string
+	Icon     string
+	To       func() string
+	Function func(ctx app.Context)
+}
+
+type RowAction[T any] struct {
+	Name     string
+	Icon     string
+	To       func(row T) string
+	Function func(ctx app.Context, row T)
 }
 
 type TableColumn[T any] struct {
@@ -29,6 +46,12 @@ func Table[T any]() *MyUITable[T] {
 	table := MyUITable[T]{}
 
 	return &table
+}
+
+func (t *MyUITable[T]) Title(title string) *MyUITable[T] {
+	t.title = title
+
+	return t
 }
 
 func (t *MyUITable[T]) Rows(rows []T) *MyUITable[T] {
@@ -51,6 +74,18 @@ func (t *MyUITable[T]) PageIndex(pageIndex uint) *MyUITable[T] {
 
 func (t *MyUITable[T]) PageSize(pageSize uint) *MyUITable[T] {
 	t.pageSize = pageSize
+
+	return t
+}
+
+func (t *MyUITable[T]) Action(actions ...TableAction) *MyUITable[T] {
+	t.actions = actions
+
+	return t
+}
+
+func (t *MyUITable[T]) RowAction(rowActions ...RowAction[T]) *MyUITable[T] {
+	t.rowActions = rowActions
 
 	return t
 }
@@ -80,6 +115,31 @@ func (t *MyUITable[T]) Render() app.UI {
 	return app.Div().
 		Class("myui-table").
 		Body(
+			app.If(t.title != "", func() app.UI {
+				return app.Div().
+					Class("myui-table-title").
+					Text(t.title)
+			}),
+			app.If(len(t.actions) > 0, func() app.UI {
+				return app.Div().
+					Class("myui-table-actions").
+					Body(
+						app.Range(t.actions).Slice(func(i int) app.UI {
+							action := t.actions[i]
+							button := Button().
+								Label(action.Name).
+								On("click", func(ctx app.Context, e app.Event) {
+									if action.Function != nil {
+										action.Function(ctx)
+									}
+								})
+							if action.To != nil {
+								button.To(action.To())
+							}
+							return button
+						}),
+					)
+			}),
 			app.Table().
 				Body(
 					app.THead().

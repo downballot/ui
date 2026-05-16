@@ -49,6 +49,19 @@ h1, h2, h3, h4, h5, h6 {
     }
 }
 
+.myui-button {
+    display: inline-block;
+    padding: 0.5em 1em;
+    border-radius: 0.25em;
+    background-color: var(--material-theme-primary);
+    color: var(--material-theme-on-primary);
+    cursor: pointer;
+}
+
+.myui-button:hover {
+    filter: brightness(1.2);
+}
+
 .myui-icon {
     width: 1em;
     height: 1em;

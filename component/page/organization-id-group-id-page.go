@@ -205,6 +205,7 @@ func (c *OrganizationIDGroupIDPage) Render() app.UI {
 		}).Else(func() app.UI {
 			return app.Div().Body(
 				myui.Table[*downballotapi.Group]().
+					Title("Sub-groups").
 					Rows(c.Children).
 					Columns([]myui.TableColumn[*downballotapi.Group]{
 						{
