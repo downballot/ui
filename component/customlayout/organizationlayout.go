@@ -77,6 +77,12 @@ func (c *OrganizationLayout) OnNav(ctx app.Context) {
 
 	c.Crumbs = crumbs
 	slog.InfoContext(ctx.Context, "OrganizationLayout: OnNav", "crumbs", c.Crumbs)
+
+	if c.RouterViewComponent.RouterView() != nil {
+		if navigator, ok := c.RouterViewComponent.RouterView().(app.Navigator); ok {
+			navigator.OnNav(ctx)
+		}
+	}
 }
 
 func (c *OrganizationLayout) Render() app.UI {

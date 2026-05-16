@@ -185,6 +185,15 @@ func main() {
 							},
 						},
 						{
+							Path: "/group/new",
+							Component: func() app.Composer {
+								return &page.OrganizationIDGroupNewPage{}
+							},
+							Meta: map[string]string{
+								"title": "New Group",
+							},
+						},
+						{
 							Path: "/group/:group_id",
 							Component: func() app.Composer {
 								return &page.OrganizationIDGroupIDPage{}

@@ -223,7 +223,15 @@ func (c *OrganizationIDGroupIDPage) Render() app.UI {
 								return fmt.Sprintf("/organization/%s/group/%s", c.OrganizationID, row.ID)
 							},
 						},
-					}).Render(),
+					}).
+					Action(myui.TableAction{
+						Name: "New group",
+						Icon: "plus",
+						To: func() string {
+							return fmt.Sprintf("/organization/%s/group/new?parent_id=%s", c.OrganizationID, c.GroupID)
+						},
+					}).
+					Render(),
 				app.Div().Body(
 					app.Div().Text("Filter:"),
 					app.Div().Body(
