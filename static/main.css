@@ -76,6 +76,36 @@ h1, h2, h3, h4, h5, h6 {
     padding: 1em;
 }
 
+.myui-input {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
+}
+
+.myui-input-label {
+    font-size: 0.8em;
+    font-weight: bold;
+}
+
+.myui-input-input {
+    padding: 0.5em;
+    border-radius: 0.25em;
+    border: 1px solid #dddddd;
+}
+
+.myui-input-input:focus {
+    outline: none;
+    border-color: var(--material-theme-primary);
+}
+
+.myui-input-input:hover {
+    border-color: var(--material-theme-primary);
+}
+
+.myui-input-input:active {
+    border-color: var(--material-theme-primary);
+}
+
 .myui-item {
 }
 
