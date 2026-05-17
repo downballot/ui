@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/downballot/downballot/downballotapi"
+	"github.com/downballot/ui/myui"
 	"github.com/maxence-charriere/go-app/v10/pkg/app"
 )
 
@@ -26,22 +27,23 @@ func (c *LoginPage) OnNav(ctx app.Context) {
 
 func (c *LoginPage) Render() app.UI {
 	return app.Div().Body(
-		app.Span().Text("Username"),
-		app.Br(),
-		app.Input().
+		app.Div().
+			Body(
+				app.H2().Text("Downballot Login"),
+			),
+		myui.Input().
+			Label("Username").
+			Type("text").
 			Value(c.username).
-			OnChange(c.ValueTo(&c.username)),
-		app.Br(),
-		app.Span().Text("Password"),
-		app.Br(),
-		app.Input().
+			On("change", c.ValueTo(&c.username)),
+		myui.Input().
+			Label("Password").
 			Type("password").
 			Value(c.password).
-			OnChange(c.ValueTo(&c.password)),
-		app.Br(),
-		app.Button().
-			Text("Log in").
-			OnClick(func(ctx app.Context, e app.Event) {
+			On("change", c.ValueTo(&c.password)),
+		myui.Button().
+			Label("Log in").
+			On("click", func(ctx app.Context, e app.Event) {
 				slog.InfoContext(ctx.Context, "Button clicked")
 				ctx.Async(func() {
 					client := downballotapi.New("/")
