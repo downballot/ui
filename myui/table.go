@@ -180,10 +180,10 @@ func (t *MyUITable[T]) Render() app.UI {
 					Class("myui-table-pagination").
 					Style("display", "flex").
 					Body(
-						app.Button().
-							Text("Previous").
+						Button().
+							Label("Previous").
 							Disabled(t.pageIndex < 1).
-							OnClick(func(ctx app.Context, e app.Event) {
+							On("click", func(ctx app.Context, e app.Event) {
 								t.pageIndex--
 								ctx.Update()
 							}),
@@ -210,10 +210,10 @@ func (t *MyUITable[T]) Render() app.UI {
 							}),
 						app.Span().
 							Text(fmt.Sprintf("/%d", totalPages)),
-						app.Button().
-							Text("Next").
+						Button().
+							Label("Next").
 							Disabled(t.pageIndex >= totalPages-1).
-							OnClick(func(ctx app.Context, e app.Event) {
+							On("click", func(ctx app.Context, e app.Event) {
 								t.pageIndex++
 								ctx.Update()
 							}),

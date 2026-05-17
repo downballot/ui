@@ -11,31 +11,31 @@ func Input() *MyUIInput {
 type MyUIInput struct {
 	app.Compo
 	UseEvents
-	inputType   string
-	label       string
-	placeholder string
-	value       string
+	TypeValue        string
+	LabelValue       string
+	PlaceholderValue string
+	ValueValue       string
 }
 
 var _ app.Composer = (*MyUIInput)(nil)
 
 func (c *MyUIInput) Placeholder(placeholder string) *MyUIInput {
-	c.placeholder = placeholder
+	c.PlaceholderValue = placeholder
 	return c
 }
 
 func (c *MyUIInput) Type(inputType string) *MyUIInput {
-	c.inputType = inputType
+	c.TypeValue = inputType
 	return c
 }
 
 func (c *MyUIInput) Label(label string) *MyUIInput {
-	c.label = label
+	c.LabelValue = label
 	return c
 }
 
 func (c *MyUIInput) Value(value string) *MyUIInput {
-	c.value = value
+	c.ValueValue = value
 	return c
 }
 
@@ -48,17 +48,17 @@ func (c *MyUIInput) Render() app.UI {
 	return app.Span().
 		Class("myui-input").
 		Body(
-			app.If(c.label != "", func() app.UI {
+			app.If(c.LabelValue != "", func() app.UI {
 				return app.Span().
 					Class("myui-input-label").
-					Text(c.label)
+					Text(c.LabelValue)
 			}),
 			c.UseEvents.Wrap(
 				app.Input().
 					Class("myui-input-input").
-					Type(c.inputType).
-					Value(c.value).
-					Placeholder(c.placeholder),
+					Type(c.TypeValue).
+					Value(c.ValueValue).
+					Placeholder(c.PlaceholderValue),
 			),
 		)
 }

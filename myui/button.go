@@ -11,12 +11,18 @@ func Button() *MyUIButton {
 type MyUIButton struct {
 	app.Compo
 	UseEvents
-	icon  string
-	label string
-	to    string
+	icon          string
+	label         string
+	to            string
+	DisabledValue bool
 }
 
 var _ app.Composer = (*MyUIButton)(nil)
+
+func (c *MyUIButton) Disabled(disabled bool) *MyUIButton {
+	c.DisabledValue = disabled
+	return c
+}
 
 func (c *MyUIButton) Icon(icon string) *MyUIButton {
 	c.icon = icon
@@ -39,27 +45,37 @@ func (c *MyUIButton) On(event string, function func(ctx app.Context, e app.Event
 }
 
 func (c *MyUIButton) Render() app.UI {
-	return c.UseEvents.Wrap(
-		app.Span().
-			Class("myui-button").
-			Body(
-				app.If(c.icon != "", func() app.UI {
-					return Icon().
-						Icon(c.icon)
-				}),
-				app.If(c.to != "", func() app.UI {
-					return app.A().
-						Href(c.to).
-						Body(
-							app.Span().
-								Class("myui-button-label").
-								Text(c.label),
-						)
-				}).Else(func() app.UI {
-					return app.Span().
-						Class("myui-button-label").
-						Text(c.label)
-				}),
-			),
-	)
+	var element app.UI
+
+	disabledClass := ""
+	if c.DisabledValue {
+		disabledClass = "disabled"
+	}
+
+	element = app.Span().
+		Class("myui-button").
+		Class(disabledClass).
+		Body(
+			app.If(c.icon != "", func() app.UI {
+				return Icon().
+					Icon(c.icon)
+			}),
+			app.If(c.to != "", func() app.UI {
+				return app.A().
+					Href(c.to).
+					Body(
+						app.Span().
+							Class("myui-button-label").
+							Text(c.label),
+					)
+			}).Else(func() app.UI {
+				return app.Span().
+					Class("myui-button-label").
+					Text(c.label)
+			}),
+		)
+	if !c.DisabledValue {
+		element = c.UseEvents.Wrap(element)
+	}
+	return element
 }

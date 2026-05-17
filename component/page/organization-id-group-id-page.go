@@ -270,9 +270,9 @@ func (c *OrganizationIDGroupIDPage) Render() app.UI {
 							}),
 						),
 						app.Div().Body(
-							app.Button().
-								Text("Search").
-								OnClick(func(ctx app.Context, e app.Event) {
+							myui.Button().
+								Label("Search").
+								On("click", func(ctx app.Context, e app.Event) {
 									queryParameters := url.Values{}
 									queryParameters.Set("filter", c.Filter)
 									queryParameters.Set("limit", fmt.Sprintf("%d", c.Limit))
@@ -321,9 +321,9 @@ func (c *OrganizationIDGroupIDPage) Render() app.UI {
 										c.PersonsTable.Rows(output.Persons)
 									})
 								}),
-							app.Button().
-								Text("CSV").
-								OnClick(func(ctx app.Context, e app.Event) {
+							myui.Button().
+								Label("CSV").
+								On("click", func(ctx app.Context, e app.Event) {
 									queryParameters := url.Values{}
 									queryParameters.Set("filter", c.Filter)
 									queryParameters.Set("limit", fmt.Sprintf("%d", c.Limit))

@@ -59,31 +59,31 @@ func (c *OrganizationIDGroupNewPage) OnNav(ctx app.Context) {
 	slog.InfoContext(ctx.Context, "OrganizationIDGroupNewPage: OnNav", "OrganizationID", c.OrganizationID)
 
 	c.ParentID = ctx.Page().URL().Query().Get("parent_id")
+	slog.InfoContext(ctx.Context, "OrganizationIDGroupNewPage: OnNav", "ParentID", c.ParentID)
 }
 
 func (c *OrganizationIDGroupNewPage) Render() app.UI {
 	slog.InfoContext(context.TODO(), "OrganizationIDGroupNewPage: Render")
 
 	return app.Div().
+		Style("display", "flex").
+		Style("flex-direction", "column").
 		Body(
-			app.Div().Body(
-				app.Span().Text("Name"),
-				app.Input().
-					Value(c.Name).
-					OnChange(c.ValueTo(&c.Name)),
-			),
-			app.Div().Body(
-				app.Span().Text("Parent"),
-				app.Input().
-					Value(c.ParentID).
-					OnChange(c.ValueTo(&c.ParentID)),
-			),
-			app.Div().Body(
-				app.Span().Text("Filter"),
-				app.Input().
-					Value(c.Filter).
-					OnChange(c.ValueTo(&c.Filter)),
-			),
+			myui.Input().
+				Label("Name").
+				Type("text").
+				Value(c.Name).
+				On("change", c.ValueTo(&c.Name)),
+			myui.Input().
+				Label("Parent").
+				Type("text").
+				Value(c.ParentID).
+				On("change", c.ValueTo(&c.ParentID)),
+			myui.Input().
+				Label("Filter").
+				Type("text").
+				Value(c.Filter).
+				On("change", c.ValueTo(&c.Filter)),
 			app.Div().Body(
 				myui.Button().
 					Label("Create").
