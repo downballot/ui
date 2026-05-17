@@ -14,6 +14,7 @@ type LoginPage struct {
 
 	username string
 	password string
+	error    string
 }
 
 func (c *LoginPage) OnNav(ctx app.Context) {
@@ -41,6 +42,11 @@ func (c *LoginPage) Render() app.UI {
 			Type("password").
 			Value(c.password).
 			On("change", c.ValueTo(&c.password)),
+		app.If(c.error != "", func() app.UI {
+			return app.Div().Body(
+				app.Span().Text(c.error),
+			)
+		}),
 		myui.Button().
 			Label("Log in").
 			On("click", func(ctx app.Context, e app.Event) {
@@ -56,6 +62,8 @@ func (c *LoginPage) Render() app.UI {
 					err := client.Do(ctx.Context, http.MethodPost, "/api/v1/authentication/login", input, &output)
 					if err != nil {
 						app.Log(err)
+						c.error = err.Error()
+						ctx.Update()
 						return
 					}
 
