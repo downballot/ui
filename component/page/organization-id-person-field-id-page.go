@@ -84,6 +84,12 @@ func (c *OrganizationIDPersonFieldIDPage) Render() app.UI {
 							},
 						},
 						{
+							Name: "Type",
+							Value: func(row *downballotapi.PersonField) any {
+								return row.Type
+							},
+						},
+						{
 							Name: "Allow Empty",
 							Value: func(row *downballotapi.PersonField) any {
 								return row.AllowEmpty

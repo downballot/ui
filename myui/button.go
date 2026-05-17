@@ -11,9 +11,9 @@ func Button() *MyUIButton {
 type MyUIButton struct {
 	app.Compo
 	UseEvents
-	icon          string
-	label         string
-	to            string
+	IconValue     string
+	LabelValue    string
+	ToValue       string
 	DisabledValue bool
 }
 
@@ -25,17 +25,17 @@ func (c *MyUIButton) Disabled(disabled bool) *MyUIButton {
 }
 
 func (c *MyUIButton) Icon(icon string) *MyUIButton {
-	c.icon = icon
+	c.IconValue = icon
 	return c
 }
 
 func (c *MyUIButton) Label(label string) *MyUIButton {
-	c.label = label
+	c.LabelValue = label
 	return c
 }
 
 func (c *MyUIButton) To(to string) *MyUIButton {
-	c.to = to
+	c.ToValue = to
 	return c
 }
 
@@ -56,22 +56,22 @@ func (c *MyUIButton) Render() app.UI {
 		Class("myui-button").
 		Class(disabledClass).
 		Body(
-			app.If(c.icon != "", func() app.UI {
+			app.If(c.IconValue != "", func() app.UI {
 				return Icon().
-					Icon(c.icon)
+					Icon(c.IconValue)
 			}),
-			app.If(c.to != "", func() app.UI {
+			app.If(c.ToValue != "", func() app.UI {
 				return app.A().
-					Href(c.to).
+					Href(c.ToValue).
 					Body(
 						app.Span().
 							Class("myui-button-label").
-							Text(c.label),
+							Text(c.LabelValue),
 					)
 			}).Else(func() app.UI {
 				return app.Span().
 					Class("myui-button-label").
-					Text(c.label)
+					Text(c.LabelValue)
 			}),
 		)
 	if !c.DisabledValue {

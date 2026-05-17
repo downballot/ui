@@ -233,6 +233,15 @@ func main() {
 							},
 						},
 						{
+							Path: "/person-field/new",
+							Component: func() app.Composer {
+								return &page.OrganizationIDPersonFieldNewPage{}
+							},
+							Meta: map[string]string{
+								"title": "New Person Field",
+							},
+						},
+						{
 							Path: "/person-field/:person_field_id",
 							Component: func() app.Composer {
 								return &page.OrganizationIDPersonFieldIDPage{}

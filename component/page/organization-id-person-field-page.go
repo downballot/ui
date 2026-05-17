@@ -49,6 +49,7 @@ func (c *OrganizationIDPersonFieldPage) OnUpdate(ctx app.Context) {
 
 func (c *OrganizationIDPersonFieldPage) Render() app.UI {
 	slog.InfoContext(context.TODO(), "OrganizationIDPersonFieldPage: Render")
+	slog.InfoContext(context.TODO(), "OrganizationIDPersonFieldPage: Render", "OrganizationID", c.OrganizationID)
 
 	return app.Div().Body(
 		myui.Table[*downballotapi.PersonField]().
@@ -93,6 +94,14 @@ func (c *OrganizationIDPersonFieldPage) Render() app.UI {
 						return row.AllowedValues
 					},
 				},
-			}).Render(),
+			}).
+			Action(myui.TableAction{
+				Name: "New Person Field",
+				To: func() string {
+					slog.InfoContext(context.TODO(), "TableAction: New Person Field", "OrganizationID", c.OrganizationID)
+					return fmt.Sprintf("/organization/%s/person-field/new", c.OrganizationID)
+				},
+			}).
+			Render(),
 	)
 }
