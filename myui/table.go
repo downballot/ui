@@ -188,6 +188,8 @@ func (t *MyUITable[T]) Render() app.UI {
 								ctx.Update()
 							}),
 						app.Span().
+							Style("display", "flex").
+							Style("align-items", "center").
 							Text("Page"),
 						app.Select().
 							Body(
@@ -209,6 +211,8 @@ func (t *MyUITable[T]) Render() app.UI {
 								ctx.Update()
 							}),
 						app.Span().
+							Style("display", "flex").
+							Style("align-items", "center").
 							Text(fmt.Sprintf("/%d", totalPages)),
 						Button().
 							Label("Next").
@@ -220,6 +224,8 @@ func (t *MyUITable[T]) Render() app.UI {
 						app.Span().
 							Style("flex-grow", "1"),
 						app.Span().
+							Style("display", "flex").
+							Style("align-items", "center").
 							Text("Page size:"),
 						app.Select().
 							Body(
