@@ -14,9 +14,16 @@ import (
 type DownballotLayout struct {
 	app.Compo
 	router.RouterViewComponent
+
+	DrawerVisible bool
 }
 
 var _ router.RouterViewInterface = (*DownballotLayout)(nil)
+var _ app.Mounter = (*DownballotLayout)(nil)
+
+func (c *DownballotLayout) OnMount(ctx app.Context) {
+	slog.InfoContext(ctx.Context, "DownballotLayout: OnMount")
+}
 
 func (c *DownballotLayout) OnNav(ctx app.Context) {
 	slog.InfoContext(ctx.Context, "DownballotLayout: OnNav", "url", ctx.Page().URL())
@@ -40,11 +47,14 @@ func (c *DownballotLayout) Render() app.UI {
 	slog.InfoContext(context.TODO(), "DownballotLayout: Render")
 
 	mainLayout := &layout.MainLayout{
+		DrawerVisible: c.DrawerVisible,
 		Header: &material.AppBar{
 			Leading: app.Div().
 				Class("mainlayout-header-leading").
 				OnClick(func(ctx app.Context, e app.Event) {
-					slog.InfoContext(ctx.Context, "DownballotLayout: Header: Leading: OnClick")
+					c.DrawerVisible = !c.DrawerVisible
+					slog.InfoContext(ctx.Context, "DownballotLayout: Header: Leading: OnClick", "DrawerVisible", c.DrawerVisible)
+					ctx.Update()
 				}).
 				Body(
 					myui.Icon().Icon("bars"),
@@ -68,5 +78,8 @@ func (c *DownballotLayout) Render() app.UI {
 			),
 	}
 	mainLayout.SetRouterView(c.RouterView())
+	slog.InfoContext(context.TODO(), "DownballotLayout: Render", "mainLayout", mainLayout)
+	slog.InfoContext(context.TODO(), "DownballotLayout: Render", "DrawerVisible", c.DrawerVisible)
+
 	return mainLayout.Render()
 }

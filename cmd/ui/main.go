@@ -121,7 +121,9 @@ func main() {
 		router.Route{
 			Path: "/",
 			Component: func() app.Composer {
-				return &customlayout.DownballotLayout{}
+				return &customlayout.DownballotLayout{
+					DrawerVisible: true,
+				}
 			},
 			Meta: map[string]string{
 				"require-login": "true",

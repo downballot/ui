@@ -12,15 +12,26 @@ type MainLayout struct {
 	app.Compo
 	router.RouterViewComponent
 
-	Header app.UI
-	Drawer app.UI
+	Header        app.UI
+	Drawer        app.UI
+	DrawerVisible bool
 }
 
 var _ router.RouterViewInterface = (*MainLayout)(nil)
 
+func (c *MainLayout) ToggleDrawer() {
+	c.DrawerVisible = !c.DrawerVisible
+	slog.InfoContext(context.TODO(), "MainLayout: ToggleDrawer", "DrawerVisible", c.DrawerVisible)
+}
+
 func (c *MainLayout) Render() app.UI {
 	slog.InfoContext(context.TODO(), "MainLayout: Render")
-	slog.InfoContext(context.TODO(), "MainLayout:", "c", c)
+	slog.InfoContext(context.TODO(), "MainLayout:", "c", c, "DrawerVisible", c.DrawerVisible)
+
+	drawerDisplay := "none"
+	if c.DrawerVisible {
+		drawerDisplay = "block"
+	}
 
 	return app.Div().
 		Class("main-layout").
@@ -35,6 +46,7 @@ func (c *MainLayout) Render() app.UI {
 				Body(
 					app.Div().
 						Class("main-layout-drawer").
+						Style("display", drawerDisplay).
 						Body(c.Drawer),
 					app.Div().
 						Class("main-layout-content").

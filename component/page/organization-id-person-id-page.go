@@ -109,6 +109,20 @@ func (c *OrganizationIDPersonIDPage) Render() app.UI {
 				myui.Table[Record]().
 					Rows(rows).
 					Columns(columns).
+					Action(myui.TableAction{
+						Name: "Add Field",
+						Icon: "plus",
+						Function: func(ctx app.Context) {
+							// TODO: Show a dialog to add a field.
+						},
+					}).
+					RowAction(myui.RowAction[Record]{
+						Name: "Edit",
+						Icon: "edit",
+						Function: func(ctx app.Context, row Record) {
+							// TODO: Show a dialog to edit a field.
+						},
+					}).
 					Render(),
 				myui.Table[*downballotapi.PersonAudit]().
 					Rows(c.Audits).

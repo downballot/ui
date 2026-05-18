@@ -128,6 +128,7 @@ func (t *MyUITable[T]) Render() app.UI {
 							action := t.actions[i]
 							button := Button().
 								Label(action.Name).
+								Icon(action.Icon).
 								On("click", func(ctx app.Context, e app.Event) {
 									if action.Function != nil {
 										action.Function(ctx)
@@ -150,6 +151,10 @@ func (t *MyUITable[T]) Render() app.UI {
 										return app.Th().
 											Text(t.columns[i].Name)
 									}),
+									app.If(len(t.rowActions) > 0, func() app.UI {
+										return app.Th().
+											Text("Actions")
+									}),
 								),
 						),
 					app.TBody().
@@ -168,6 +173,21 @@ func (t *MyUITable[T]) Render() app.UI {
 															Text(column.Value(row))
 													}).Else(func() app.UI {
 														return app.Span().Text(column.Value(row))
+													}),
+												)
+										}),
+										app.If(len(t.rowActions) > 0, func() app.UI {
+											return app.Td().
+												Body(
+													app.Range(t.rowActions).Slice(func(i int) app.UI {
+														rowAction := t.rowActions[i]
+														button := Button().
+															Label(rowAction.Name).
+															Icon(rowAction.Icon).
+															On("click", func(ctx app.Context, e app.Event) {
+																rowAction.Function(ctx, row)
+															})
+														return button
 													}),
 												)
 										}),
