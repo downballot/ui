@@ -11,6 +11,7 @@ import (
 	"github.com/downballot/downballot/downballotapi"
 	"github.com/downballot/ui/api"
 	"github.com/downballot/ui/myui"
+	"github.com/google/uuid"
 	"github.com/maxence-charriere/go-app/v10/pkg/app"
 )
 
@@ -21,6 +22,7 @@ type OrganizationIDPersonIDPage struct {
 	VoterID        string `route:"voter_id"`
 	Person         *downballotapi.Person
 	Audits         []*downballotapi.PersonAudit
+	DialogID       string
 }
 
 func (c *OrganizationIDPersonIDPage) OnUpdate(ctx app.Context) {
@@ -31,6 +33,8 @@ func (c *OrganizationIDPersonIDPage) OnUpdate(ctx app.Context) {
 	if c.OrganizationID == "" {
 		return
 	}
+
+	c.DialogID = "id-" + uuid.New().String()
 
 	ctx.Async(func() {
 		var output downballotapi.GetPersonResponse
@@ -107,13 +111,19 @@ func (c *OrganizationIDPersonIDPage) Render() app.UI {
 
 			return app.Div().Body(
 				myui.Table[Record]().
+					Title("Fields").
 					Rows(rows).
 					Columns(columns).
 					Action(myui.TableAction{
 						Name: "Add Field",
 						Icon: "plus",
 						Function: func(ctx app.Context) {
-							// TODO: Show a dialog to add a field.
+							dialogElement := app.Window().GetElementByID(c.DialogID)
+							if dialogElement == nil || dialogElement.IsNull() {
+								slog.ErrorContext(ctx.Context, "Could not get dialog element", "dialogID", c.DialogID)
+								return
+							}
+							dialogElement.Call("showModal")
 						},
 					}).
 					RowAction(myui.RowAction[Record]{
@@ -124,7 +134,38 @@ func (c *OrganizationIDPersonIDPage) Render() app.UI {
 						},
 					}).
 					Render(),
+				app.Dialog().
+					ID(c.DialogID).
+					Body(
+						app.H2().Text("Add Field"),
+						app.Div().
+							Class("myui-dialog-actions").
+							Body(
+								myui.Button().
+									Label("Cancel").
+									On("click", func(ctx app.Context, event app.Event) {
+										dialogElement := app.Window().GetElementByID(c.DialogID)
+										if dialogElement == nil || dialogElement.IsNull() {
+											slog.ErrorContext(ctx.Context, "Could not get dialog element", "dialogID", c.DialogID)
+											return
+										}
+										dialogElement.Call("close")
+									}),
+								app.Span().Style("flex", "1"),
+								myui.Button().
+									Label("Save").
+									On("click", func(ctx app.Context, event app.Event) {
+										dialogElement := app.Window().GetElementByID(c.DialogID)
+										if dialogElement == nil || dialogElement.IsNull() {
+											slog.ErrorContext(ctx.Context, "Could not get dialog element", "dialogID", c.DialogID)
+											return
+										}
+										dialogElement.Call("close")
+									}),
+							),
+					),
 				myui.Table[*downballotapi.PersonAudit]().
+					Title("Audit Log").
 					Rows(c.Audits).
 					Columns([]myui.TableColumn[*downballotapi.PersonAudit]{
 						{

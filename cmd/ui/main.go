@@ -402,7 +402,18 @@ func (h *JavascriptConsoleLogger) Handle(ctx context.Context, record slog.Record
 		variables = append(variables, a.Key, "=", a.Value)
 		return true
 	})
-	app.Log(variables...)
+	switch record.Level {
+	case slog.LevelDebug:
+		app.Log(variables...) // TODO: Can we do console.debug?
+	case slog.LevelInfo:
+		app.Log(variables...)
+	case slog.LevelWarn:
+		app.Log(variables...) // TODO: Can we do console.warn?
+	case slog.LevelError:
+		app.Log(variables...) // TODO: Can we do console.error?
+	default:
+		app.Log(variables...)
+	}
 	return nil
 }
 func (h *JavascriptConsoleLogger) WithAttrs(attrs []slog.Attr) slog.Handler {

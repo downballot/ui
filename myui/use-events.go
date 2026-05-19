@@ -1,7 +1,6 @@
 package myui
 
 import (
-	"log/slog"
 	"reflect"
 
 	"github.com/maxence-charriere/go-app/v10/pkg/app"
@@ -32,10 +31,12 @@ func (c *UseEvents) On(name string, eventHandler app.EventHandler, options ...ap
 
 func (c *UseEvents) Wrap(element app.UI) app.UI {
 	func() {
-		slog.Info("Wrap", "element", element)
+		//slog.Debug("Wrap", "element", element)
 
 		elementValue := reflect.ValueOf(element)
-		slog.Info("Wrap", "elementValue", elementValue)
+		//slog.Debug("Wrap", "elementValue", elementValue)
+
+		// TODO: Can we remove this block?
 		/*for elementValue.Kind() == reflect.Pointer {
 			elementValue = elementValue.Elem()
 		}
@@ -49,7 +50,7 @@ func (c *UseEvents) Wrap(element app.UI) app.UI {
 		if methodValue.IsZero() {
 			return
 		}
-		slog.Info("Wrap", "methodValue", methodValue)
+		//slog.Debug("Wrap", "methodValue", methodValue)
 		methodType := methodValue.Type()
 		if methodType.NumIn() != 3 {
 			return
@@ -70,7 +71,7 @@ func (c *UseEvents) Wrap(element app.UI) app.UI {
 		}
 
 		for _, event := range c.events {
-			slog.Info("REGISTERING EVENT", "name", event.name)
+			//slog.Debug("REGISTERING EVENT", "name", event.name)
 			reflectOptions := []reflect.Value{
 				reflect.ValueOf(event.name),
 				reflect.ValueOf(event.eventHandler),
