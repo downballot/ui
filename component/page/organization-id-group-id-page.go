@@ -284,6 +284,7 @@ func (c *OrganizationIDGroupIDPage) Render() app.UI {
 										c.Error = err.Error()
 										return
 									}
+									c.Error = ""
 
 									ctx.Dispatch(func(ctx app.Context) {
 										slog.InfoContext(ctx.Context, "Dispatch: Setting persons", "persons", output.Persons)

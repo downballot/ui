@@ -66,6 +66,7 @@ func (c *LoginPage) Render() app.UI {
 						ctx.Update()
 						return
 					}
+					c.error = ""
 
 					app.Logf("request response: %+v", output)
 					ctx.SetState("api-token", output.Token).Persist()
