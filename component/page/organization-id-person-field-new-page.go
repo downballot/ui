@@ -85,14 +85,14 @@ func (c *OrganizationIDPersonFieldNewPage) Render() app.UI {
 			On("click", func(ctx app.Context, e app.Event) {
 				var input downballotapi.CreatePersonFieldRequest
 				input.Name = c.Name
-				input.Type = c.Type
+				input.Type = downballotapi.PersonFieldDefinitionType(c.Type)
 				input.AllowEmpty = c.AllowEmpty
 				input.AllowedRegex = c.AllowedRegex
 				input.AllowedValues = c.AllowedValues
 				var output downballotapi.CreatePersonFieldResponse
 				err := api.Do(ctx, http.MethodPost, "/api/v1/organization/"+c.OrganizationID+"/person-field", input, &output)
 				if err != nil {
-					slog.ErrorContext(ctx.Context, "Could not create group", "err", err)
+					slog.ErrorContext(ctx.Context, "Could not create person field", "err", err)
 					return
 				}
 				ctx.Navigate(fmt.Sprintf("/organization/%s/person-field/%s", c.OrganizationID, output.PersonField.ID))

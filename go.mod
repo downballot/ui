@@ -17,10 +17,14 @@ require (
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/emicklei/go-restful/v3 v3.13.0 // indirect
+	github.com/jinzhu/inflection v1.0.0 // indirect
+	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/threatmate/restfulwrapper v0.1.4 // indirect
 	golang.org/x/sys v0.36.0 // indirect
+	golang.org/x/text v0.20.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
+	gorm.io/gorm v1.31.1 // indirect
 )
 
 replace github.com/downballot/downballot => ../downballot

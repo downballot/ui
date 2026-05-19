@@ -85,6 +85,11 @@ h1, h2, h3, h4, h5, h6 {
     color: var(--material-theme-on-primary);
 }
 
+.myui-dialog-actions {
+    display: flex;
+    flex-direction: row;
+}
+
 .myui-icon {
     width: 1em;
     height: 1em;

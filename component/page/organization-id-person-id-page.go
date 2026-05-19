@@ -10,6 +10,7 @@ import (
 
 	"github.com/downballot/downballot/downballotapi"
 	"github.com/downballot/ui/api"
+	"github.com/downballot/ui/component"
 	"github.com/downballot/ui/myui"
 	"github.com/google/uuid"
 	"github.com/maxence-charriere/go-app/v10/pkg/app"
@@ -22,7 +23,8 @@ type OrganizationIDPersonIDPage struct {
 	VoterID        string `route:"voter_id"`
 	Person         *downballotapi.Person
 	Audits         []*downballotapi.PersonAudit
-	DialogID       string
+
+	AddFieldDialog component.AddFieldDialog
 }
 
 func (c *OrganizationIDPersonIDPage) OnUpdate(ctx app.Context) {
@@ -34,7 +36,30 @@ func (c *OrganizationIDPersonIDPage) OnUpdate(ctx app.Context) {
 		return
 	}
 
-	c.DialogID = "id-" + uuid.New().String()
+	c.AddFieldDialog = component.AddFieldDialog{
+		OrganizationID: c.OrganizationID,
+		VoterID:        c.VoterID,
+		DialogID:       "id-" + uuid.New().String(),
+	}
+
+	c.AddFieldDialog.SubmitFunctionValue = func(ctx app.Context) error {
+		slog.InfoContext(ctx.Context, "AddFieldDialog: SubmitFunctionValue", "SelectedFieldValue", c.AddFieldDialog.SelectedFieldValue, "ValueValue", c.AddFieldDialog.ValueValue)
+		input := downballotapi.PatchPersonRequest{
+			Fields: map[string]*string{},
+		}
+		input.Fields[c.AddFieldDialog.SelectedFieldValue] = &c.AddFieldDialog.ValueValue
+		var output downballotapi.PatchPersonRequest
+		err := api.Do(ctx, http.MethodPatch, "/api/v1/organization/"+c.OrganizationID+"/person/"+c.VoterID, input, &output)
+		if err != nil {
+			slog.ErrorContext(ctx.Context, "Could not update person", "err", err)
+			return err
+		}
+
+		ctx.Dispatch(func(ctx app.Context) {
+			c.OnUpdate(ctx)
+		})
+		return nil
+	}
 
 	ctx.Async(func() {
 		var output downballotapi.GetPersonResponse
@@ -48,11 +73,6 @@ func (c *OrganizationIDPersonIDPage) OnUpdate(ctx app.Context) {
 			slog.InfoContext(ctx.Context, "Dispatch: Setting person", "person", output.Person)
 			c.Person = output.Person
 		})
-		ctx.Defer(func(ctx app.Context) {
-			slog.InfoContext(ctx.Context, "Defer: Person should be set", "person", c.Person)
-
-			//ctx.Update()
-		})
 	})
 	ctx.Async(func() {
 		var output downballotapi.ListPersonAuditsResponse
@@ -65,11 +85,6 @@ func (c *OrganizationIDPersonIDPage) OnUpdate(ctx app.Context) {
 		ctx.Dispatch(func(ctx app.Context) {
 			slog.InfoContext(ctx.Context, "Dispatch: Setting person audits", "Audits", output.Audits)
 			c.Audits = output.Audits
-		})
-		ctx.Defer(func(ctx app.Context) {
-			slog.InfoContext(ctx.Context, "Defer: Person audits should be set", "Audits", c.Audits)
-
-			//ctx.Update()
 		})
 	})
 }
@@ -118,52 +133,20 @@ func (c *OrganizationIDPersonIDPage) Render() app.UI {
 						Name: "Add Field",
 						Icon: "plus",
 						Function: func(ctx app.Context) {
-							dialogElement := app.Window().GetElementByID(c.DialogID)
-							if dialogElement == nil || dialogElement.IsNull() {
-								slog.ErrorContext(ctx.Context, "Could not get dialog element", "dialogID", c.DialogID)
-								return
-							}
-							dialogElement.Call("showModal")
+							c.AddFieldDialog.Open(ctx)
 						},
 					}).
 					RowAction(myui.RowAction[Record]{
 						Name: "Edit",
 						Icon: "edit",
 						Function: func(ctx app.Context, row Record) {
-							// TODO: Show a dialog to edit a field.
+							c.AddFieldDialog.SelectedFieldValue = row.Field
+							c.AddFieldDialog.ValueValue = row.Value
+							c.AddFieldDialog.Open(ctx)
 						},
 					}).
 					Render(),
-				app.Dialog().
-					ID(c.DialogID).
-					Body(
-						app.H2().Text("Add Field"),
-						app.Div().
-							Class("myui-dialog-actions").
-							Body(
-								myui.Button().
-									Label("Cancel").
-									On("click", func(ctx app.Context, event app.Event) {
-										dialogElement := app.Window().GetElementByID(c.DialogID)
-										if dialogElement == nil || dialogElement.IsNull() {
-											slog.ErrorContext(ctx.Context, "Could not get dialog element", "dialogID", c.DialogID)
-											return
-										}
-										dialogElement.Call("close")
-									}),
-								app.Span().Style("flex", "1"),
-								myui.Button().
-									Label("Save").
-									On("click", func(ctx app.Context, event app.Event) {
-										dialogElement := app.Window().GetElementByID(c.DialogID)
-										if dialogElement == nil || dialogElement.IsNull() {
-											slog.ErrorContext(ctx.Context, "Could not get dialog element", "dialogID", c.DialogID)
-											return
-										}
-										dialogElement.Call("close")
-									}),
-							),
-					),
+				c.AddFieldDialog.Render(),
 				myui.Table[*downballotapi.PersonAudit]().
 					Title("Audit Log").
 					Rows(c.Audits).
