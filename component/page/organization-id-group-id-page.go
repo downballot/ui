@@ -355,7 +355,9 @@ func (c *OrganizationIDGroupIDPage) Render() app.UI {
 						),
 					),
 				app.If(c.Error != "", func() app.UI {
-					return app.Div().Text(c.Error)
+					return myui.StatusBar().
+						Text(c.Error).
+						Bad()
 				}),
 				app.Div().
 					Class("map-container").

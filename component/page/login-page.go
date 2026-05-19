@@ -43,9 +43,9 @@ func (c *LoginPage) Render() app.UI {
 			Value(c.password).
 			On("change", c.ValueTo(&c.password)),
 		app.If(c.error != "", func() app.UI {
-			return app.Div().Body(
-				app.Span().Text(c.error),
-			)
+			return myui.StatusBar().
+				Text(c.error).
+				Bad()
 		}),
 		myui.Button().
 			Label("Log in").

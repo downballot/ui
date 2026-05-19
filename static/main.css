@@ -11,6 +11,14 @@ html {
     --material-theme-on-primary: #ffffff;
     --material-theme-on-secondary: #000000;
     --material-theme-on-background: #000000;
+    --material-theme-success: #4caf50;
+    --material-theme-warning: #ff9800;
+    --material-theme-info: #2196f3;
+    --material-theme-error: #f44336;
+    --material-theme-on-success: #ffffff;
+    --material-theme-on-warning: #ffffff;
+    --material-theme-on-info: #ffffff;
+    --material-theme-on-error: #ffffff;
 }
 
 body {
@@ -52,7 +60,7 @@ h1, h2, h3, h4, h5, h6 {
 .myui-button {
     display: inline-block;
     padding: 0.5em 1em;
-    border-radius: 0.25em;
+    border-radius: 0.5em;
     background-color: var(--material-theme-primary);
     color: var(--material-theme-on-primary);
     cursor: pointer;
@@ -126,6 +134,28 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .myui-item-name {
+}
+
+.myui-statusbar {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+
+    padding: 0.6em;
+    border-radius: 0.5em;
+
+    background-color: var(--material-theme-info);
+    color: var(--material-theme-on-info);
+}
+
+.myui-statusbar.good {
+    background-color: var(--material-theme-success);
+    color: var(--material-theme-on-success);
+}
+
+.myui-statusbar.bad {
+    background-color: var(--material-theme-error);
+    color: var(--material-theme-on-error);
 }
 
 .myui-table {
