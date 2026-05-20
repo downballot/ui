@@ -9,6 +9,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/downballot/downballot/downballotapi"
 	"github.com/downballot/ui/api"
@@ -20,6 +21,8 @@ import (
 
 type OrganizationIDGroupIDPage struct {
 	app.Compo
+
+	Loaded bool
 
 	OrganizationID string `route:"organization_id"`
 	Organization   *downballotapi.Organization
@@ -73,66 +76,72 @@ func (c *OrganizationIDGroupIDPage) OnUpdate(ctx app.Context) {
 		PageSize(10)
 
 	ctx.Async(func() {
-		var output downballotapi.GetOrganizationResponse
-		err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.OrganizationID, nil, &output)
-		if err != nil {
-			slog.ErrorContext(ctx.Context, "Could not get organizations", "err", err)
-			return
-		}
-	})
-	ctx.Async(func() {
-		var output downballotapi.GetGroupResponse
-		err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.OrganizationID+"/group/"+c.GroupID, nil, &output)
-		if err != nil {
-			slog.ErrorContext(ctx.Context, "Could not get group", "err", err)
-			return
-		}
-
-		ctx.Dispatch(func(ctx app.Context) {
-			slog.InfoContext(ctx.Context, "Dispatch: Setting group", "group", output.Group)
-			c.Group = output.Group
-		})
-	})
-	ctx.Async(func() {
-		var output downballotapi.ListGroupsResponse
-		err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.OrganizationID+"/group?parent_id="+c.GroupID, nil, &output)
-		if err != nil {
-			slog.ErrorContext(ctx.Context, "Could not get groups", "err", err)
-			return
-		}
-
-		ctx.Dispatch(func(ctx app.Context) {
-			slog.InfoContext(ctx.Context, "Dispatch: Setting children", "groups", output.Groups)
-			c.Children = output.Groups
-		})
-	})
-	ctx.Async(func() {
-		var output downballotapi.ListPersonFieldsResponse
-		err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.OrganizationID+"/person-field", nil, &output)
-		if err != nil {
-			slog.ErrorContext(ctx.Context, "Could not get person fields", "err", err)
-			return
-		}
-
-		var possibleFields []string
-		for _, personField := range output.PersonFields {
-			possibleFields = append(possibleFields, personField.Name)
-		}
-		slices.Sort(possibleFields)
-
-		ctx.Dispatch(func(ctx app.Context) {
-			slog.InfoContext(ctx.Context, "Dispatch: Setting person fields", "person fields", output.PersonFields)
-			c.PossibleFields = possibleFields
-
-			c.SelectedFields = []string{
-				"name",
-				"phone_number",
-				"residential_address",
-				"residential_address_development",
-				"candidate.notes",
+		var wg sync.WaitGroup
+		wg.Go(func() {
+			var output downballotapi.GetOrganizationResponse
+			err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.OrganizationID, nil, &output)
+			if err != nil {
+				slog.ErrorContext(ctx.Context, "Could not get organizations", "err", err)
+				return
 			}
-			slices.Sort(c.SelectedFields)
 		})
+		wg.Go(func() {
+			var output downballotapi.GetGroupResponse
+			err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.OrganizationID+"/group/"+c.GroupID, nil, &output)
+			if err != nil {
+				slog.ErrorContext(ctx.Context, "Could not get group", "err", err)
+				return
+			}
+
+			ctx.Dispatch(func(ctx app.Context) {
+				slog.InfoContext(ctx.Context, "Dispatch: Setting group", "group", output.Group)
+				c.Group = output.Group
+			})
+		})
+		wg.Go(func() {
+			var output downballotapi.ListGroupsResponse
+			err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.OrganizationID+"/group?parent_id="+c.GroupID, nil, &output)
+			if err != nil {
+				slog.ErrorContext(ctx.Context, "Could not get groups", "err", err)
+				return
+			}
+
+			ctx.Dispatch(func(ctx app.Context) {
+				slog.InfoContext(ctx.Context, "Dispatch: Setting children", "groups", output.Groups)
+				c.Children = output.Groups
+			})
+		})
+		wg.Go(func() {
+			var output downballotapi.ListPersonFieldsResponse
+			err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.OrganizationID+"/person-field", nil, &output)
+			if err != nil {
+				slog.ErrorContext(ctx.Context, "Could not get person fields", "err", err)
+				return
+			}
+
+			var possibleFields []string
+			for _, personField := range output.PersonFields {
+				possibleFields = append(possibleFields, personField.Name)
+			}
+			slices.Sort(possibleFields)
+
+			ctx.Dispatch(func(ctx app.Context) {
+				slog.InfoContext(ctx.Context, "Dispatch: Setting person fields", "person fields", output.PersonFields)
+				c.PossibleFields = possibleFields
+
+				c.SelectedFields = []string{
+					"name",
+					"phone_number",
+					"residential_address",
+					"residential_address_development",
+					"candidate.notes",
+				}
+				slices.Sort(c.SelectedFields)
+			})
+		})
+		wg.Wait()
+
+		c.Loaded = true
 	})
 }
 
@@ -220,177 +229,183 @@ func (c *OrganizationIDGroupIDPage) Render() app.UI {
 		}
 	}
 
-	return app.Div().Body(
-		app.If(c.Group == nil, func() app.UI {
-			return app.Div().Text("Not found")
-		}).Else(func() app.UI {
-			return app.Div().Body(
-				myui.Table[*downballotapi.Group]().
-					Title("Sub-groups").
-					Rows(c.Children).
-					Columns([]myui.TableColumn[*downballotapi.Group]{
-						{
-							Name: "ID",
-							Value: func(row *downballotapi.Group) any {
-								return row.ID
-							},
+	if !c.Loaded {
+		return nil
+	}
+
+	if c.Group == nil {
+		return myui.StatusBar().
+			Text("Not found").
+			Bad()
+	}
+
+	return app.Div().
+		Class("organization-id-group-id-page").
+		Body(
+			myui.Table[*downballotapi.Group]().
+				Title("Sub-groups").
+				Rows(c.Children).
+				Columns([]myui.TableColumn[*downballotapi.Group]{
+					{
+						Name: "ID",
+						Value: func(row *downballotapi.Group) any {
+							return row.ID
 						},
-						{
-							Name: "Name",
-							Value: func(row *downballotapi.Group) any {
-								return row.Name
-							},
-							To: func(row *downballotapi.Group) string {
-								return fmt.Sprintf("/organization/%s/group/%s", c.OrganizationID, row.ID)
-							},
+					},
+					{
+						Name: "Name",
+						Value: func(row *downballotapi.Group) any {
+							return row.Name
 						},
-					}).
-					Action(myui.TableAction{
-						Name: "New group",
-						Icon: "plus",
-						To: func() string {
-							return fmt.Sprintf("/organization/%s/group/new?parent_id=%s", c.OrganizationID, c.GroupID)
+						To: func(row *downballotapi.Group) string {
+							return fmt.Sprintf("/organization/%s/group/%s", c.OrganizationID, row.ID)
 						},
-					}).
-					Render(),
-				app.Div().
-					Style("display", "flex").
-					Style("flex-direction", "column").
-					Body(
-						myui.Input().
-							Label("Filter").
-							Type("text").
-							Placeholder("key = 'value' or ...").
-							Value(c.Filter).
-							On("change", c.ValueTo(&c.Filter)),
-						myui.Input().
-							Label("Limit").
-							Type("number").
-							Placeholder("1000").
-							Value(fmt.Sprintf("%d", c.Limit)).
-							On("change", c.ValueTo(&c.Limit)),
-						myui.Multiselect().
-							Label("Fields").
-							AllowedValue(func() []myui.SelectOption {
-								selectOptions := []myui.SelectOption{}
-								for _, field := range c.PossibleFields {
-									selectOptions = append(selectOptions, myui.SelectOption{
-										Label: field,
-										Value: field,
-									})
+					},
+				}).
+				Action(myui.TableAction{
+					Name: "New group",
+					Icon: "plus",
+					To: func() string {
+						return fmt.Sprintf("/organization/%s/group/new?parent_id=%s", c.OrganizationID, c.GroupID)
+					},
+				}).
+				Render(),
+			app.Div().
+				Style("display", "flex").
+				Style("flex-direction", "column").
+				Body(
+					myui.Input().
+						Label("Filter").
+						Type("text").
+						Placeholder("key = 'value' or ...").
+						Value(c.Filter).
+						On("change", c.ValueTo(&c.Filter)),
+					myui.Input().
+						Label("Limit").
+						Type("number").
+						Placeholder("1000").
+						Value(fmt.Sprintf("%d", c.Limit)).
+						On("change", c.ValueTo(&c.Limit)),
+					myui.Multiselect().
+						Label("Fields").
+						AllowedValue(func() []myui.SelectOption {
+							selectOptions := []myui.SelectOption{}
+							for _, field := range c.PossibleFields {
+								selectOptions = append(selectOptions, myui.SelectOption{
+									Label: field,
+									Value: field,
+								})
+							}
+							return selectOptions
+						}()...).
+						SelectedValue(c.SelectedFields...).
+						On("change", myui.SelectedValuesTo(&c.SelectedFields)),
+					app.Div().Body(
+						myui.Button().
+							Label("Search").
+							On("click", func(ctx app.Context, e app.Event) {
+								queryParameters := url.Values{}
+								queryParameters.Set("filter", c.Filter)
+								queryParameters.Set("limit", fmt.Sprintf("%d", c.Limit))
+								//queryParameters.Set("fields", strings.Join(c.SelectedFields, ",")) // Always get all fields.
+								var output downballotapi.ListPersonsResponse
+								err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.OrganizationID+"/group/"+c.GroupID+"/person?"+queryParameters.Encode(), nil, &output)
+								if err != nil {
+									slog.ErrorContext(ctx.Context, "Could not get persons", "err", err)
+									c.Error = err.Error()
+									return
 								}
-								return selectOptions
-							}()...).
-							SelectedValue(c.SelectedFields...).
-							On("change", myui.SelectedValuesTo(&c.SelectedFields)),
-						app.Div().Body(
-							myui.Button().
-								Label("Search").
-								On("click", func(ctx app.Context, e app.Event) {
-									queryParameters := url.Values{}
-									queryParameters.Set("filter", c.Filter)
-									queryParameters.Set("limit", fmt.Sprintf("%d", c.Limit))
-									//queryParameters.Set("fields", strings.Join(c.SelectedFields, ",")) // Always get all fields.
-									var output downballotapi.ListPersonsResponse
-									err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.OrganizationID+"/group/"+c.GroupID+"/person?"+queryParameters.Encode(), nil, &output)
-									if err != nil {
-										slog.ErrorContext(ctx.Context, "Could not get persons", "err", err)
-										c.Error = err.Error()
-										return
-									}
-									c.Error = ""
+								c.Error = ""
 
-									ctx.Dispatch(func(ctx app.Context) {
-										slog.InfoContext(ctx.Context, "Dispatch: Setting persons", "persons", output.Persons)
-										c.Persons = output.Persons
+								ctx.Dispatch(func(ctx app.Context) {
+									slog.InfoContext(ctx.Context, "Dispatch: Setting persons", "persons", output.Persons)
+									c.Persons = output.Persons
 
-										slices.SortFunc(c.Persons, func(left, right *downballotapi.Person) int {
-											leftAddress := streetCanon(left.Fields["residential_address"])
-											rightAddress := streetCanon(right.Fields["residential_address"])
+									slices.SortFunc(c.Persons, func(left, right *downballotapi.Person) int {
+										leftAddress := streetCanon(left.Fields["residential_address"])
+										rightAddress := streetCanon(right.Fields["residential_address"])
 
-											return strings.Compare(leftAddress, rightAddress)
-										})
+										return strings.Compare(leftAddress, rightAddress)
+									})
 
-										columns := []myui.TableColumn[*downballotapi.Person]{
-											{
-												Name: "Voter ID",
-												Value: func(row *downballotapi.Person) any {
-													return row.VoterID
-												},
-												To: func(row *downballotapi.Person) string {
-													return fmt.Sprintf("/organization/%s/person/%s", c.OrganizationID, row.VoterID)
-												},
+									columns := []myui.TableColumn[*downballotapi.Person]{
+										{
+											Name: "Voter ID",
+											Value: func(row *downballotapi.Person) any {
+												return row.VoterID
 											},
-										}
-
-										for _, name := range c.SelectedFields {
-											columns = append(columns, myui.TableColumn[*downballotapi.Person]{
-												Name: name,
-												Value: func(row *downballotapi.Person) any {
-													return row.Fields[name]
-												},
-											})
-										}
-
-										c.PersonsTable.Columns(columns)
-										c.PersonsTable.Rows(output.Persons)
-									})
-								}),
-							myui.Button().
-								Label("CSV").
-								On("click", func(ctx app.Context, e app.Event) {
-									queryParameters := url.Values{}
-									queryParameters.Set("filter", c.Filter)
-									queryParameters.Set("limit", fmt.Sprintf("%d", c.Limit))
-									queryParameters.Set("fields", strings.Join(c.SelectedFields, ","))
-									var output restapiclient.RawBytes
-									err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.OrganizationID+"/group/"+c.GroupID+"/person?"+queryParameters.Encode(), nil, &output, restapiclient.OptionHeader("Accept", "text/csv"))
-									if err != nil {
-										slog.ErrorContext(ctx.Context, "Could not get persons", "err", err)
-										return
+											To: func(row *downballotapi.Person) string {
+												return fmt.Sprintf("/organization/%s/person/%s", c.OrganizationID, row.VoterID)
+											},
+										},
 									}
 
-									ctx.Dispatch(func(ctx app.Context) {
-										slog.InfoContext(ctx.Context, "Dispatch: Saving CSV")
-										blobConstructor := app.Window().Get("Blob")
-										arrayConstructor := app.Window().Get("Array")
-										array := arrayConstructor.New(string(output))
-										blob := blobConstructor.New(array, map[string]any{"type": "text/csv"})
+									for _, name := range c.SelectedFields {
+										columns = append(columns, myui.TableColumn[*downballotapi.Person]{
+											Name: name,
+											Value: func(row *downballotapi.Person) any {
+												return row.Fields[name]
+											},
+										})
+									}
 
-										aElement := app.Window().Get("document").Call("createElement", "a")
-										aElement.Set("style", "display: none;")
-										aElement.Set("href", app.Window().Get("URL").Call("createObjectURL", blob))
-										aElement.Set("download", "persons.csv")
+									c.PersonsTable.Columns(columns)
+									c.PersonsTable.Rows(output.Persons)
+								})
+							}),
+						myui.Button().
+							Label("CSV").
+							On("click", func(ctx app.Context, e app.Event) {
+								queryParameters := url.Values{}
+								queryParameters.Set("filter", c.Filter)
+								queryParameters.Set("limit", fmt.Sprintf("%d", c.Limit))
+								queryParameters.Set("fields", strings.Join(c.SelectedFields, ","))
+								var output restapiclient.RawBytes
+								err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.OrganizationID+"/group/"+c.GroupID+"/person?"+queryParameters.Encode(), nil, &output, restapiclient.OptionHeader("Accept", "text/csv"))
+								if err != nil {
+									slog.ErrorContext(ctx.Context, "Could not get persons", "err", err)
+									return
+								}
 
-										app.Window().Get("document").Get("body").Call("appendChild", aElement)
-										aElement.Call("click")
-										app.Window().Get("document").Get("body").Call("removeChild", aElement)
-									})
-								}),
-						),
+								ctx.Dispatch(func(ctx app.Context) {
+									slog.InfoContext(ctx.Context, "Dispatch: Saving CSV")
+									blobConstructor := app.Window().Get("Blob")
+									arrayConstructor := app.Window().Get("Array")
+									array := arrayConstructor.New(string(output))
+									blob := blobConstructor.New(array, map[string]any{"type": "text/csv"})
+
+									aElement := app.Window().Get("document").Call("createElement", "a")
+									aElement.Set("style", "display: none;")
+									aElement.Set("href", app.Window().Get("URL").Call("createObjectURL", blob))
+									aElement.Set("download", "persons.csv")
+
+									app.Window().Get("document").Get("body").Call("appendChild", aElement)
+									aElement.Call("click")
+									app.Window().Get("document").Get("body").Call("removeChild", aElement)
+								})
+							}),
 					),
-				app.If(c.Error != "", func() app.UI {
-					return myui.StatusBar().
-						Text(c.Error).
-						Bad()
-				}),
-				app.Div().
-					Class("map-container").
-					Style("width", "100%").
-					Style("height", "600px").
-					Body(
-						googlemap.GoogleMap().
-							APIKey(app.Getenv("GOOGLE_MAPS_API_KEY")).
-							Center(center).
-							Markers(markers),
-						//Render(),
-					),
-				app.Div().
-					Body(
-						app.Text("Total: "+fmt.Sprintf("%d", len(c.Persons))),
-					),
-				c.PersonsTable.Render(),
-			)
-		}),
-	)
+				),
+			app.If(c.Error != "", func() app.UI {
+				return myui.StatusBar().
+					Text(c.Error).
+					Bad()
+			}),
+			app.Div().
+				Class("map-container").
+				Style("width", "100%").
+				Style("height", "600px").
+				Body(
+					googlemap.GoogleMap().
+						APIKey(app.Getenv("GOOGLE_MAPS_API_KEY")).
+						Center(center).
+						Markers(markers),
+					//Render(),
+				),
+			app.Div().
+				Body(
+					app.Text("Total: "+fmt.Sprintf("%d", len(c.Persons))),
+				),
+			c.PersonsTable.Render(),
+		)
 }
