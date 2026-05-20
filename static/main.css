@@ -141,6 +141,17 @@ h1, h2, h3, h4, h5, h6 {
 .myui-item-name {
 }
 
+.myui-multiselect {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
+}
+
+.myui-multiselect-label {
+    font-size: 0.8em;
+    font-weight: bold;
+}
+
 .myui-statusbar {
     display: flex;
     align-items: center;

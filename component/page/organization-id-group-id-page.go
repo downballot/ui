@@ -269,27 +269,20 @@ func (c *OrganizationIDGroupIDPage) Render() app.UI {
 							Placeholder("1000").
 							Value(fmt.Sprintf("%d", c.Limit)).
 							On("change", c.ValueTo(&c.Limit)),
-						app.Div().Body(
-							app.Range(c.PossibleFields).Slice(func(i int) app.UI {
-								possibleField := c.PossibleFields[i]
-
-								return app.Label().Body(
-									app.Input().
-										Type("checkbox").
-										Checked(slices.Contains(c.SelectedFields, possibleField)).
-										OnChange(func(ctx app.Context, e app.Event) {
-											checked := e.Value.Get("target").Get("checked").Bool()
-											if checked {
-												c.SelectedFields = append(c.SelectedFields, possibleField)
-											} else {
-												c.SelectedFields = slices.DeleteFunc(c.SelectedFields, func(item string) bool { return item == possibleField })
-											}
-											slices.Sort(c.SelectedFields)
-										}),
-									app.Text(possibleField),
-								)
-							}),
-						),
+						myui.Multiselect().
+							Label("Fields").
+							AllowedValue(func() []myui.SelectOption {
+								selectOptions := []myui.SelectOption{}
+								for _, field := range c.PossibleFields {
+									selectOptions = append(selectOptions, myui.SelectOption{
+										Label: field,
+										Value: field,
+									})
+								}
+								return selectOptions
+							}()...).
+							SelectedValue(c.SelectedFields...).
+							On("change", myui.SelectedValuesTo(&c.SelectedFields)),
 						app.Div().Body(
 							myui.Button().
 								Label("Search").
