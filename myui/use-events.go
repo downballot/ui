@@ -3,7 +3,7 @@ package myui
 import (
 	"reflect"
 
-	"github.com/maxence-charriere/go-app/v10/pkg/app"
+	"github.com/maxence-charriere/go-app/v11/pkg/app"
 )
 
 type HasEvents[T any] interface {

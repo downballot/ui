@@ -8,7 +8,7 @@ import (
 
 	router "github.com/downballot/ui/app-router"
 	"github.com/downballot/ui/material"
-	"github.com/maxence-charriere/go-app/v10/pkg/app"
+	"github.com/maxence-charriere/go-app/v11/pkg/app"
 )
 
 type OrganizationLayout struct {

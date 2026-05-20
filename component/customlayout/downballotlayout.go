@@ -8,7 +8,7 @@ import (
 	"github.com/downballot/ui/component/layout"
 	"github.com/downballot/ui/material"
 	"github.com/downballot/ui/myui"
-	"github.com/maxence-charriere/go-app/v10/pkg/app"
+	"github.com/maxence-charriere/go-app/v11/pkg/app"
 )
 
 type DownballotLayout struct {

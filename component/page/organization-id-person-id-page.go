@@ -13,7 +13,7 @@ import (
 	"github.com/downballot/ui/component"
 	"github.com/downballot/ui/myui"
 	"github.com/google/uuid"
-	"github.com/maxence-charriere/go-app/v10/pkg/app"
+	"github.com/maxence-charriere/go-app/v11/pkg/app"
 )
 
 type OrganizationIDPersonIDPage struct {

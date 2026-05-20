@@ -14,7 +14,7 @@ import (
 	"github.com/downballot/ui/api"
 	"github.com/downballot/ui/googlemap"
 	"github.com/downballot/ui/myui"
-	"github.com/maxence-charriere/go-app/v10/pkg/app"
+	"github.com/maxence-charriere/go-app/v11/pkg/app"
 	"github.com/tekkamanendless/restapiclient"
 )
 

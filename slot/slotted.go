@@ -1,6 +1,6 @@
 package slot
 
-import "github.com/maxence-charriere/go-app/v10/pkg/app"
+import "github.com/maxence-charriere/go-app/v11/pkg/app"
 
 type Slotted struct {
 	components []app.UI

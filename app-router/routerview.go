@@ -6,7 +6,7 @@ import (
 	"log/slog"
 
 	"github.com/downballot/ui/app-router/route"
-	"github.com/maxence-charriere/go-app/v10/pkg/app"
+	"github.com/maxence-charriere/go-app/v11/pkg/app"
 )
 
 // RouterViewInterface is the interface that must be implemented in order for a component to be

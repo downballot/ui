@@ -6,7 +6,7 @@ import (
 	"log/slog"
 
 	"github.com/downballot/ui/app-router/route"
-	"github.com/maxence-charriere/go-app/v10/pkg/app"
+	"github.com/maxence-charriere/go-app/v11/pkg/app"
 )
 
 // LayoutWrapper is a wrapper around the desired component that handles top-level events to ensure that the component is properly updated.

@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/downballot/ui/app-router/route"
-	"github.com/maxence-charriere/go-app/v10/pkg/app"
+	"github.com/maxence-charriere/go-app/v11/pkg/app"
 )
 
 // Route is a route that can be applied to the application.

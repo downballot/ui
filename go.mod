@@ -8,7 +8,7 @@ require (
 	github.com/joho/godotenv v1.5.1
 	github.com/lmittmann/tint v1.1.3
 	github.com/mattn/go-isatty v0.0.22
-	github.com/maxence-charriere/go-app/v10 v10.1.11
+	github.com/maxence-charriere/go-app/v11 v11.0.1
 	github.com/stretchr/testify v1.11.1
 	github.com/tekkamanendless/httperror v1.0.1
 	github.com/tekkamanendless/restapiclient v0.1.1

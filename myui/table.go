@@ -7,7 +7,7 @@ import (
 	"slices"
 	"strconv"
 
-	"github.com/maxence-charriere/go-app/v10/pkg/app"
+	"github.com/maxence-charriere/go-app/v11/pkg/app"
 )
 
 type MyUITable[T any] struct {
