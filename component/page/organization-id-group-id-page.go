@@ -37,6 +37,27 @@ type OrganizationIDGroupIDPage struct {
 	PersonsTable *myui.MyUITable[*downballotapi.Person]
 }
 
+var _ app.Navigator = (*OrganizationIDGroupIDPage)(nil)
+
+func (c *OrganizationIDGroupIDPage) OnNav(ctx app.Context) {
+	slog.InfoContext(ctx.Context, "OrganizationIDGroupIDPage: OnNav")
+	slog.InfoContext(ctx.Context, "OrganizationIDGroupIDPage: OnNav", "OrganizationID", c.OrganizationID)
+
+	if value := ctx.Page().URL().Query().Get("filter"); value != "" {
+		c.Filter = value
+	}
+	if value := ctx.Page().URL().Query().Get("limit"); value != "" {
+		uintValue, err := strconv.ParseUint(value, 10, 64)
+		if err != nil {
+			slog.ErrorContext(ctx.Context, "Could not parse limit", "err", err)
+		} else {
+			c.Limit = uint(uintValue)
+		}
+	}
+
+	ctx.Update()
+}
+
 func (c *OrganizationIDGroupIDPage) OnUpdate(ctx app.Context) {
 	slog.InfoContext(ctx.Context, "OrganizationIDGroupIDPage: OnUpdate")
 	slog.InfoContext(ctx.Context, "OrganizationIDGroupIDPage: OnUpdate", "OrganizationID", c.OrganizationID)
