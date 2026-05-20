@@ -7,11 +7,14 @@ import (
 
 	"github.com/downballot/downballot/downballotapi"
 	"github.com/downballot/ui/api"
+	"github.com/downballot/ui/myui"
 	"github.com/maxence-charriere/go-app/v11/pkg/app"
 )
 
 type OrganizationIDPage struct {
 	app.Compo
+
+	Loaded bool
 
 	OrganizationID string `route:"organization_id"`
 	Organization   *downballotapi.Organization
@@ -34,13 +37,10 @@ func (c *OrganizationIDPage) OnUpdate(ctx app.Context) {
 		}
 
 		ctx.Dispatch(func(ctx app.Context) {
+			c.Loaded = true
+
 			slog.InfoContext(ctx.Context, "Dispatch: Setting organization", "organization", output.Organization)
 			c.Organization = &output.Organization
-		})
-		ctx.Defer(func(ctx app.Context) {
-			slog.InfoContext(ctx.Context, "Defer: Organization should be set", "organization", c.Organization)
-
-			//ctx.Update()
 		})
 	})
 }
@@ -48,14 +48,20 @@ func (c *OrganizationIDPage) OnUpdate(ctx app.Context) {
 func (c *OrganizationIDPage) Render() app.UI {
 	slog.InfoContext(context.TODO(), "OrganizationIDPage: Render")
 
-	return app.Div().Body(
-		app.If(c.Organization == nil, func() app.UI {
-			return app.Div().Text("Not found")
-		}).Else(func() app.UI {
-			return app.Div().Body(
-				app.Div().Text("ID: "+c.Organization.ID),
-				app.Div().Text("Name: "+c.Organization.Name),
-			)
-		}),
-	)
+	if !c.Loaded {
+		return nil
+	}
+
+	if c.Organization == nil {
+		return myui.StatusBar().
+			Text("Not found").
+			Bad()
+	}
+
+	return app.Div().
+		Class("organization-id-page").
+		Body(
+			app.Div().Text("ID: "+c.Organization.ID),
+			app.Div().Text("Name: "+c.Organization.Name),
+		)
 }

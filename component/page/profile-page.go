@@ -13,6 +13,8 @@ import (
 type ProfilePage struct {
 	app.Compo
 
+	Loaded bool
+
 	AuthenticatedUser *downballotapi.AuthenticationStatusUser
 }
 
@@ -25,37 +27,41 @@ func (c *ProfilePage) OnUpdate(ctx app.Context) {
 		}
 
 		ctx.Dispatch(func(ctx app.Context) {
+			c.Loaded = true
+
 			c.AuthenticatedUser = output.User
 		})
 	})
 }
 
 func (c *ProfilePage) Render() app.UI {
+	if !c.Loaded {
+		return nil
+	}
+
+	if c.AuthenticatedUser == nil {
+		return myui.StatusBar().
+			Text("Not logged in.").
+			Bad()
+	}
+
 	return myui.Page().
 		Body(
-			app.If(c.AuthenticatedUser == nil, func() app.UI {
-				return app.Div().Body(
-					app.Span().Text("Not logged in."),
-				)
-			}).Else(func() app.UI {
-				return app.Div().Body(
-					app.Span().Text("Username: "),
-					app.Span().Text(c.AuthenticatedUser.Email),
-					app.Br(),
-					app.Span().Text("Name: "),
-					app.Span().Text(c.AuthenticatedUser.Name),
-					app.Br(),
-					myui.Button().
-						Label("Log out").
-						On("click", func(ctx app.Context, e app.Event) {
-							ctx.DelState("api-token")
+			app.Span().Text("Username: "),
+			app.Span().Text(c.AuthenticatedUser.Email),
+			app.Br(),
+			app.Span().Text("Name: "),
+			app.Span().Text(c.AuthenticatedUser.Name),
+			app.Br(),
+			myui.Button().
+				Label("Log out").
+				On("click", func(ctx app.Context, e app.Event) {
+					ctx.DelState("api-token")
 
-							err := api.Do(ctx, http.MethodGet, "/api/v1/authentication/status", nil, nil)
-							if err != nil {
-								slog.InfoContext(ctx.Context, "Could not get (un)authenticated user", "err", err)
-							}
-						}),
-				)
-			}),
+					err := api.Do(ctx, http.MethodGet, "/api/v1/authentication/status", nil, nil)
+					if err != nil {
+						slog.InfoContext(ctx.Context, "Could not get (un)authenticated user", "err", err)
+					}
+				}),
 		)
 }

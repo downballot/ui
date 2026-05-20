@@ -141,7 +141,9 @@ func (c *OrganizationIDGroupIDPage) OnUpdate(ctx app.Context) {
 		})
 		wg.Wait()
 
-		c.Loaded = true
+		ctx.Dispatch(func(ctx app.Context) {
+			c.Loaded = true
+		})
 	})
 }
 

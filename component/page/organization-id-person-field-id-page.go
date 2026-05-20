@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"sync"
 
 	"github.com/downballot/downballot/downballotapi"
 	"github.com/downballot/ui/api"
@@ -14,6 +15,8 @@ import (
 
 type OrganizationIDPersonFieldIDPage struct {
 	app.Compo
+
+	Loaded bool
 
 	OrganizationID string `route:"organization_id"`
 	PersonFieldID  string `route:"person_field_id"`
@@ -30,29 +33,32 @@ func (c *OrganizationIDPersonFieldIDPage) OnUpdate(ctx app.Context) {
 	}
 
 	ctx.Async(func() {
-		var output downballotapi.GetOrganizationResponse
-		err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.OrganizationID, nil, &output)
-		if err != nil {
-			slog.ErrorContext(ctx.Context, "Could not get organizations", "err", err)
-			return
-		}
-	})
-	ctx.Async(func() {
-		var output downballotapi.GetPersonFieldResponse
-		err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.OrganizationID+"/person-field/"+c.PersonFieldID, nil, &output)
-		if err != nil {
-			slog.ErrorContext(ctx.Context, "Could not get person field", "err", err)
-			return
-		}
+		var wg sync.WaitGroup
+		wg.Go(func() {
+			var output downballotapi.GetOrganizationResponse
+			err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.OrganizationID, nil, &output)
+			if err != nil {
+				slog.ErrorContext(ctx.Context, "Could not get organizations", "err", err)
+				return
+			}
+		})
+		wg.Go(func() {
+			var output downballotapi.GetPersonFieldResponse
+			err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.OrganizationID+"/person-field/"+c.PersonFieldID, nil, &output)
+			if err != nil {
+				slog.ErrorContext(ctx.Context, "Could not get person field", "err", err)
+				return
+			}
+
+			ctx.Dispatch(func(ctx app.Context) {
+				slog.InfoContext(ctx.Context, "Dispatch: Setting person field", "person field", output.PersonField)
+				c.PersonField = output.PersonField
+			})
+		})
+		wg.Wait()
 
 		ctx.Dispatch(func(ctx app.Context) {
-			slog.InfoContext(ctx.Context, "Dispatch: Setting person field", "person field", output.PersonField)
-			c.PersonField = output.PersonField
-		})
-		ctx.Defer(func(ctx app.Context) {
-			slog.InfoContext(ctx.Context, "Defer: Person field should be set", "person field", c.PersonField)
-
-			//ctx.Update()
+			c.Loaded = true
 		})
 	})
 }
@@ -60,55 +66,61 @@ func (c *OrganizationIDPersonFieldIDPage) OnUpdate(ctx app.Context) {
 func (c *OrganizationIDPersonFieldIDPage) Render() app.UI {
 	slog.InfoContext(context.TODO(), "OrganizationIDPersonFieldIDPage: Render")
 
-	return app.Div().Body(
-		app.If(c.PersonField == nil, func() app.UI {
-			return app.Div().Text("Not found")
-		}).Else(func() app.UI {
-			return app.Div().Body(
-				myui.Table[*downballotapi.PersonField]().
-					Rows([]*downballotapi.PersonField{c.PersonField}).
-					Columns([]myui.TableColumn[*downballotapi.PersonField]{
-						{
-							Name: "ID",
-							Value: func(row *downballotapi.PersonField) any {
-								return row.ID
-							},
+	if !c.Loaded {
+		return nil
+	}
+
+	if c.PersonField == nil {
+		return myui.StatusBar().
+			Text("Not found").
+			Bad()
+	}
+
+	return app.Div().
+		Class("organization-id-person-field-id-page").
+		Body(
+			myui.Table[*downballotapi.PersonField]().
+				Rows([]*downballotapi.PersonField{c.PersonField}).
+				Columns([]myui.TableColumn[*downballotapi.PersonField]{
+					{
+						Name: "ID",
+						Value: func(row *downballotapi.PersonField) any {
+							return row.ID
 						},
-						{
-							Name: "Name",
-							Value: func(row *downballotapi.PersonField) any {
-								return row.Name
-							},
-							To: func(row *downballotapi.PersonField) string {
-								return fmt.Sprintf("/organization/%s/person-field/%s", c.OrganizationID, row.ID)
-							},
+					},
+					{
+						Name: "Name",
+						Value: func(row *downballotapi.PersonField) any {
+							return row.Name
 						},
-						{
-							Name: "Type",
-							Value: func(row *downballotapi.PersonField) any {
-								return row.Type
-							},
+						To: func(row *downballotapi.PersonField) string {
+							return fmt.Sprintf("/organization/%s/person-field/%s", c.OrganizationID, row.ID)
 						},
-						{
-							Name: "Allow Empty",
-							Value: func(row *downballotapi.PersonField) any {
-								return row.AllowEmpty
-							},
+					},
+					{
+						Name: "Type",
+						Value: func(row *downballotapi.PersonField) any {
+							return row.Type
 						},
-						{
-							Name: "Allowed Regex",
-							Value: func(row *downballotapi.PersonField) any {
-								return row.AllowedRegex
-							},
+					},
+					{
+						Name: "Allow Empty",
+						Value: func(row *downballotapi.PersonField) any {
+							return row.AllowEmpty
 						},
-						{
-							Name: "Allowed Values",
-							Value: func(row *downballotapi.PersonField) any {
-								return row.AllowedValues
-							},
+					},
+					{
+						Name: "Allowed Regex",
+						Value: func(row *downballotapi.PersonField) any {
+							return row.AllowedRegex
 						},
-					}).Render(),
-			)
-		}),
-	)
+					},
+					{
+						Name: "Allowed Values",
+						Value: func(row *downballotapi.PersonField) any {
+							return row.AllowedValues
+						},
+					},
+				}).Render(),
+		)
 }
