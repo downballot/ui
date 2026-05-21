@@ -28,8 +28,6 @@ func (c *MainLayout) Render() app.UI {
 
 	return app.Div().
 		Class("main-layout").
-		Style("height", "100vh").
-		Style("width", "100%").
 		Body(
 			app.Div().
 				Class("main-layout-header").
