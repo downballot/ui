@@ -90,20 +90,6 @@ func main() {
 		router.Route{
 			Path: "/",
 			Component: func() app.Composer {
-				return &layout.MainLayout{}
-			},
-			Children: []router.Route{
-				{
-					Path: "/test/1",
-					Component: func() app.Composer {
-						return &SimpleElement{}
-					},
-				},
-			},
-		},
-		router.Route{
-			Path: "/",
-			Component: func() app.Composer {
 				return &layout.CenterLayout{}
 			},
 			Meta: map[string]string{
@@ -121,9 +107,7 @@ func main() {
 		router.Route{
 			Path: "/",
 			Component: func() app.Composer {
-				return &customlayout.DownballotLayout{
-					DrawerVisible: true,
-				}
+				return &customlayout.DownballotLayout{}
 			},
 			Meta: map[string]string{
 				"require-login": "true",

@@ -31,6 +31,28 @@ h1, h2, h3, h4, h5, h6 {
     margin: 0
 }
 
+.downballotlayout-header-leading {
+    display: none;
+}
+
+.main-layout-drawer {
+    display: block;
+}
+
+.main-layout-drawer.visible {
+    display: block;
+}
+
+@media screen and (max-width: 600px) {
+    .downballotlayout-header-leading {
+        display: block;
+    }
+
+    .main-layout-drawer {
+        display: none;
+    }
+}
+
 .main-layout-header {
 }
 
@@ -42,14 +64,6 @@ h1, h2, h3, h4, h5, h6 {
 .main-layout-drawer {
     padding: 1em;
     min-width: 150px;
-}
-
-.main-layout-drawer.visible {
-    display: block;
-}
-
-.main-layout-drawer.hidden {
-    display: none;
 }
 
 .main-layout-content {

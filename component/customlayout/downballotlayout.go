@@ -14,8 +14,6 @@ import (
 type DownballotLayout struct {
 	app.Compo
 	router.RouterViewComponent
-
-	DrawerVisible bool
 }
 
 var _ router.RouterViewInterface = (*DownballotLayout)(nil)
@@ -47,14 +45,23 @@ func (c *DownballotLayout) Render() app.UI {
 	slog.InfoContext(context.TODO(), "DownballotLayout: Render")
 
 	mainLayout := &layout.MainLayout{
-		DrawerVisible: c.DrawerVisible,
 		Header: &material.AppBar{
 			Leading: app.Div().
-				Class("mainlayout-header-leading").
+				Class("downballotlayout-header-leading").
+				Style("cursor", "pointer").
 				OnClick(func(ctx app.Context, e app.Event) {
-					c.DrawerVisible = !c.DrawerVisible
-					slog.InfoContext(ctx.Context, "DownballotLayout: Header: Leading: OnClick", "DrawerVisible", c.DrawerVisible)
-					ctx.Update()
+					slog.InfoContext(ctx.Context, "DownballotLayout: Header: Leading: OnClick")
+					ctx.PreventUpdate()
+
+					mainLayoutElement := e.Get("target").Call("closest", ".main-layout")
+					slog.InfoContext(ctx.Context, "DownballotLayout: Header: Leading: OnClick", "mainLayoutElement", mainLayoutElement)
+					if !mainLayoutElement.IsNull() {
+						drawerElement := mainLayoutElement.Call("querySelector", ".main-layout-drawer")
+						slog.InfoContext(ctx.Context, "DownballotLayout: Header: Leading: OnClick", "drawerElement", drawerElement)
+						if !drawerElement.IsNull() {
+							drawerElement.Get("classList").Call("toggle", "visible")
+						}
+					}
 				}).
 				Body(
 					myui.Icon().Icon("bars"),
@@ -62,6 +69,7 @@ func (c *DownballotLayout) Render() app.UI {
 			Headline: "Downballot",
 		},
 		Drawer: app.Div().
+			Class("downballotlayout-drawer").
 			Body(
 				myui.Item().
 					Icon("arrow-right-to-bracket").
@@ -78,8 +86,8 @@ func (c *DownballotLayout) Render() app.UI {
 			),
 	}
 	mainLayout.SetRouterView(c.RouterView())
+
 	slog.InfoContext(context.TODO(), "DownballotLayout: Render", "mainLayout", mainLayout)
-	slog.InfoContext(context.TODO(), "DownballotLayout: Render", "DrawerVisible", c.DrawerVisible)
 
 	return mainLayout.Render()
 }
