@@ -116,7 +116,7 @@ func main() {
 				{
 					Path: "/",
 					Component: func() app.Composer {
-						return &SimpleElement{}
+						return &page.HomePage{}
 					},
 					Meta: map[string]string{
 						"title": "Home",

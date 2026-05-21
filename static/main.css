@@ -31,6 +31,10 @@ h1, h2, h3, h4, h5, h6 {
     margin: 0
 }
 
+.center-layout {
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
 .downballotlayout-header-leading {
     display: none;
 }
@@ -124,10 +128,6 @@ h1, h2, h3, h4, h5, h6 {
     height: 1em;
 }
 
-.myui-page {
-    padding: 1em;
-}
-
 .myui-input {
     display: flex;
     flex-direction: column;
@@ -179,6 +179,13 @@ h1, h2, h3, h4, h5, h6 {
 .myui-multiselect-label {
     font-size: 0.8em;
     font-weight: bold;
+}
+
+
+.myui-page {
+    padding: 1em;
+    background-color: var(--material-theme-background);
+    color: var(--material-theme-on-background);
 }
 
 .myui-statusbar {
@@ -293,4 +300,9 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .material-app-bar-trailer {
+}
+
+.login-page-actions {
+    display: flex;
+    flex-direction: row;
 }

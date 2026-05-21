@@ -27,7 +27,7 @@ func (c *LoginPage) OnNav(ctx app.Context) {
 }
 
 func (c *LoginPage) Render() app.UI {
-	return app.Div().Body(
+	return myui.Page().Body(
 		app.Div().
 			Body(
 				app.H2().Text("Downballot Login"),
@@ -47,31 +47,36 @@ func (c *LoginPage) Render() app.UI {
 				Text(c.error).
 				Bad()
 		}),
-		myui.Button().
-			Label("Log in").
-			On("click", func(ctx app.Context, e app.Event) {
-				slog.InfoContext(ctx.Context, "Button clicked")
-				ctx.Async(func() {
-					client := downballotapi.New("/")
+		app.Div().
+			Class("login-page-actions").
+			Body(
+				app.Span().Style("flex", "1"),
+				myui.Button().
+					Label("Log in").
+					On("click", func(ctx app.Context, e app.Event) {
+						slog.InfoContext(ctx.Context, "Button clicked")
+						ctx.Async(func() {
+							client := downballotapi.New("/")
 
-					input := downballotapi.LoginRequest{
-						Username: c.username,
-						Password: c.password,
-					}
-					var output downballotapi.LoginResponse
-					err := client.Do(ctx.Context, http.MethodPost, "/api/v1/authentication/login", input, &output)
-					if err != nil {
-						app.Log(err)
-						c.error = err.Error()
-						ctx.Update()
-						return
-					}
-					c.error = ""
+							input := downballotapi.LoginRequest{
+								Username: c.username,
+								Password: c.password,
+							}
+							var output downballotapi.LoginResponse
+							err := client.Do(ctx.Context, http.MethodPost, "/api/v1/authentication/login", input, &output)
+							if err != nil {
+								app.Log(err)
+								c.error = err.Error()
+								ctx.Update()
+								return
+							}
+							c.error = ""
 
-					app.Logf("request response: %+v", output)
-					ctx.SetState("api-token", output.Token).Persist()
-					ctx.Navigate("/")
-				})
-			}),
+							app.Logf("request response: %+v", output)
+							ctx.SetState("api-token", output.Token).Persist()
+							ctx.Navigate("/")
+						})
+					}),
+			),
 	)
 }

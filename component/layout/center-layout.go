@@ -19,7 +19,7 @@ func (c *CenterLayout) Render() app.UI {
 	slog.InfoContext(context.TODO(), "CenterLayout: Render")
 
 	return app.Div().
-		Class("center-layout-content").
+		Class("center-layout").
 		Style("display", "flex").
 		Style("justify-content", "center").
 		Style("align-items", "center").
