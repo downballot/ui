@@ -29,15 +29,19 @@ func (c *MainLayout) Render() app.UI {
 	return app.Div().
 		Class("main-layout").
 		Body(
-			app.Div().
-				Class("main-layout-header").
-				Body(c.Header),
+			app.If(c.Header != nil, func() app.UI {
+				return app.Div().
+					Class("main-layout-header").
+					Body(c.Header)
+			}),
 			app.Div().
 				Class("main-layout-body").
 				Body(
-					app.Div().
-						Class("main-layout-drawer").
-						Body(c.Drawer),
+					app.If(c.Drawer != nil, func() app.UI {
+						return app.Div().
+							Class("main-layout-drawer").
+							Body(c.Drawer)
+					}),
 					app.Div().
 						Class("main-layout-content").
 						Body(

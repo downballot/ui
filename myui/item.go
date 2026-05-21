@@ -11,25 +11,25 @@ func Item() *MyUIItem {
 type MyUIItem struct {
 	app.Compo
 	UseEvents
-	icon string
-	name string
-	to   string
+	IconValue string
+	NameValue string
+	ToValue   string
 }
 
 var _ app.Composer = (*MyUIItem)(nil)
 
 func (c *MyUIItem) Icon(icon string) *MyUIItem {
-	c.icon = icon
+	c.IconValue = icon
 	return c
 }
 
 func (c *MyUIItem) Name(name string) *MyUIItem {
-	c.name = name
+	c.NameValue = name
 	return c
 }
 
 func (c *MyUIItem) To(to string) *MyUIItem {
-	c.to = to
+	c.ToValue = to
 	return c
 }
 
@@ -38,32 +38,32 @@ func (c *MyUIItem) Render() app.UI {
 		app.Div().
 			Class("myui-item").
 			Body(
-				app.If(c.to != "", func() app.UI {
-					return app.A().Href(c.to).
+				app.If(c.ToValue != "", func() app.UI {
+					return app.A().Href(c.ToValue).
 						Body(
 							app.Span().
 								Class("myui-item-icon").
 								Body(
-									app.If(c.icon != "", func() app.UI {
-										return Icon().Icon(c.icon)
+									app.If(c.IconValue != "", func() app.UI {
+										return Icon().Icon(c.IconValue)
 									}),
 								),
 							app.Span().
 								Class("myui-item-name").
-								Text(c.name),
+								Text(c.NameValue),
 						)
 				}).ElseSlice(func() []app.UI {
 					return []app.UI{
 						app.Span().
 							Class("myui-item-icon").
 							Body(
-								app.If(c.icon != "", func() app.UI {
-									return Icon().Icon(c.icon)
+								app.If(c.IconValue != "", func() app.UI {
+									return Icon().Icon(c.IconValue)
 								}),
 							),
 						app.Span().
 							Class("myui-item-name").
-							Text(c.name),
+							Text(c.NameValue),
 					}
 				}),
 			),

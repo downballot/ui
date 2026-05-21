@@ -39,6 +39,12 @@ h1, h2, h3, h4, h5, h6 {
     display: none;
 }
 
+.downballotlayout-menu {
+    display: flex;
+    flex-direction: row;
+    gap: 0.5em;
+}
+
 .main-layout {
     height: 100vh;
     min-width: 100%;
@@ -53,8 +59,16 @@ h1, h2, h3, h4, h5, h6 {
     display: block;
 }
 
+.main-layout-header .material-app-bar-leading {
+    display: none;
+}
+
 @media screen and (max-width: 900px) {
     .downballotlayout-header-leading {
+        display: block;
+    }
+
+    .main-layout-header .material-app-bar-leading {
         display: block;
     }
 
@@ -159,6 +173,14 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .myui-item {
+    padding: 0.5em;
+    background-color: var(--material-theme-background);
+    color: var(--material-theme-on-background);
+    cursor: pointer;
+}
+
+.myui-item:hover {
+    filter: brightness(0.9);
 }
 
 .myui-item-icon {
@@ -262,11 +284,12 @@ h1, h2, h3, h4, h5, h6 {
 
 .material-app-bar {
     display: flex;
+    gap: 0.5em;
     justify-content: space-between;
     align-items: left;
     width: 100%;
     box-sizing: border-box;
-    padding: 1em;
+    padding: 0.5em;
     background-color: var(--material-theme-primary);
     color: var(--material-theme-on-primary);
     font-size: 1.5em;
@@ -276,7 +299,6 @@ h1, h2, h3, h4, h5, h6 {
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-right: 0.5em;
 }
 
 .material-app-bar-content {
@@ -284,10 +306,10 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .material-app-bar-headline {
+    font-weight: bold;
 }
 
 .material-app-bar-headline-text {
-    font-weight: bold;
 }
 
 .material-app-bar-subtitle {

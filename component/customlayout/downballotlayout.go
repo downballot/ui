@@ -46,44 +46,21 @@ func (c *DownballotLayout) Render() app.UI {
 
 	mainLayout := &layout.MainLayout{
 		Header: &material.AppBar{
-			Leading: app.Div().
-				Class("downballotlayout-header-leading").
-				Style("cursor", "pointer").
-				OnClick(func(ctx app.Context, e app.Event) {
-					slog.InfoContext(ctx.Context, "DownballotLayout: Header: Leading: OnClick")
-					ctx.PreventUpdate()
-
-					mainLayoutElement := e.Get("target").Call("closest", ".main-layout")
-					slog.InfoContext(ctx.Context, "DownballotLayout: Header: Leading: OnClick", "mainLayoutElement", mainLayoutElement)
-					if !mainLayoutElement.IsNull() {
-						drawerElement := mainLayoutElement.Call("querySelector", ".main-layout-drawer")
-						slog.InfoContext(ctx.Context, "DownballotLayout: Header: Leading: OnClick", "drawerElement", drawerElement)
-						if !drawerElement.IsNull() {
-							drawerElement.Get("classList").Call("toggle", "visible")
-						}
-					}
-				}).
-				Body(
-					myui.Icon().Icon("bars"),
-				),
 			Headline: "Downballot",
+			SubtitleUI: app.Div().
+				Class("downballotlayout-menu").
+				Body(
+					myui.Item().
+						Icon("building").
+						Name("Organizations").
+						To("/organization"),
+					app.Span().Style("flex", "1"),
+					myui.Item().
+						Icon("user").
+						Name("Profile").
+						To("/profile"),
+				),
 		},
-		Drawer: app.Div().
-			Class("downballotlayout-drawer").
-			Body(
-				myui.Item().
-					Icon("arrow-right-to-bracket").
-					Name("Login").
-					To("/login"),
-				myui.Item().
-					Icon("building").
-					Name("Organizations").
-					To("/organization"),
-				myui.Item().
-					Icon("user").
-					Name("Profile").
-					To("/profile"),
-			),
 	}
 	mainLayout.SetRouterView(c.RouterView())
 

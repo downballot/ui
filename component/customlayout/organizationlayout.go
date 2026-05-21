@@ -7,7 +7,9 @@ import (
 	"strings"
 
 	router "github.com/downballot/ui/app-router"
+	"github.com/downballot/ui/component/layout"
 	"github.com/downballot/ui/material"
+	"github.com/downballot/ui/myui"
 	"github.com/maxence-charriere/go-app/v11/pkg/app"
 )
 
@@ -86,7 +88,7 @@ func (c *OrganizationLayout) OnNav(ctx app.Context) {
 }
 
 func (c *OrganizationLayout) Render() app.UI {
-	slog.InfoContext(context.TODO(), "OrganizationLayout: Render")
+	slog.InfoContext(context.TODO(), "OrganizationLayout: Render", "OrganizationID", c.OrganizationID, "OrganizationName", c.OrganizationName)
 
 	bodyItems := []app.UI{}
 	for _, crumb := range c.Crumbs {
@@ -105,43 +107,49 @@ func (c *OrganizationLayout) Render() app.UI {
 		bodyItems...,
 	)
 
-	return app.Div().
-		Class("organization-layout").
-		Body(
-			&material.AppBar{
-				Headline:   c.OrganizationName,
-				HeadlineUI: headline,
-			},
-			app.Div().
-				Class("organization-layout-menu").
+	mainLayout := &layout.MainLayout{
+		Header: &material.AppBar{
+			Leading: app.Div().
+				Class("organizationlayout-header-leading").
+				Style("cursor", "pointer").
+				OnClick(func(ctx app.Context, e app.Event) {
+					slog.InfoContext(ctx.Context, "OrganizationLayout: Header: Leading: OnClick")
+					ctx.PreventUpdate()
+
+					mainLayoutElement := e.Get("target").Call("closest", ".main-layout")
+					slog.InfoContext(ctx.Context, "OrganizationLayout: Header: Leading: OnClick", "mainLayoutElement", mainLayoutElement)
+					if !mainLayoutElement.IsNull() {
+						drawerElement := mainLayoutElement.Call("querySelector", ".main-layout-drawer")
+						slog.InfoContext(ctx.Context, "OrganizationLayout: Header: Leading: OnClick", "drawerElement", drawerElement)
+						if !drawerElement.IsNull() {
+							drawerElement.Get("classList").Call("toggle", "visible")
+						}
+					}
+				}).
 				Body(
-					app.Ul().
-						Style("list-style-type", "none").
-						Style("padding", "0").
-						Style("margin", "0").
-						Style("display", "flex").
-						Style("gap", "20px").
-						Body(
-							app.Li().
-								Style("margin-left", "auto").
-								Style("margin-right", "auto").
-								Body(
-									app.A().Href("/organization/"+c.OrganizationID).Text("Organization"),
-								),
-							app.Li().
-								Style("margin-left", "auto").
-								Style("margin-right", "auto").
-								Body(
-									app.A().Href("/organization/"+c.OrganizationID+"/group").Text("Groups"),
-								),
-							app.Li().
-								Style("margin-left", "auto").
-								Style("margin-right", "auto").
-								Body(
-									app.A().Href("/organization/"+c.OrganizationID+"/person-field").Text("Person Fields"),
-								),
-						),
+					myui.Icon().Icon("bars"),
 				),
-			c.RouterView().Render(),
-		)
+			Headline:   c.OrganizationName,
+			HeadlineUI: headline,
+		},
+		Drawer: app.Div().
+			Class("organizationlayout-menu").
+			Body(
+				myui.Item().
+					Icon("house").
+					Name("Home").
+					To("/organization/"+c.OrganizationID),
+				myui.Item().
+					Icon("people-group").
+					Name("Groups").
+					To("/organization/"+c.OrganizationID+"/group"),
+				myui.Item().
+					Icon("user-gear").
+					Name("Person Fields").
+					To("/organization/"+c.OrganizationID+"/person-field"),
+			),
+	}
+	mainLayout.SetRouterView(c.RouterView())
+
+	return mainLayout.Render()
 }
