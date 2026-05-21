@@ -142,7 +142,7 @@ func (c *OrganizationIDPersonIDPage) Render() app.UI {
 		return strings.Compare(left.Field, right.Field)
 	})
 
-	return app.Div().Body(
+	return myui.Page().Body(
 		myui.Table[Record]().
 			Title("Fields").
 			Rows(rows).

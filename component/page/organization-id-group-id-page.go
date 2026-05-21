@@ -241,8 +241,7 @@ func (c *OrganizationIDGroupIDPage) Render() app.UI {
 			Bad()
 	}
 
-	return app.Div().
-		Class("organization-id-group-id-page").
+	return myui.Page().
 		Body(
 			myui.Table[*downballotapi.Group]().
 				Title("Sub-groups").

@@ -76,8 +76,7 @@ func (c *OrganizationIDPersonFieldIDPage) Render() app.UI {
 			Bad()
 	}
 
-	return app.Div().
-		Class("organization-id-person-field-id-page").
+	return myui.Page().
 		Body(
 			myui.Table[*downballotapi.PersonField]().
 				Rows([]*downballotapi.PersonField{c.PersonField}).

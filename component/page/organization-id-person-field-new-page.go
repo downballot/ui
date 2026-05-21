@@ -49,7 +49,7 @@ func (c *OrganizationIDPersonFieldNewPage) OnUpdate(ctx app.Context) {
 func (c *OrganizationIDPersonFieldNewPage) Render() app.UI {
 	slog.InfoContext(context.TODO(), "OrganizationIDPersonFieldNewPage: Render")
 
-	return app.Div().Body(
+	return myui.Page().Body(
 		myui.Input().
 			Label("Name").
 			Type("text").

@@ -51,7 +51,7 @@ func (c *OrganizationIDPersonFieldPage) Render() app.UI {
 	slog.InfoContext(context.TODO(), "OrganizationIDPersonFieldPage: Render")
 	slog.InfoContext(context.TODO(), "OrganizationIDPersonFieldPage: Render", "OrganizationID", c.OrganizationID)
 
-	return app.Div().Body(
+	return myui.Page().Body(
 		myui.Table[*downballotapi.PersonField]().
 			Rows(c.PersonFields).
 			Columns([]myui.TableColumn[*downballotapi.PersonField]{

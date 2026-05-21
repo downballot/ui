@@ -58,7 +58,7 @@ func (c *OrganizationIDGroupPage) OnUpdate(ctx app.Context) {
 func (c *OrganizationIDGroupPage) Render() app.UI {
 	slog.InfoContext(context.TODO(), "OrganizationIDGroupPage: Render")
 
-	return app.Div().Body(
+	return myui.Page().Body(
 		myui.Table[*downballotapi.Group]().
 			Rows(c.Groups).
 			Columns([]myui.TableColumn[*downballotapi.Group]{

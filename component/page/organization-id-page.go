@@ -58,8 +58,7 @@ func (c *OrganizationIDPage) Render() app.UI {
 			Bad()
 	}
 
-	return app.Div().
-		Class("organization-id-page").
+	return myui.Page().
 		Body(
 			app.Div().Text("ID: "+c.Organization.ID),
 			app.Div().Text("Name: "+c.Organization.Name),
