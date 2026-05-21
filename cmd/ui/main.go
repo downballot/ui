@@ -23,14 +23,6 @@ import (
 	"github.com/maxence-charriere/go-app/v11/pkg/app"
 )
 
-type SimpleElement struct {
-	app.Compo
-}
-
-func (e *SimpleElement) Render() app.UI {
-	return app.Div().Text("SimpleElement")
-}
-
 // The main function is the entry point where the app is configured and started.
 // It is executed in 2 different environments: A client (the web browser) and a
 // server.
