@@ -179,6 +179,10 @@ func (c *AddFieldDialog) Render() app.UI {
 			valueElement = app.Select().
 				Body(
 					app.Option().
+						Text("").
+						Value("").
+						Disabled(true),
+					app.Option().
 						Text("true").
 						Value("true").
 						Selected(c.ValueValue == "true"),
