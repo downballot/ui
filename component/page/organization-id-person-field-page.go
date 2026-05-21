@@ -39,11 +39,6 @@ func (c *OrganizationIDPersonFieldPage) OnUpdate(ctx app.Context) {
 			slog.InfoContext(ctx.Context, "Dispatch: Setting person fields", "person fields", output.PersonFields)
 			c.PersonFields = output.PersonFields
 		})
-		ctx.Defer(func(ctx app.Context) {
-			slog.InfoContext(ctx.Context, "Defer: Person fields should be set", "person fields", c.PersonFields)
-
-			//ctx.Update()
-		})
 	})
 }
 

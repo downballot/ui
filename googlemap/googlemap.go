@@ -131,9 +131,11 @@ func (c *HTMLGoogleMap) Render() app.UI {
 							Attr("gmp-clickable", "true").
 							On("gmp-click", func(ctx app.Context, event app.Event) {
 								slog.InfoContext(ctx.Context, "GoogleMap: Marker clicked", "marker", marker)
-								if marker.OnClick != nil {
-									marker.OnClick(ctx, event)
+								if marker.OnClick == nil {
+									ctx.PreventUpdate()
+									return
 								}
+								marker.OnClick(ctx, event)
 							})
 					}),
 				),

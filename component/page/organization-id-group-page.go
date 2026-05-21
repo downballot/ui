@@ -47,11 +47,6 @@ func (c *OrganizationIDGroupPage) OnUpdate(ctx app.Context) {
 			slog.InfoContext(ctx.Context, "Dispatch: Setting groups", "groups", output.Groups)
 			c.Groups = output.Groups
 		})
-		ctx.Defer(func(ctx app.Context) {
-			slog.InfoContext(ctx.Context, "Defer: Groups should be set", "groups", c.Groups)
-
-			//ctx.Update()
-		})
 	})
 }
 

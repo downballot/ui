@@ -217,6 +217,8 @@ func (c *OrganizationIDGroupIDPage) Render() app.UI {
 				},
 				Title: title,
 				OnClick: func(ctx app.Context, event app.Event) {
+					ctx.PreventUpdate()
+
 					app.Window().Call("open", fmt.Sprintf("/organization/%s/person/%s", c.OrganizationID, person.VoterID), "_blank")
 				},
 			})

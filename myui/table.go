@@ -130,9 +130,11 @@ func (t *MyUITable[T]) Render() app.UI {
 								Label(action.Name).
 								Icon(action.Icon).
 								On("click", func(ctx app.Context, e app.Event) {
-									if action.Function != nil {
-										action.Function(ctx)
+									if action.Function == nil {
+										ctx.PreventUpdate()
+										return
 									}
+									action.Function(ctx)
 								})
 							if action.To != nil {
 								button.To(action.To())
