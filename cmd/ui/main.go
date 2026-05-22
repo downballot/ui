@@ -246,6 +246,24 @@ func main() {
 								"title": "Users",
 							},
 						},
+						{
+							Path: "/user/:user_id",
+							Component: func() app.Composer {
+								return &page.OrganizationIDUserIDPage{}
+							},
+							Meta: map[string]string{
+								"title": ":user_id",
+							},
+							PathVariables: func(ctx app.Context, variables map[string]string) {
+								var output downballotapi.GetUserResponse
+								err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+variables["organization_id"]+"/user/"+variables["user_id"], nil, &output)
+								if err != nil {
+									slog.ErrorContext(ctx.Context, "Could not get user", "err", err)
+									return
+								}
+								variables["user_name"] = output.User.Name
+							},
+						},
 					},
 				},
 				{
