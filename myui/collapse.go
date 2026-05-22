@@ -94,6 +94,7 @@ func (c *MyUICollapse) Render() app.UI {
 		Body(
 			app.Div().
 				Class("myui-collapse-label").
+				Style("cursor", "pointer").
 				Body(
 					app.Span().
 						Text(c.LabelValue),
@@ -102,17 +103,17 @@ func (c *MyUICollapse) Render() app.UI {
 						Class("myui-collapse-icon").
 						Body(
 							Icon().
-								Icon(closedIcon).
-								On("click", func(ctx app.Context, e app.Event) {
-									c.OpenValue = !c.OpenValue
-									if c.BindValue != nil {
-										*c.BindValue = c.OpenValue
-									}
-									slog.InfoContext(ctx.Context, "Collapse: OnClick", "OpenValue", c.OpenValue)
-									ctx.Update()
-								}),
+								Icon(closedIcon),
 						),
-				),
+				).
+				On("click", func(ctx app.Context, e app.Event) {
+					c.OpenValue = !c.OpenValue
+					if c.BindValue != nil {
+						*c.BindValue = c.OpenValue
+					}
+					slog.InfoContext(ctx.Context, "Collapse: OnClick", "OpenValue", c.OpenValue)
+					ctx.Update()
+				}),
 			app.If(c.OpenValue, func() app.UI {
 				return app.Div().
 					Class("myui-collapse-content").

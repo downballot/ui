@@ -172,12 +172,9 @@ func main() {
 							},
 						},
 						{
-							Path: "/group/:group_id",
-							Component: func() app.Composer {
-								return &page.OrganizationIDGroupIDPage{}
-							},
+							Path:      "/group/:group_id",
+							Component: nil,
 							PathVariables: func(ctx app.Context, variables map[string]string) {
-								//ctx.Dispatch(func(ctx app.Context) {
 								var output downballotapi.GetGroupResponse
 								err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+variables["organization_id"]+"/group/"+variables["group_id"], nil, &output)
 								if err != nil {
@@ -186,10 +183,29 @@ func main() {
 								}
 
 								variables["group_name"] = output.Group.Name
-								//})
 							},
 							Meta: map[string]string{
 								"title": ":group_name",
+							},
+							Children: []router.Route{
+								{
+									Path: "/",
+									Component: func() app.Composer {
+										return &page.OrganizationIDGroupIDPage{}
+									},
+									Meta: map[string]string{
+										"title": ":group_name",
+									},
+								},
+								{
+									Path: "/person",
+									Component: func() app.Composer {
+										return &page.OrganizationIDGroupIDPersonPage{}
+									},
+									Meta: map[string]string{
+										"title": "Persons",
+									},
+								},
 							},
 						},
 						{

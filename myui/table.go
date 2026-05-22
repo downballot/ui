@@ -185,10 +185,15 @@ func (t *MyUITable[T]) Render() app.UI {
 														rowAction := t.rowActions[i]
 														button := Button().
 															Label(rowAction.Name).
-															Icon(rowAction.Icon).
-															On("click", func(ctx app.Context, e app.Event) {
+															Icon(rowAction.Icon)
+														if rowAction.To != nil {
+															button.To(rowAction.To(row))
+														}
+														if rowAction.Function != nil {
+															button.On("click", func(ctx app.Context, e app.Event) {
 																rowAction.Function(ctx, row)
 															})
+														}
 														return button
 													}),
 												)
