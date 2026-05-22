@@ -31,6 +31,12 @@ h1, h2, h3, h4, h5, h6 {
     margin: 0
 }
 
+@media print {
+    .no-print {
+        display: none;
+    }
+}
+
 .center-layout {
     background-color: rgba(0, 0, 0, 0.5);
 }
@@ -132,6 +138,20 @@ h1, h2, h3, h4, h5, h6 {
     color: var(--material-theme-on-primary);
 }
 
+.myui-collapse {
+}
+
+.myui-collapse-label {
+    display: flex;
+    flex-direction: row;
+}
+
+@media print {
+    .myui-collapse.closed {
+        display: none;
+    }
+}
+
 .myui-dialog-actions {
     display: flex;
     flex-direction: row;
@@ -207,6 +227,10 @@ h1, h2, h3, h4, h5, h6 {
     padding: 1em;
     background-color: var(--material-theme-background);
     color: var(--material-theme-on-background);
+
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
 }
 
 .myui-statusbar {
@@ -234,11 +258,12 @@ h1, h2, h3, h4, h5, h6 {
 .myui-table {
     font-family: sans-serif;
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.15); /* Adds a modern elevation effect */
-    margin: 25px 0;
 }
 
 .myui-table-title {
     padding: 0.5em;
+    font-weight: bold;
+    font-size: 1.1em;
 }
 
 .myui-table-actions {

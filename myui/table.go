@@ -116,7 +116,7 @@ func (t *MyUITable[T]) Render() app.UI {
 		Class("myui-table").
 		Body(
 			app.If(t.title != "", func() app.UI {
-				return app.H2().
+				return app.Div().
 					Class("myui-table-title").
 					Text(t.title)
 			}),
