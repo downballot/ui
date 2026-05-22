@@ -200,7 +200,6 @@ func (t *MyUITable[T]) Render() app.UI {
 			app.If(paginated, func() app.UI {
 				return app.Div().
 					Class("myui-table-pagination").
-					Style("display", "flex").
 					Body(
 						Button().
 							Label("Previous").
