@@ -237,6 +237,15 @@ func main() {
 								variables["person_field_name"] = output.PersonField.Name
 							},
 						},
+						{
+							Path: "/user",
+							Component: func() app.Composer {
+								return &page.OrganizationIDUserPage{}
+							},
+							Meta: map[string]string{
+								"title": "Users",
+							},
+						},
 					},
 				},
 				{

@@ -147,6 +147,10 @@ func (c *OrganizationLayout) Render() app.UI {
 					Icon("user-gear").
 					Name("Person Fields").
 					To("/organization/"+c.OrganizationID+"/person-field"),
+				myui.Item().
+					Icon("user").
+					Name("Users").
+					To("/organization/"+c.OrganizationID+"/user"),
 			),
 	}
 	mainLayout.SetRouterView(c.RouterView())

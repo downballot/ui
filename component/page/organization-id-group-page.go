@@ -28,14 +28,6 @@ func (c *OrganizationIDGroupPage) OnUpdate(ctx app.Context) {
 	}
 
 	ctx.Async(func() {
-		var output downballotapi.GetOrganizationResponse
-		err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.OrganizationID, nil, &output)
-		if err != nil {
-			slog.ErrorContext(ctx.Context, "Could not get organizations", "err", err)
-			return
-		}
-	})
-	ctx.Async(func() {
 		var output downballotapi.ListGroupsResponse
 		err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.OrganizationID+"/group?parent_id=null", nil, &output)
 		if err != nil {
