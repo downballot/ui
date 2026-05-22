@@ -37,7 +37,7 @@ func (c *OrganizationIDGroupPage) OnUpdate(ctx app.Context) {
 	})
 	ctx.Async(func() {
 		var output downballotapi.ListGroupsResponse
-		err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.OrganizationID+"/group", nil, &output)
+		err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.OrganizationID+"/group?parent_id=null", nil, &output)
 		if err != nil {
 			slog.ErrorContext(ctx.Context, "Could not get groups", "err", err)
 			return
@@ -61,18 +61,6 @@ func (c *OrganizationIDGroupPage) Render() app.UI {
 					Name: "ID",
 					Value: func(row *downballotapi.Group) any {
 						return row.ID
-					},
-				},
-				{
-					Name: "Parent ID",
-					Value: func(row *downballotapi.Group) any {
-						return row.ParentID
-					},
-					To: func(row *downballotapi.Group) string {
-						if row.ParentID == "" {
-							return ""
-						}
-						return fmt.Sprintf("/organization/%s/group/%s", c.OrganizationID, row.ParentID)
 					},
 				},
 				{
