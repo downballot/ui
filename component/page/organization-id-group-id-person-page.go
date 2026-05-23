@@ -181,6 +181,9 @@ func (c *OrganizationIDGroupIDPersonPage) Render() app.UI {
 			if person.Fields["residential_address"] != "" {
 				title += "\n" + person.Fields["residential_address"]
 			}
+			if person.Fields["residential_address_development"] != "" {
+				title += "\n" + person.Fields["residential_address_development"]
+			}
 
 			coordinates := person.Fields[coordinatesField]
 			if coordinates == "" {

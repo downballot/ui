@@ -97,8 +97,8 @@ func (c *OrganizationIDUserIDPage) Render() app.UI {
 		Body(
 			app.Div().
 				Body(
-					app.Div().Text("Name: " + c.User.Name),
+					app.Div().Text("Name: "+c.User.Name),
+					app.Div().Text("E-mail address: "+c.User.Username),
 				),
-			//c.GroupsTable.Render(),
 		)
 }
