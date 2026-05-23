@@ -12,6 +12,7 @@ type MyUIInput struct {
 	app.Compo
 	UseEvents
 	TypeValue        string
+	DisabledValue    bool
 	LabelValue       string
 	PlaceholderValue string
 	ValueValue       string
@@ -21,6 +22,11 @@ var _ app.Composer = (*MyUIInput)(nil)
 
 func (c *MyUIInput) Placeholder(placeholder string) *MyUIInput {
 	c.PlaceholderValue = placeholder
+	return c
+}
+
+func (c *MyUIInput) Disabled(disabled bool) *MyUIInput {
+	c.DisabledValue = disabled
 	return c
 }
 
@@ -56,6 +62,7 @@ func (c *MyUIInput) Render() app.UI {
 			c.UseEvents.Wrap(
 				app.Input().
 					Class("myui-input-input").
+					Disabled(c.DisabledValue).
 					Type(c.TypeValue).
 					Value(c.ValueValue).
 					Placeholder(c.PlaceholderValue),
