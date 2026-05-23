@@ -1,6 +1,9 @@
 package myui
 
 import (
+	"context"
+	"log/slog"
+
 	"github.com/maxence-charriere/go-app/v11/pkg/app"
 )
 
@@ -51,6 +54,8 @@ func (c *MyUIInput) On(event string, function func(ctx app.Context, e app.Event)
 }
 
 func (c *MyUIInput) Render() app.UI {
+	slog.InfoContext(context.TODO(), "MyUIInput: Render", "label", c.LabelValue, "type", c.TypeValue, "value", c.ValueValue, "placeholder", c.PlaceholderValue, "disabled", c.DisabledValue)
+
 	return app.Span().
 		Class("myui-input").
 		Body(

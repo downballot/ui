@@ -28,3 +28,8 @@ require (
 )
 
 replace github.com/downballot/downballot => ../downballot
+
+//replace github.com/maxence-charriere/go-app/v11 => github.com/tekkamanendless/fork-of-maxence-charriere-go-app/v11 fix-attributes
+replace github.com/maxence-charriere/go-app/v11 => github.com/tekkamanendless/fork-of-maxence-charriere-go-app/v11 v11.0.0-20260523133809-881d4c81ee3f
+
+//replace github.com/maxence-charriere/go-app/v11 => ../../tekkamanendless/fork-of-maxence-charriere-go-app

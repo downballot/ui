@@ -100,6 +100,14 @@ func (c *OrganizationIDGroupIDPage) Render() app.UI {
 
 	return myui.Page().
 		Body(
+			app.Div().
+				Class("page-actions").
+				Body(
+					myui.Button().
+						Label("Persons").
+						Icon("people-group").
+						To(fmt.Sprintf("/organization/%s/group/%s/person", c.OrganizationID, c.GroupID)),
+				),
 			myui.Table[*downballotapi.Group]().
 				Title("Sub-groups").
 				Rows(c.Children).

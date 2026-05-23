@@ -181,7 +181,8 @@ func (c *AddFieldDialog) Render() app.UI {
 					app.Option().
 						Text("").
 						Value("").
-						Disabled(true),
+						Disabled(true).
+						Selected(c.ValueValue == ""),
 					app.Option().
 						Text("true").
 						Value("true").
