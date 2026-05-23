@@ -38,8 +38,9 @@ type OrganizationIDGroupIDPersonPage struct {
 
 	PersonsTable *myui.MyUITable[*downballotapi.Person]
 
-	SubGroupsCollapsed bool
-	FilterCollapsed    bool
+	SubGroupsOpen bool
+	FilterOpen    bool
+	MapOpen       bool
 }
 
 var _ app.Navigator = (*OrganizationIDGroupIDPersonPage)(nil)
@@ -73,6 +74,7 @@ func (c *OrganizationIDGroupIDPersonPage) OnUpdate(ctx app.Context) {
 	}
 
 	c.Limit = 1000
+	c.MapOpen = true
 
 	c.PersonsTable = myui.Table[*downballotapi.Person]().
 		PageSize(10)
@@ -238,7 +240,7 @@ func (c *OrganizationIDGroupIDPersonPage) Render() app.UI {
 		Body(
 			myui.Collapse().
 				Label("Filter").
-				Bind(&c.FilterCollapsed).
+				Bind(&c.FilterOpen).
 				Body(
 					app.Div().
 						Style("display", "flex").
@@ -287,16 +289,20 @@ func (c *OrganizationIDGroupIDPersonPage) Render() app.UI {
 					Text(c.Error).
 					Bad()
 			}),
-			app.Div().
-				Class("map-container").
-				Style("width", "100%").
-				Style("height", "600px").
+			myui.Collapse().
+				Label("Map").
+				Bind(&c.MapOpen).
 				Body(
-					googlemap.GoogleMap().
-						APIKey(app.Getenv("GOOGLE_MAPS_API_KEY")).
-						Center(center).
-						Markers(markers),
-					//Render(),
+					app.Div().
+						Class("map-container").
+						Style("width", "100%").
+						Style("height", "600px").
+						Body(
+							googlemap.GoogleMap().
+								APIKey(app.Getenv("GOOGLE_MAPS_API_KEY")).
+								Center(center).
+								Markers(markers),
+						),
 				),
 			app.Div().
 				Body(
