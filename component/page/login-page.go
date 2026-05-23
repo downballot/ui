@@ -36,8 +36,10 @@ func (c *LoginPage) Render() app.UI {
 			),
 		myui.Input().
 			Label("E-mail address").
+			Name("email").
 			Type("text").
 			Disabled(c.readyForPassword).
+			AutoFocus(!c.readyForPassword).
 			Value(c.username).
 			On("change", c.ValueTo(&c.username)),
 		app.If(c.readyForPassword, func() app.UI {
@@ -49,8 +51,10 @@ func (c *LoginPage) Render() app.UI {
 		app.If(c.readyForPassword, func() app.UI {
 			return myui.Input().
 				Label("Password").
+				Name("password").
 				Type("password").
 				Value(c.password).
+				AutoFocus(true).
 				On("change", c.ValueTo(&c.password))
 		}),
 		app.If(c.error != "", func() app.UI {
@@ -96,7 +100,20 @@ func (c *LoginPage) Render() app.UI {
 								c.message = output.Message
 
 								c.readyForPassword = true
+
 								ctx.Update()
+
+								newFunc := app.FuncOf(
+									func(this app.Value, args []app.Value) any {
+										element := c.JSValue().Call("querySelector", "[autofocus]")
+										if !element.IsNull() {
+											element.Call("focus")
+											slog.InfoContext(ctx.Context, "Defer: Focused on input", "element", element.Get("className").String(), "name", element.Get("name").String())
+										}
+										return nil
+									},
+								)
+								app.Window().Call("setTimeout", newFunc, 100)
 							})
 						})
 				}),

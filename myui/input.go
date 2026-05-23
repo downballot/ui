@@ -14,7 +14,9 @@ func Input() *MyUIInput {
 type MyUIInput struct {
 	app.Compo
 	UseEvents
+	AutoFocusValue   bool
 	TypeValue        string
+	NameValue        string
 	DisabledValue    bool
 	LabelValue       string
 	PlaceholderValue string
@@ -22,6 +24,16 @@ type MyUIInput struct {
 }
 
 var _ app.Composer = (*MyUIInput)(nil)
+
+func (c *MyUIInput) AutoFocus(autoFocus bool) *MyUIInput {
+	c.AutoFocusValue = autoFocus
+	return c
+}
+
+func (c *MyUIInput) Name(name string) *MyUIInput {
+	c.NameValue = name
+	return c
+}
 
 func (c *MyUIInput) Placeholder(placeholder string) *MyUIInput {
 	c.PlaceholderValue = placeholder
@@ -68,6 +80,8 @@ func (c *MyUIInput) Render() app.UI {
 				app.Input().
 					Class("myui-input-input").
 					Disabled(c.DisabledValue).
+					AutoFocus(c.AutoFocusValue).
+					Name(c.NameValue).
 					Type(c.TypeValue).
 					Value(c.ValueValue).
 					Placeholder(c.PlaceholderValue),

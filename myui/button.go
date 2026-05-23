@@ -55,6 +55,8 @@ func (c *MyUIButton) Render() app.UI {
 	element = app.Span().
 		Class("myui-button").
 		Class(disabledClass).
+		TabIndex(0).
+		Role("button").
 		Body(
 			app.If(c.IconValue != "", func() app.UI {
 				return Icon().
@@ -73,7 +75,12 @@ func (c *MyUIButton) Render() app.UI {
 					Class("myui-button-label").
 					Text(c.LabelValue)
 			}),
-		)
+		).
+		OnKeyPress(func(ctx app.Context, e app.Event) {
+			if e.Get("key").String() == "Enter" || e.Get("key").String() == " " {
+				e.Get("target").Call("click")
+			}
+		})
 	if !c.DisabledValue {
 		element = c.UseEvents.Wrap(element)
 	}
