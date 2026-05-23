@@ -94,6 +94,12 @@ func main() {
 						return &page.LoginPage{}
 					},
 				},
+				{
+					Path: "/signup",
+					Component: func() app.Composer {
+						return &page.SignupPage{}
+					},
+				},
 			},
 		},
 		router.Route{

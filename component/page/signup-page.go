@@ -9,15 +9,15 @@ import (
 	"github.com/maxence-charriere/go-app/v11/pkg/app"
 )
 
-type LoginPage struct {
+type SignupPage struct {
 	app.Compo
 
+	name     string
 	username string
-	password string
 	error    string
 }
 
-func (c *LoginPage) OnNav(ctx app.Context) {
+func (c *SignupPage) OnNav(ctx app.Context) {
 	var apiToken string
 	ctx.GetState("api-token", &apiToken)
 	slog.InfoContext(ctx.Context, "State", "api-token", apiToken)
@@ -26,22 +26,22 @@ func (c *LoginPage) OnNav(ctx app.Context) {
 	}
 }
 
-func (c *LoginPage) Render() app.UI {
+func (c *SignupPage) Render() app.UI {
 	return myui.Page().Body(
 		app.Div().
 			Body(
-				app.H2().Text("Downballot Login"),
+				app.H2().Text("Downballot Signup"),
 			),
 		myui.Input().
-			Label("Username").
+			Label("Name").
+			Type("text").
+			Value(c.name).
+			On("change", c.ValueTo(&c.name)),
+		myui.Input().
+			Label("E-mail address").
 			Type("text").
 			Value(c.username).
 			On("change", c.ValueTo(&c.username)),
-		myui.Input().
-			Label("Password").
-			Type("password").
-			Value(c.password).
-			On("change", c.ValueTo(&c.password)),
 		app.If(c.error != "", func() app.UI {
 			return myui.StatusBar().
 				Text(c.error).
@@ -52,18 +52,19 @@ func (c *LoginPage) Render() app.UI {
 			Body(
 				app.Span().Style("flex", "1"),
 				myui.Button().
-					Label("Log in").
+					Label("Sign up").
 					On("click", func(ctx app.Context, e app.Event) {
 						slog.InfoContext(ctx.Context, "Button clicked")
 						ctx.Async(func() {
 							client := downballotapi.New("/")
 
-							input := downballotapi.LoginRequest{
+							input := downballotapi.RegisterUserRequest{
+								Name:     c.name,
 								Username: c.username,
-								Password: c.password,
+								Password: "BOGUS",
 							}
-							var output downballotapi.LoginResponse
-							err := client.Do(ctx.Context, http.MethodPost, "/api/v1/authentication/login", input, &output)
+							var output downballotapi.RegisterUserResponse
+							err := client.Do(ctx.Context, http.MethodPost, "/api/v1/user", input, &output)
 							if err != nil {
 								app.Log(err)
 								c.error = err.Error()
@@ -73,16 +74,15 @@ func (c *LoginPage) Render() app.UI {
 							c.error = ""
 
 							app.Logf("request response: %+v", output)
-							ctx.SetState("api-token", output.Token).Persist()
-							ctx.Navigate("/")
+							ctx.Navigate("/login")
 						})
 					}),
 			),
 		app.Hr(),
 		app.Div().
-			Text("Don't have an account?"),
+			Text("Already have an account?"),
 		app.A().
-			Href("/signup").
-			Text("Sign up"),
+			Href("/login").
+			Text("Log in"),
 	)
 }
