@@ -35,6 +35,7 @@ type OrganizationIDGroupIDPersonPage struct {
 	SelectedFields []string
 	Error          string
 	Persons        []*downballotapi.Person
+	Filters        []*downballotapi.Filter
 
 	PersonsTable *myui.MyUITable[*downballotapi.Person]
 
@@ -112,6 +113,19 @@ func (c *OrganizationIDGroupIDPersonPage) OnUpdate(ctx app.Context) {
 			ctx.Dispatch(func(ctx app.Context) {
 				slog.InfoContext(ctx.Context, "Dispatch: Setting group", "group", output.Group)
 				c.Group = output.Group
+			})
+		})
+		wg.Go(func() {
+			var output downballotapi.ListFiltersResponse
+			err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.OrganizationID+"/filter", nil, &output)
+			if err != nil {
+				slog.ErrorContext(ctx.Context, "Could not get filters", "err", err)
+				return
+			}
+
+			ctx.Dispatch(func(ctx app.Context) {
+				slog.InfoContext(ctx.Context, "Dispatch: Setting filters", "filters", output.Filters)
+				c.Filters = output.Filters
 			})
 		})
 		wg.Go(func() {
@@ -241,6 +255,12 @@ func (c *OrganizationIDGroupIDPersonPage) Render() app.UI {
 		}
 	}
 
+	var allPossibleFilterStrings []string
+	for _, filter := range c.Filters {
+		allPossibleFilterStrings = append(allPossibleFilterStrings, filter.Filter)
+	}
+	slices.Sort(allPossibleFilterStrings)
+
 	if !c.Loaded {
 		return nil
 	}
@@ -261,6 +281,26 @@ func (c *OrganizationIDGroupIDPersonPage) Render() app.UI {
 						Style("display", "flex").
 						Style("flex-direction", "column").
 						Body(
+							app.Select().
+								Name("saved_filter").
+								Body(
+									app.Option().
+										Text("Select a filter or create your own").
+										Value("").
+										//Disabled(true).
+										Selected(c.Filter == "" || slices.Contains(allPossibleFilterStrings, c.Filter)),
+									app.Range(c.Filters).Slice(func(i int) app.UI {
+										filter := c.Filters[i]
+										return app.Option().
+											Text(filter.Name).
+											Value(filter.Filter).
+											Selected(c.Filter == filter.Filter)
+									}),
+								).
+								On("change", func(ctx app.Context, e app.Event) {
+									c.ValueTo(&c.Filter)(ctx, e)
+									ctx.SetState("persist-organization-id-group-id-person-page-filter", c.Filter).Persist()
+								}),
 							myui.Input().
 								Label("Filter").
 								Type("text").
