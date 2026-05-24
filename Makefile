@@ -22,6 +22,10 @@ bin/web/app.wasm: bin/web $(ALL_GO_FILES)
 bin/web/main.css: bin/web static/main.css
 	cp static/main.css $@
 
+bin/web/robots.txt: bin/web static/robots.txt
+	cp static/robots.txt $@
+
+
 .PHONY: run
 run: binaries
 	cd bin && ./ui
