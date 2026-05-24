@@ -49,6 +49,18 @@ func (c *OrganizationIDGroupIDPersonPage) OnNav(ctx app.Context) {
 	slog.InfoContext(ctx.Context, "OrganizationIDGroupIDPersonPage: OnNav")
 	slog.InfoContext(ctx.Context, "OrganizationIDGroupIDPersonPage: OnNav", "OrganizationID", c.OrganizationID)
 
+	var persistFilter string
+	ctx.GetState("persist-organization-id-group-id-person-page-filter", &persistFilter)
+	if persistFilter != "" {
+		c.Filter = persistFilter
+	}
+
+	var persistLimit uint
+	ctx.GetState("persist-organization-id-group-id-person-page-limit", &persistLimit)
+	if persistLimit != 0 {
+		c.Limit = persistLimit
+	}
+
 	if value := ctx.Page().URL().Query().Get("filter"); value != "" {
 		c.Filter = value
 	}
@@ -254,13 +266,19 @@ func (c *OrganizationIDGroupIDPersonPage) Render() app.UI {
 								Type("text").
 								Placeholder("key = 'value' or ...").
 								Value(c.Filter).
-								On("change", c.ValueTo(&c.Filter)),
+								On("change", func(ctx app.Context, e app.Event) {
+									c.ValueTo(&c.Filter)(ctx, e)
+									ctx.SetState("persist-organization-id-group-id-person-page-filter", c.Filter).Persist()
+								}),
 							myui.Input().
 								Label("Limit").
 								Type("number").
 								Placeholder("1000").
 								Value(fmt.Sprintf("%d", c.Limit)).
-								On("change", c.ValueTo(&c.Limit)),
+								On("change", func(ctx app.Context, e app.Event) {
+									c.ValueTo(&c.Limit)(ctx, e)
+									ctx.SetState("persist-organization-id-group-id-person-page-limit", c.Limit).Persist()
+								}),
 							myui.Multiselect().
 								Label("Fields").
 								AllowedValue(func() []myui.SelectOption {
