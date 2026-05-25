@@ -11,9 +11,11 @@ func Button() *MyUIButton {
 type MyUIButton struct {
 	app.Compo
 	UseEvents
+	FlatValue     bool
 	IconValue     string
 	LabelValue    string
 	ToValue       string
+	RoundValue    bool
 	DisabledValue bool
 }
 
@@ -24,6 +26,11 @@ func (c *MyUIButton) Disabled(disabled bool) *MyUIButton {
 	return c
 }
 
+func (c *MyUIButton) Flat(flat bool) *MyUIButton {
+	c.FlatValue = flat
+	return c
+}
+
 func (c *MyUIButton) Icon(icon string) *MyUIButton {
 	c.IconValue = icon
 	return c
@@ -31,6 +38,11 @@ func (c *MyUIButton) Icon(icon string) *MyUIButton {
 
 func (c *MyUIButton) Label(label string) *MyUIButton {
 	c.LabelValue = label
+	return c
+}
+
+func (c *MyUIButton) Round(round bool) *MyUIButton {
+	c.RoundValue = round
 	return c
 }
 
@@ -52,29 +64,50 @@ func (c *MyUIButton) Render() app.UI {
 		disabledClass = "disabled"
 	}
 
+	flatClass := ""
+	if c.FlatValue {
+		flatClass = "flat"
+	}
+
+	roundClass := ""
+	if c.RoundValue {
+		roundClass = "round"
+	}
+
 	element = app.Span().
 		Class("myui-button").
 		Class(disabledClass).
+		Class(roundClass).
+		Class(flatClass).
 		TabIndex(0).
 		Role("button").
 		Body(
-			app.If(c.IconValue != "", func() app.UI {
-				return Icon().
-					Icon(c.IconValue)
-			}),
-			app.If(c.ToValue != "", func() app.UI {
-				return app.A().
-					Href(c.ToValue).
-					Body(
-						app.Span().
-							Class("myui-button-label").
-							Text(c.LabelValue),
-					)
-			}).Else(func() app.UI {
-				return app.Span().
-					Class("myui-button-label").
-					Text(c.LabelValue)
-			}),
+			app.Div().
+				Class("myui-button__content").
+				Body(
+					app.If(c.IconValue != "", func() app.UI {
+						return Icon().
+							Class("myui-button__icon").
+							Icon(c.IconValue)
+					}),
+					app.If(c.LabelValue != "", func() app.UI {
+						return app.Div().
+							Class("myui-button__label").
+							Body(
+								app.If(c.ToValue != "", func() app.UI {
+									return app.A().
+										Href(c.ToValue).
+										Body(
+											app.Span().
+												Text(c.LabelValue),
+										)
+								}).Else(func() app.UI {
+									return app.Span().
+										Text(c.LabelValue)
+								}),
+							)
+					}),
+				),
 		).
 		OnKeyPress(func(ctx app.Context, e app.Event) {
 			if e.Get("key").String() == "Enter" || e.Get("key").String() == " " {

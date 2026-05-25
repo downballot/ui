@@ -115,11 +115,18 @@ func (t *MyUITable[T]) Render() app.UI {
 	return app.Div().
 		Class("myui-table").
 		Body(
-			app.If(t.title != "", func() app.UI {
-				return app.Div().
-					Class("myui-table-title").
-					Text(t.title)
-			}),
+			app.Div().
+				Class("myui-table-header").
+				Body(
+					app.Div().
+						Class("myui-table-title").
+						Text(t.title),
+					app.Span().Style("flex", "1"),
+					Button().
+						Round(true).
+						Flat(true).
+						Icon("ellipsis-vertical"),
+				),
 			app.If(len(t.actions) > 0, func() app.UI {
 				return app.Div().
 					Class("myui-table-actions").

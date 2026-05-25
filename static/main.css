@@ -112,7 +112,6 @@ h1, h2, h3, h4, h5, h6 {
 
 .myui-button {
     display: inline-block;
-    padding: 0.5em 1em;
     border-radius: 0.5em;
     background-color: var(--material-theme-primary);
     color: var(--material-theme-on-primary);
@@ -128,17 +127,38 @@ h1, h2, h3, h4, h5, h6 {
     filter: brightness(1.2);
 }
 
+.myui-button.flat {
+    background-color: transparent;
+    color: var(--material-theme-primary);
+}
+
+.myui-button.round {
+    border-radius: 50%;
+}
+
 .myui-button.disabled {
     filter: brightness(0.5);
     cursor: not-allowed;
     user-select: none;
 }
 
-.myui-button .myui-icon {
-    margin-right: 0.5em;
+.myui-button__icon {
+    margin-left: auto;
+    margin-right: auto;
+    width: 1em;
+    height: 1em;
 }
 
-.myui-button a {
+.myui-button__content {
+    margin-top: auto;
+    margin-bottom: auto;
+    display: flex;
+    flex-direction: row;
+    padding: 0.5em 0.5em;
+    gap: 0.5em;
+}
+
+.myui-button__content a {
     text-decoration: none;
     color: var(--material-theme-on-primary);
 }
@@ -263,6 +283,12 @@ h1, h2, h3, h4, h5, h6 {
 .myui-table {
     font-family: sans-serif;
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.15); /* Adds a modern elevation effect */
+}
+
+.myui-table-header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
 }
 
 .myui-table-title {

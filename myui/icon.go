@@ -11,10 +11,16 @@ func Icon() *MyUIIcon {
 type MyUIIcon struct {
 	app.Compo
 	UseEvents
-	IconValue string
+	ClassValue string
+	IconValue  string
 }
 
 var _ app.Composer = (*MyUIIcon)(nil)
+
+func (c *MyUIIcon) Class(class string) *MyUIIcon {
+	c.ClassValue = class
+	return c
+}
 
 func (c *MyUIIcon) Icon(icon string) *MyUIIcon {
 	c.IconValue = icon
@@ -30,6 +36,7 @@ func (c *MyUIIcon) Render() app.UI {
 	return c.UseEvents.Wrap(
 		app.Span().
 			Class("myui-icon").
+			Class(c.ClassValue).
 			DataSet("icon", c.IconValue).
 			Body(
 				app.I().
