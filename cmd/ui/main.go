@@ -270,12 +270,30 @@ func main() {
 							},
 						},
 						{
-							Path: "/person/:voter_id",
-							Component: func() app.Composer {
-								return &page.OrganizationIDPersonIDPage{}
+							Path:      "/person/:voter_id",
+							Component: nil,
+							PathVariables: func(ctx app.Context, variables map[string]string) {
+								var output downballotapi.GetPersonResponse
+								err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+variables["organization_id"]+"/person/"+variables["voter_id"], nil, &output)
+								if err != nil {
+									slog.ErrorContext(ctx.Context, "Could not get person", "err", err)
+									return
+								}
+
+								for name, value := range output.Person.Fields {
+									variables["person_field_"+name] = value
+								}
 							},
-							Meta: map[string]string{
-								"title": ":voter_id",
+							Children: []router.Route{
+								{
+									Path: "/",
+									Component: func() app.Composer {
+										return &page.OrganizationIDPersonIDPage{}
+									},
+									Meta: map[string]string{
+										"title": ":person_field_name",
+									},
+								},
 							},
 						},
 						{

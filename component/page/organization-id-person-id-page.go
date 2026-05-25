@@ -205,6 +205,12 @@ func (c *OrganizationIDPersonIDPage) Render() app.UI {
 						return *row.NewValue
 					},
 				},
+				{
+					Name: "User",
+					Value: func(row *downballotapi.PersonAudit) any {
+						return row.Username
+					},
+				},
 			}).Render(),
 	)
 }
