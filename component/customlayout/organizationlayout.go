@@ -144,6 +144,10 @@ func (c *OrganizationLayout) Render() app.UI {
 					Name("Groups").
 					To("/organization/"+c.OrganizationID+"/group"),
 				myui.Item().
+					Icon("filter").
+					Name("Filters").
+					To("/organization/"+c.OrganizationID+"/filter"),
+				myui.Item().
 					Icon("user-gear").
 					Name("Person Fields").
 					To("/organization/"+c.OrganizationID+"/person-field"),

@@ -142,6 +142,13 @@ func (c *OrganizationIDGroupIDPage) Render() app.UI {
 						return fmt.Sprintf("/organization/%s/group/%s/person", c.OrganizationID, row.ID)
 					},
 				}).
+				RowAction(myui.RowAction[*downballotapi.Group]{
+					Name: "Edit",
+					Icon: "edit",
+					To: func(row *downballotapi.Group) string {
+						return fmt.Sprintf("/organization/%s/group/%s/edit", c.OrganizationID, row.ID)
+					},
+				}).
 				Render(),
 		)
 }

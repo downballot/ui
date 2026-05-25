@@ -160,6 +160,52 @@ func main() {
 							},
 						},
 						{
+							Path: "/filter",
+							Component: func() app.Composer {
+								return &page.OrganizationIDFilterPage{}
+							},
+							Meta: map[string]string{
+								"title": "Filters",
+							},
+						},
+						{
+							Path: "/filter/new",
+							Component: func() app.Composer {
+								return &page.OrganizationIDFilterNewPage{}
+							},
+							Meta: map[string]string{
+								"title": "New Filter",
+							},
+						},
+						{
+							Path:      "/filter/:filter_id",
+							Component: nil,
+							PathVariables: func(ctx app.Context, variables map[string]string) {
+								var output downballotapi.GetFilterResponse
+								err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+variables["organization_id"]+"/filter/"+variables["filter_id"], nil, &output)
+								if err != nil {
+									slog.ErrorContext(ctx.Context, "Could not get filter", "err", err)
+									return
+								}
+
+								variables["filter_name"] = output.Filter.Name
+							},
+							Meta: map[string]string{
+								"title": ":filter_name",
+							},
+							Children: []router.Route{
+								{
+									Path: "/edit",
+									Component: func() app.Composer {
+										return &page.OrganizationIDFilterIDEditPage{}
+									},
+									Meta: map[string]string{
+										"title": "Edit Filter",
+									},
+								},
+							},
+						},
+						{
 							Path: "/group",
 							Component: func() app.Composer {
 								return &page.OrganizationIDGroupPage{}
@@ -201,6 +247,15 @@ func main() {
 									},
 									Meta: map[string]string{
 										"title": ":group_name",
+									},
+								},
+								{
+									Path: "/edit",
+									Component: func() app.Composer {
+										return &page.OrganizationIDGroupIDEditPage{}
+									},
+									Meta: map[string]string{
+										"title": "Edit Group",
 									},
 								},
 								{

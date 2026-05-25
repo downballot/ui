@@ -79,13 +79,13 @@ func (t *MyUITable[T]) PageSize(pageSize uint) *MyUITable[T] {
 }
 
 func (t *MyUITable[T]) Action(actions ...TableAction) *MyUITable[T] {
-	t.actions = actions
+	t.actions = append(t.actions, actions...)
 
 	return t
 }
 
 func (t *MyUITable[T]) RowAction(rowActions ...RowAction[T]) *MyUITable[T] {
-	t.rowActions = rowActions
+	t.rowActions = append(t.rowActions, rowActions...)
 
 	return t
 }
