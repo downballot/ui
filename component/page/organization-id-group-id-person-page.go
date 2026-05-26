@@ -280,6 +280,26 @@ func (c *OrganizationIDGroupIDPersonPage) Render() app.UI {
 			myui.Collapse().
 				Label("Filter").
 				Bind(&c.FilterOpen).
+				Summary(
+					app.Span().
+						Text(func() string {
+							summary := "Filter: "
+							if c.Filter == "" {
+								summary += "n/a"
+							} else {
+								summary += c.Filter
+							}
+
+							summary += " | Limit: "
+							if c.Limit == 0 {
+								summary += "n/a"
+							} else {
+								summary += fmt.Sprintf("%d", c.Limit)
+							}
+
+							return summary
+						}()),
+				).
 				Body(
 					app.Div().
 						Style("display", "flex").

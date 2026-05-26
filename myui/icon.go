@@ -40,10 +40,9 @@ func (c *MyUIIcon) Render() app.UI {
 			DataSet("icon", c.IconValue).
 			Body(
 				app.I().
+					Class("myui-icon__icon").
 					Class("fa-solid").
-					Class("fa-" + c.IconValue).
-					Class("myui-icon").
-					Text(c.IconValue),
+					Class("fa-" + c.IconValue),
 			),
 	)
 }

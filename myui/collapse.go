@@ -14,11 +14,12 @@ func Collapse() *MyUICollapse {
 type MyUICollapse struct {
 	app.Compo
 	UseEvents
-	LabelValue    string
-	DisabledValue bool
-	OpenValue     bool
-	BindValue     *bool
-	BodyValue     []app.UI
+	ILabel    string
+	IDisabled bool
+	ISummary  []app.UI
+	IBody     []app.UI
+	OpenValue bool
+	BindValue *bool
 }
 
 var _ app.Composer = (*MyUICollapse)(nil)
@@ -37,7 +38,7 @@ func (c *MyUICollapse) OnUpdate(ctx app.Context) {
 	}
 }
 func (c *MyUICollapse) Disabled(disabled bool) *MyUICollapse {
-	c.DisabledValue = disabled
+	c.IDisabled = disabled
 	return c
 }
 
@@ -47,12 +48,17 @@ func (c *MyUICollapse) Open(open bool) *MyUICollapse {
 }
 
 func (c *MyUICollapse) Label(label string) *MyUICollapse {
-	c.LabelValue = label
+	c.ILabel = label
+	return c
+}
+
+func (c *MyUICollapse) Summary(summary ...app.UI) *MyUICollapse {
+	c.ISummary = summary
 	return c
 }
 
 func (c *MyUICollapse) Body(body ...app.UI) *MyUICollapse {
-	c.BodyValue = body
+	c.IBody = body
 	return c
 }
 
@@ -76,7 +82,7 @@ func (c *MyUICollapse) Render() app.UI {
 	var element app.UI
 
 	disabledClass := ""
-	if c.DisabledValue {
+	if c.IDisabled {
 		disabledClass = "disabled"
 	}
 
@@ -93,11 +99,17 @@ func (c *MyUICollapse) Render() app.UI {
 		Class(closedClass).
 		Body(
 			app.Div().
-				Class("myui-collapse-label").
+				Class("myui-collapse__top").
 				Style("cursor", "pointer").
 				Body(
 					app.Span().
-						Text(c.LabelValue),
+						Class("myui-collapse__label").
+						Text(c.ILabel),
+					app.If(len(c.ISummary) > 0, func() app.UI {
+						return app.Span().
+							Class("myui-collapse__summary").
+							Body(c.ISummary...)
+					}),
 					app.Span().Style("flex", "1"),
 					app.Span().
 						Class("myui-collapse-icon").
@@ -117,10 +129,10 @@ func (c *MyUICollapse) Render() app.UI {
 			app.If(c.OpenValue, func() app.UI {
 				return app.Div().
 					Class("myui-collapse-content").
-					Body(c.BodyValue...)
+					Body(c.IBody...)
 			}),
 		)
-	if !c.DisabledValue {
+	if !c.IDisabled {
 		element = c.UseEvents.Wrap(element)
 	}
 	return element

@@ -168,9 +168,14 @@ h1, h2, h3, h4, h5, h6 {
 .myui-collapse {
 }
 
-.myui-collapse-label {
+.myui-collapse__top {
     display: flex;
     flex-direction: row;
+}
+
+.myui-collapse__label {
+    font-weight: bold;
+    margin-right: 1em;
 }
 
 @media print {
