@@ -22,6 +22,14 @@ type MyUITable[T any] struct {
 	IPageIndex              uint
 	IActions                []TableAction
 	IRowActions             []RowAction[T]
+	BindValue               *TableBinding[T]
+}
+
+type TableBinding[T any] struct {
+	PageSize           uint
+	PageIndex          uint
+	VisibleColumnNames []string
+	Rows               []T
 }
 
 type TableAction struct {
@@ -49,6 +57,11 @@ func Table[T any]() *MyUITable[T] {
 	return &table
 }
 
+func (t *MyUITable[T]) Bind(bindValue *TableBinding[T]) *MyUITable[T] {
+	t.BindValue = bindValue
+	return t
+}
+
 func (t *MyUITable[T]) Title(title string) *MyUITable[T] {
 	t.ITitle = title
 	return t
@@ -56,6 +69,9 @@ func (t *MyUITable[T]) Title(title string) *MyUITable[T] {
 
 func (t *MyUITable[T]) Rows(rows []T) *MyUITable[T] {
 	t.IRows = rows
+	if t.BindValue != nil {
+		t.BindValue.Rows = rows
+	}
 	return t
 }
 
@@ -66,6 +82,9 @@ func (t *MyUITable[T]) Columns(columns []TableColumn[T]) *MyUITable[T] {
 
 func (t *MyUITable[T]) VisibleColumns(visibleColumnNames []string) *MyUITable[T] {
 	t.IVisibleColumnNames = visibleColumnNames
+	if t.BindValue != nil {
+		t.BindValue.VisibleColumnNames = visibleColumnNames
+	}
 	return t
 }
 
@@ -77,11 +96,17 @@ func (t *MyUITable[T]) BindVisibleColumns(visibleColumnNames *[]string) *MyUITab
 
 func (t *MyUITable[T]) PageIndex(pageIndex uint) *MyUITable[T] {
 	t.IPageIndex = pageIndex
+	if t.BindValue != nil {
+		t.BindValue.PageIndex = pageIndex
+	}
 	return t
 }
 
 func (t *MyUITable[T]) PageSize(pageSize uint) *MyUITable[T] {
 	t.IPageSize = pageSize
+	if t.BindValue != nil {
+		t.BindValue.PageSize = pageSize
+	}
 	return t
 }
 
@@ -96,9 +121,20 @@ func (t *MyUITable[T]) RowAction(rowActions ...RowAction[T]) *MyUITable[T] {
 }
 
 func (t *MyUITable[T]) Render() app.UI {
-	slog.InfoContext(context.TODO(), "MyUITable: Render", "pageIndex", t.IPageIndex, "pageSize", t.IPageSize, "rows", len(t.IRows))
+	if t.BindValue != nil {
+		t.IPageIndex = t.BindValue.PageIndex
+	}
+	if t.BindValue != nil {
+		t.IPageSize = t.BindValue.PageSize
+	}
+	slog.InfoContext(context.TODO(), "MyUITable: Render", "IPageIndex", t.IPageIndex, "IPageSize", t.IPageSize, "rows", len(t.IRows))
 	slog.InfoContext(context.TODO(), "MyUITable: Render", "IVisibleColumnNames", t.IVisibleColumnNames)
 	slog.InfoContext(context.TODO(), "MyUITable: Render", "IBindVisibleColumnNames", t.IBindVisibleColumnNames)
+	if t.BindValue == nil {
+		slog.InfoContext(context.TODO(), "MyUITable: Render: BindValue is nil")
+	} else {
+		slog.InfoContext(context.TODO(), "MyUITable: Render", "BindValue", *t.BindValue)
+	}
 
 	visibleColumns := []TableColumn[T]{}
 	for _, column := range t.IColumns {
@@ -237,6 +273,9 @@ func (t *MyUITable[T]) Render() app.UI {
 									if t.IBindVisibleColumnNames != nil {
 										*t.IBindVisibleColumnNames = t.IVisibleColumnNames
 									}
+									if t.BindValue != nil {
+										t.BindValue.VisibleColumnNames = t.IVisibleColumnNames
+									}
 									slog.InfoContext(ctx.Context, "MyUITable: Render: Apply", "visibleColumnNames", t.IVisibleColumnNames)
 									ctx.Update()
 								}),
@@ -334,6 +373,9 @@ func (t *MyUITable[T]) Render() app.UI {
 							Disabled(t.IPageIndex < 1).
 							On("click", func(ctx app.Context, e app.Event) {
 								t.IPageIndex--
+								if t.BindValue != nil {
+									t.BindValue.PageIndex = t.IPageIndex
+								}
 								ctx.Update()
 							}),
 						app.Span().
@@ -357,6 +399,9 @@ func (t *MyUITable[T]) Render() app.UI {
 									return
 								}
 								t.IPageIndex = uint(index)
+								if t.BindValue != nil {
+									t.BindValue.PageIndex = uint(index)
+								}
 								ctx.Update()
 							}),
 						app.Span().
@@ -368,6 +413,11 @@ func (t *MyUITable[T]) Render() app.UI {
 							Disabled(t.IPageIndex >= totalPages-1).
 							On("click", func(ctx app.Context, e app.Event) {
 								t.IPageIndex++
+								slog.InfoContext(ctx.Context, "MyUITable: Render: Next", "IPageIndex", t.IPageIndex)
+								if t.BindValue != nil {
+									t.BindValue.PageIndex = t.IPageIndex
+									slog.InfoContext(ctx.Context, "MyUITable: Render: Next", "BindValue", *t.BindValue)
+								}
 								ctx.Update()
 							}),
 						app.Span().
@@ -393,6 +443,9 @@ func (t *MyUITable[T]) Render() app.UI {
 									return
 								}
 								t.IPageSize = uint(pageSize)
+								if t.BindValue != nil {
+									t.BindValue.PageSize = uint(pageSize)
+								}
 								ctx.Update()
 							}),
 					)
