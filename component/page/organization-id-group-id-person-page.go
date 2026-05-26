@@ -39,9 +39,8 @@ type OrganizationIDGroupIDPersonPage struct {
 	PersonsTable               *myui.MyUITable[*downballotapi.Person]
 	PersonsTableVisibleColumns []string
 
-	SubGroupsOpen bool
-	FilterOpen    bool
-	MapOpen       bool
+	FilterOpen bool
+	MapOpen    bool
 }
 
 var _ app.Navigator = (*OrganizationIDGroupIDPersonPage)(nil)

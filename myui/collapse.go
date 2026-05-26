@@ -18,8 +18,7 @@ type MyUICollapse struct {
 	IDisabled bool
 	ISummary  []app.UI
 	IBody     []app.UI
-	OpenValue bool
-	BindValue *bool
+	BindOpen  *bool
 }
 
 var _ app.Composer = (*MyUICollapse)(nil)
@@ -27,14 +26,10 @@ var _ app.Updater = (*MyUICollapse)(nil)
 
 func (c *MyUICollapse) OnUpdate(ctx app.Context) {
 	slog.InfoContext(ctx.Context, "MyUICollapse: OnUpdate")
-	slog.InfoContext(ctx.Context, "MyUICollapse: OnUpdate", "OpenValue", c.OpenValue)
-	slog.InfoContext(ctx.Context, "MyUICollapse: OnUpdate", "BindValue", c.BindValue)
-	if c.BindValue != nil {
-		slog.InfoContext(ctx.Context, "MyUICollapse: OnUpdate", "*BindValue", *c.BindValue)
-	}
-
-	if c.BindValue != nil {
-		c.OpenValue = *c.BindValue
+	if c.BindOpen != nil {
+		slog.InfoContext(ctx.Context, "MyUICollapse: OnUpdate", "*BindValue", *c.BindOpen)
+	} else {
+		slog.InfoContext(ctx.Context, "MyUICollapse: OnUpdate: BindOpen is nil.")
 	}
 }
 func (c *MyUICollapse) Disabled(disabled bool) *MyUICollapse {
@@ -43,7 +38,10 @@ func (c *MyUICollapse) Disabled(disabled bool) *MyUICollapse {
 }
 
 func (c *MyUICollapse) Open(open bool) *MyUICollapse {
-	c.OpenValue = open
+	if c.BindOpen == nil {
+		c.BindOpen = new(bool)
+	}
+	*c.BindOpen = open
 	return c
 }
 
@@ -68,16 +66,16 @@ func (c *MyUICollapse) On(event string, function func(ctx app.Context, e app.Eve
 }
 
 func (c *MyUICollapse) Bind(variable *bool) *MyUICollapse {
-	c.BindValue = variable
+	c.BindOpen = variable
 	return c
 }
 
 func (c *MyUICollapse) Render() app.UI {
-	slog.InfoContext(context.TODO(), "MyUICollapse: Render", "OpenValue", c.OpenValue)
-	slog.InfoContext(context.TODO(), "MyUICollapse: Render", "BindValue", c.BindValue)
-	if c.BindValue != nil {
-		slog.InfoContext(context.TODO(), "MyUICollapse: Render", "*BindValue", *c.BindValue)
+	open := false
+	if c.BindOpen != nil {
+		open = *c.BindOpen
 	}
+	slog.InfoContext(context.TODO(), "MyUICollapse: Render", "BindOpen", c.BindOpen, "open", open)
 
 	var element app.UI
 
@@ -88,7 +86,7 @@ func (c *MyUICollapse) Render() app.UI {
 
 	closedIcon := "chevron-down"
 	closedClass := ""
-	if !c.OpenValue {
+	if !open {
 		closedIcon = "chevron-right"
 		closedClass = "closed"
 	}
@@ -119,14 +117,14 @@ func (c *MyUICollapse) Render() app.UI {
 						),
 				).
 				On("click", func(ctx app.Context, e app.Event) {
-					c.OpenValue = !c.OpenValue
-					if c.BindValue != nil {
-						*c.BindValue = c.OpenValue
+					open = !open
+					if c.BindOpen != nil {
+						*c.BindOpen = open
 					}
-					slog.InfoContext(ctx.Context, "Collapse: OnClick", "OpenValue", c.OpenValue)
+					slog.InfoContext(ctx.Context, "Collapse: OnClick", "BindOpen", c.BindOpen, "open", open)
 					ctx.Update()
 				}),
-			app.If(c.OpenValue, func() app.UI {
+			app.If(open, func() app.UI {
 				return app.Div().
 					Class("myui-collapse-content").
 					Body(c.IBody...)
