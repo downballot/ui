@@ -98,8 +98,8 @@ func (c *MyUIInput[T]) Render() app.UI {
 					Name(c.IName).
 					Type(c.IType).
 					Value(value).
-					Placeholder(c.IPlaceholder).
-					On("change", c.ValueTo(c.BindValue)),
+					Placeholder(c.IPlaceholder),
+				WithOn("change", c.ValueTo(c.BindValue)),
 			),
 		)
 }

@@ -1,6 +1,7 @@
 package myui
 
 import (
+	"log/slog"
 	"reflect"
 
 	"github.com/maxence-charriere/go-app/v11/pkg/app"
@@ -29,7 +30,23 @@ func (c *UseEvents) On(name string, eventHandler app.EventHandler, options ...ap
 	return c
 }
 
-func (c *UseEvents) Wrap(element app.UI) app.UI {
+func WithOn(name string, eventHandler app.EventHandler) eventHandlerEvent {
+	return eventHandlerEvent{
+		name:         name,
+		eventHandler: eventHandler,
+		options:      []app.EventOption{}, // Options are not allowed for our internal events.
+	}
+}
+
+func (c *UseEvents) Wrap(element app.UI, firstEvents ...eventHandlerEvent) app.UI {
+	firstEventsByName := map[string]eventHandlerEvent{}
+	for _, event := range firstEvents {
+		if _, exists := firstEventsByName[event.name]; exists {
+			slog.Warn("WithOn: Event already registered", "name", event.name)
+		}
+		firstEventsByName[event.name] = event
+	}
+
 	func() {
 		//slog.Debug("Wrap", "element", element)
 
@@ -72,9 +89,18 @@ func (c *UseEvents) Wrap(element app.UI) app.UI {
 
 		for _, event := range c.events {
 			//slog.Debug("REGISTERING EVENT", "name", event.name)
+
+			actualEventHandler := event.eventHandler
+			if firstEvent, exists := firstEventsByName[event.name]; exists {
+				actualEventHandler = func(ctx app.Context, e app.Event) {
+					firstEvent.eventHandler(ctx, e)
+					event.eventHandler(ctx, e)
+				}
+			}
+
 			reflectOptions := []reflect.Value{
 				reflect.ValueOf(event.name),
-				reflect.ValueOf(event.eventHandler),
+				reflect.ValueOf(actualEventHandler), // Use our custom one.
 			}
 			for _, option := range event.options {
 				reflectOptions = append(reflectOptions, reflect.ValueOf(option))

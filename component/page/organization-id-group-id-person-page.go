@@ -342,18 +342,18 @@ func (c *OrganizationIDGroupIDPersonPage) Render() app.UI {
 								Label("Filter").
 								Type("text").
 								Placeholder("key = 'value' or ...").
-								Bind(&c.Filter), /*.
-							On("change", func(ctx app.Context, e app.Event) {
-								ctx.SetState("persist-organization-id-group-id-person-page-filter", c.Filter).Persist()
-							})*/
+								Bind(&c.Filter).
+								On("change", func(ctx app.Context, e app.Event) {
+									ctx.SetState("persist-organization-id-group-id-person-page-filter", c.Filter).Persist()
+								}),
 							myui.Input[uint]().
 								Label("Limit").
 								Type("number").
 								Placeholder("1000").
-								Bind(&c.Limit), /*.
-							On("change", func(ctx app.Context, e app.Event) {
-								ctx.SetState("persist-organization-id-group-id-person-page-limit", c.Limit).Persist()
-							})*/
+								Bind(&c.Limit).
+								On("change", func(ctx app.Context, e app.Event) {
+									ctx.SetState("persist-organization-id-group-id-person-page-limit", c.Limit).Persist()
+								}),
 						),
 				),
 			app.Div().
