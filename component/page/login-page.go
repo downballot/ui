@@ -34,14 +34,13 @@ func (c *LoginPage) Render() app.UI {
 			Body(
 				app.H2().Text("Downballot Login"),
 			),
-		myui.Input().
+		myui.Input[string]().
 			Label("E-mail address").
 			Name("email").
 			Type("text").
 			Disabled(c.readyForPassword).
 			AutoFocus(!c.readyForPassword).
-			Value(c.username).
-			On("change", c.ValueTo(&c.username)),
+			Bind(&c.username),
 		app.If(c.readyForPassword, func() app.UI {
 			return app.If(c.message != "", func() app.UI {
 				return myui.StatusBar().
@@ -49,13 +48,12 @@ func (c *LoginPage) Render() app.UI {
 			})
 		}),
 		app.If(c.readyForPassword, func() app.UI {
-			return myui.Input().
+			return myui.Input[string]().
 				Label("Password").
 				Name("password").
 				Type("password").
-				Value(c.password).
 				AutoFocus(true).
-				On("change", c.ValueTo(&c.password))
+				Bind(&c.password)
 		}),
 		app.If(c.error != "", func() app.UI {
 			return myui.StatusBar().

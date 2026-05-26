@@ -36,11 +36,12 @@ type OrganizationIDGroupIDPersonPage struct {
 	Persons        []*downballotapi.Person
 	Filters        []*downballotapi.Filter
 
-	PersonsTable               *myui.MyUITable[*downballotapi.Person]
+	PersonsTableColumns        []myui.TableColumn[*downballotapi.Person]
 	PersonsTableVisibleColumns []string
 
-	FilterOpen bool
-	MapOpen    bool
+	FilterOpen  bool
+	MapOpen     bool
+	ResultsOpen bool
 }
 
 var _ app.Navigator = (*OrganizationIDGroupIDPersonPage)(nil)
@@ -86,21 +87,12 @@ func (c *OrganizationIDGroupIDPersonPage) OnUpdate(ctx app.Context) {
 	}
 
 	c.Limit = 1000
+	c.FilterOpen = false
 	c.MapOpen = true
-
-	c.PersonsTable = myui.Table[*downballotapi.Person]().
-		PageSize(10)
+	c.ResultsOpen = true
 
 	ctx.Async(func() {
 		var wg sync.WaitGroup
-		wg.Go(func() {
-			var output downballotapi.GetOrganizationResponse
-			err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.OrganizationID, nil, &output)
-			if err != nil {
-				slog.ErrorContext(ctx.Context, "Could not get organizations", "err", err)
-				return
-			}
-		})
 		wg.Go(func() {
 			var output downballotapi.GetGroupResponse
 			err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.OrganizationID+"/group/"+c.GroupID, nil, &output)
@@ -123,7 +115,7 @@ func (c *OrganizationIDGroupIDPersonPage) OnUpdate(ctx app.Context) {
 			}
 
 			ctx.Dispatch(func(ctx app.Context) {
-				slog.InfoContext(ctx.Context, "Dispatch: Setting filters", "filters", output.Filters)
+				slog.InfoContext(ctx.Context, "Dispatch: Setting filters", "len(filters)", len(output.Filters))
 				c.Filters = output.Filters
 			})
 		})
@@ -141,29 +133,49 @@ func (c *OrganizationIDGroupIDPersonPage) OnUpdate(ctx app.Context) {
 			}
 			slices.Sort(possibleFields)
 
-			ctx.Dispatch(func(ctx app.Context) {
-				slog.InfoContext(ctx.Context, "Dispatch: Setting person fields", "person fields", output.PersonFields)
-				c.PossibleFields = possibleFields
+			c.PersonsTableColumns = []myui.TableColumn[*downballotapi.Person]{
+				{
+					Name: "Voter ID",
+					Value: func(row *downballotapi.Person) any {
+						return row.VoterID
+					},
+					To: func(row *downballotapi.Person) string {
+						return fmt.Sprintf("/organization/%s/person/%s", c.OrganizationID, row.VoterID)
+					},
+				},
+			}
 
-				c.PersonsTableVisibleColumns = []string{
-					"Voter ID",
-					"name",
-					"phone_number",
-					"residential_address",
-					"residential_address_development",
-					"candidate.notes",
-				}
-				slices.Sort(c.PersonsTableVisibleColumns)
+			for _, name := range possibleFields {
+				c.PersonsTableColumns = append(c.PersonsTableColumns, myui.TableColumn[*downballotapi.Person]{
+					Name: name,
+					Value: func(row *downballotapi.Person) any {
+						return row.Fields[name]
+					},
+				})
+			}
 
-				c.PersonsTable.VisibleColumns(c.PersonsTableVisibleColumns)
-				c.PersonsTable.BindVisibleColumns(&c.PersonsTableVisibleColumns)
-			})
+			slog.InfoContext(ctx.Context, "OrganizationIDGroupIDPersonPage: OnUpdate: Async", "len(PersonsTableColumns)", len(c.PersonsTableColumns))
+
+			c.PossibleFields = possibleFields
+			slog.InfoContext(ctx.Context, "OrganizationIDGroupIDPersonPage: OnUpdate: Async", "len(PossibleFields)", len(c.PossibleFields))
+
+			c.PersonsTableVisibleColumns = []string{
+				"Voter ID",
+				"name",
+				"phone_number",
+				"residential_address",
+				"residential_address_development",
+				"candidate.notes",
+			}
+			slices.Sort(c.PersonsTableVisibleColumns)
+			slog.InfoContext(ctx.Context, "OrganizationIDGroupIDPersonPage: OnUpdate: Async", "len(PersonsTableVisibleColumns)", len(c.PersonsTableVisibleColumns))
 		})
 		wg.Wait()
 
 		ctx.Dispatch(func(ctx app.Context) {
 			c.Loaded = true
 
+			slog.InfoContext(ctx.Context, "Dispatch: Loading complete.  Searching for persons.")
 			c.search(ctx, app.Event{})
 		})
 	})
@@ -274,6 +286,8 @@ func (c *OrganizationIDGroupIDPersonPage) Render() app.UI {
 			Bad()
 	}
 
+	slog.InfoContext(context.TODO(), "OrganizationIDGroupIDPersonPage: Render", "PersonsTableVisibleColumns", c.PersonsTableVisibleColumns)
+
 	return myui.Page().
 		Body(
 			myui.Collapse().
@@ -324,24 +338,22 @@ func (c *OrganizationIDGroupIDPersonPage) Render() app.UI {
 									c.ValueTo(&c.Filter)(ctx, e)
 									ctx.SetState("persist-organization-id-group-id-person-page-filter", c.Filter).Persist()
 								}),
-							myui.Input().
+							myui.Input[string]().
 								Label("Filter").
 								Type("text").
 								Placeholder("key = 'value' or ...").
-								Value(c.Filter).
-								On("change", func(ctx app.Context, e app.Event) {
-									c.ValueTo(&c.Filter)(ctx, e)
-									ctx.SetState("persist-organization-id-group-id-person-page-filter", c.Filter).Persist()
-								}),
-							myui.Input().
+								Bind(&c.Filter), /*.
+							On("change", func(ctx app.Context, e app.Event) {
+								ctx.SetState("persist-organization-id-group-id-person-page-filter", c.Filter).Persist()
+							})*/
+							myui.Input[uint]().
 								Label("Limit").
 								Type("number").
 								Placeholder("1000").
-								Value(fmt.Sprintf("%d", c.Limit)).
-								On("change", func(ctx app.Context, e app.Event) {
-									c.ValueTo(&c.Limit)(ctx, e)
-									ctx.SetState("persist-organization-id-group-id-person-page-limit", c.Limit).Persist()
-								}),
+								Bind(&c.Limit), /*.
+							On("change", func(ctx app.Context, e app.Event) {
+								ctx.SetState("persist-organization-id-group-id-person-page-limit", c.Limit).Persist()
+							})*/
 						),
 				),
 			app.Div().
@@ -378,7 +390,19 @@ func (c *OrganizationIDGroupIDPersonPage) Render() app.UI {
 				Body(
 					app.Text("Total: "+fmt.Sprintf("%d", len(c.Persons))),
 				),
-			c.PersonsTable,
+			myui.Collapse().
+				Label("Results").
+				Bind(&c.ResultsOpen).
+				Summary(
+					app.Text("Results: "+fmt.Sprintf("%d", len(c.Persons))),
+				).
+				Body(
+					myui.Table[*downballotapi.Person]().
+						PageSize(10).
+						Columns(c.PersonsTableColumns).
+						BindVisibleColumns(&c.PersonsTableVisibleColumns).
+						Rows(c.Persons),
+				),
 		)
 }
 
@@ -386,7 +410,6 @@ func (c *OrganizationIDGroupIDPersonPage) search(ctx app.Context, e app.Event) {
 	queryParameters := url.Values{}
 	queryParameters.Set("filter", c.Filter)
 	queryParameters.Set("limit", fmt.Sprintf("%d", c.Limit))
-	//queryParameters.Set("fields", strings.Join(c.SelectedFields, ",")) // Always get all fields.
 	var output downballotapi.ListPersonsResponse
 	err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.OrganizationID+"/group/"+c.GroupID+"/person?"+queryParameters.Encode(), nil, &output)
 	if err != nil {
@@ -396,41 +419,17 @@ func (c *OrganizationIDGroupIDPersonPage) search(ctx app.Context, e app.Event) {
 	}
 	c.Error = ""
 
-	ctx.Dispatch(func(ctx app.Context) {
-		slog.InfoContext(ctx.Context, "Dispatch: Setting persons", "persons", output.Persons)
-		c.Persons = output.Persons
+	slog.InfoContext(ctx.Context, "Setting persons", "len(persons)", len(output.Persons))
+	c.Persons = output.Persons
 
-		slices.SortFunc(c.Persons, func(left, right *downballotapi.Person) int {
-			leftAddress := streetCanon(left.Fields["residential_address"])
-			rightAddress := streetCanon(right.Fields["residential_address"])
+	slices.SortFunc(c.Persons, func(left, right *downballotapi.Person) int {
+		leftAddress := streetCanon(left.Fields["residential_address"])
+		rightAddress := streetCanon(right.Fields["residential_address"])
 
-			return strings.Compare(leftAddress, rightAddress)
-		})
-
-		columns := []myui.TableColumn[*downballotapi.Person]{
-			{
-				Name: "Voter ID",
-				Value: func(row *downballotapi.Person) any {
-					return row.VoterID
-				},
-				To: func(row *downballotapi.Person) string {
-					return fmt.Sprintf("/organization/%s/person/%s", c.OrganizationID, row.VoterID)
-				},
-			},
-		}
-
-		for _, name := range c.PossibleFields {
-			columns = append(columns, myui.TableColumn[*downballotapi.Person]{
-				Name: name,
-				Value: func(row *downballotapi.Person) any {
-					return row.Fields[name]
-				},
-			})
-		}
-
-		c.PersonsTable.Columns(columns)
-		c.PersonsTable.Rows(output.Persons)
+		return strings.Compare(leftAddress, rightAddress)
 	})
+
+	ctx.Update()
 }
 
 func (c *OrganizationIDGroupIDPersonPage) csv(ctx app.Context, e app.Event) {

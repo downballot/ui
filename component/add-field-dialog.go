@@ -139,7 +139,7 @@ func (c *AddFieldDialog) Render() app.UI {
 	if selectedPersonField != nil {
 		switch selectedPersonField.Type {
 		case downballotapi.PersonFieldDefinitionTypeDate:
-			valueElement = myui.Input().
+			valueElement = myui.Input[string]().
 				Label("Value").
 				Type("date").
 				Placeholder("Value").
@@ -162,14 +162,14 @@ func (c *AddFieldDialog) Render() app.UI {
 				).
 				OnChange(c.ValueTo(&c.ValueValue))
 		case downballotapi.PersonFieldDefinitionTypeString:
-			valueElement = myui.Input().
+			valueElement = myui.Input[string]().
 				Label("Value").
 				Type("text").
 				Placeholder("Value").
 				Value(c.ValueValue).
 				On("change", c.ValueTo(&c.ValueValue))
 		case downballotapi.PersonFieldDefinitionTypeInteger:
-			valueElement = myui.Input().
+			valueElement = myui.Input[string]().
 				Label("Value").
 				Type("number").
 				Placeholder("Value").
@@ -194,7 +194,7 @@ func (c *AddFieldDialog) Render() app.UI {
 				).
 				OnChange(c.ValueTo(&c.ValueValue))
 		default:
-			valueElement = myui.Input().
+			valueElement = myui.Input[string]().
 				Label("Value").
 				Type("text").
 				Placeholder("Value").

@@ -32,16 +32,14 @@ func (c *SignupPage) Render() app.UI {
 			Body(
 				app.H2().Text("Downballot Signup"),
 			),
-		myui.Input().
+		myui.Input[string]().
 			Label("Name").
 			Type("text").
-			Value(c.name).
-			On("change", c.ValueTo(&c.name)),
-		myui.Input().
+			Bind(&c.name),
+		myui.Input[string]().
 			Label("E-mail address").
 			Type("text").
-			Value(c.username).
-			On("change", c.ValueTo(&c.username)),
+			Bind(&c.username),
 		app.If(c.error != "", func() app.UI {
 			return myui.StatusBar().
 				Text(c.error).

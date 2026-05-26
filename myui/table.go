@@ -13,15 +13,15 @@ import (
 type MyUITable[T any] struct {
 	app.Compo
 
-	title                   string
-	columns                 []TableColumn[T]
+	ITitle                  string
+	IColumns                []TableColumn[T]
 	IVisibleColumnNames     []string
 	IBindVisibleColumnNames *[]string
-	rows                    []T
-	pageSize                uint
-	pageIndex               uint
-	actions                 []TableAction
-	rowActions              []RowAction[T]
+	IRows                   []T
+	IPageSize               uint
+	IPageIndex              uint
+	IActions                []TableAction
+	IRowActions             []RowAction[T]
 }
 
 type TableAction struct {
@@ -50,17 +50,17 @@ func Table[T any]() *MyUITable[T] {
 }
 
 func (t *MyUITable[T]) Title(title string) *MyUITable[T] {
-	t.title = title
+	t.ITitle = title
 	return t
 }
 
 func (t *MyUITable[T]) Rows(rows []T) *MyUITable[T] {
-	t.rows = rows
+	t.IRows = rows
 	return t
 }
 
 func (t *MyUITable[T]) Columns(columns []TableColumn[T]) *MyUITable[T] {
-	t.columns = columns
+	t.IColumns = columns
 	return t
 }
 
@@ -76,47 +76,49 @@ func (t *MyUITable[T]) BindVisibleColumns(visibleColumnNames *[]string) *MyUITab
 }
 
 func (t *MyUITable[T]) PageIndex(pageIndex uint) *MyUITable[T] {
-	t.pageIndex = pageIndex
+	t.IPageIndex = pageIndex
 	return t
 }
 
 func (t *MyUITable[T]) PageSize(pageSize uint) *MyUITable[T] {
-	t.pageSize = pageSize
+	t.IPageSize = pageSize
 	return t
 }
 
 func (t *MyUITable[T]) Action(actions ...TableAction) *MyUITable[T] {
-	t.actions = append(t.actions, actions...)
+	t.IActions = append(t.IActions, actions...)
 	return t
 }
 
 func (t *MyUITable[T]) RowAction(rowActions ...RowAction[T]) *MyUITable[T] {
-	t.rowActions = append(t.rowActions, rowActions...)
+	t.IRowActions = append(t.IRowActions, rowActions...)
 	return t
 }
 
 func (t *MyUITable[T]) Render() app.UI {
-	slog.InfoContext(context.TODO(), "MyUITable: Render", "pageIndex", t.pageIndex, "pageSize", t.pageSize, "rows", len(t.rows))
+	slog.InfoContext(context.TODO(), "MyUITable: Render", "pageIndex", t.IPageIndex, "pageSize", t.IPageSize, "rows", len(t.IRows))
+	slog.InfoContext(context.TODO(), "MyUITable: Render", "IVisibleColumnNames", t.IVisibleColumnNames)
+	slog.InfoContext(context.TODO(), "MyUITable: Render", "IBindVisibleColumnNames", t.IBindVisibleColumnNames)
 
 	visibleColumns := []TableColumn[T]{}
-	for _, column := range t.columns {
+	for _, column := range t.IColumns {
 		if len(t.IVisibleColumnNames) == 0 || slices.Contains(t.IVisibleColumnNames, column.Name) {
 			visibleColumns = append(visibleColumns, column)
 		}
 	}
 	slog.InfoContext(context.TODO(), "MyUITable: Render", "visibleColumns", visibleColumns)
 
-	rows := t.rows
-	paginated := t.pageSize > 0
+	rows := t.IRows
+	paginated := t.IPageSize > 0
 	totalPages := uint(1)
-	if t.pageSize > 0 && uint(len(t.rows)) > t.pageSize {
-		totalPages = uint(uint(len(t.rows)) / t.pageSize)
-		if uint(len(t.rows))%t.pageSize > 0 {
+	if t.IPageSize > 0 && uint(len(t.IRows)) > t.IPageSize {
+		totalPages = uint(uint(len(t.IRows)) / t.IPageSize)
+		if uint(len(t.IRows))%t.IPageSize > 0 {
 			totalPages++
 		}
 
-		pages := slices.Collect(slices.Chunk(t.rows, int(t.pageSize)))
-		rows = pages[t.pageIndex]
+		pages := slices.Collect(slices.Chunk(t.IRows, int(t.IPageSize)))
+		rows = pages[t.IPageIndex]
 	}
 	pageIndexes := []uint{}
 	for i := uint(0); i < totalPages; i++ {
@@ -138,7 +140,7 @@ func (t *MyUITable[T]) Render() app.UI {
 				Body(
 					app.Div().
 						Class("myui-table-title").
-						Text(t.title),
+						Text(t.ITitle),
 					app.Span().Style("flex", "1"),
 					Button().
 						Round(true).
@@ -198,7 +200,7 @@ func (t *MyUITable[T]) Render() app.UI {
 								Label("Columns").
 								AllowedValue(func() []SelectOption {
 									columns := []SelectOption{}
-									for _, column := range t.columns {
+									for _, column := range t.IColumns {
 										columns = append(columns, SelectOption{
 											Label: column.Name,
 											Value: column.Name,
@@ -230,12 +232,12 @@ func (t *MyUITable[T]) Render() app.UI {
 								}),
 						),
 				),
-			app.If(len(t.actions) > 0, func() app.UI {
+			app.If(len(t.IActions) > 0, func() app.UI {
 				return app.Div().
 					Class("myui-table-actions").
 					Body(
-						app.Range(t.actions).Slice(func(i int) app.UI {
-							action := t.actions[i]
+						app.Range(t.IActions).Slice(func(i int) app.UI {
+							action := t.IActions[i]
 							button := Button().
 								Label(action.Name).
 								Icon(action.Icon).
@@ -264,7 +266,7 @@ func (t *MyUITable[T]) Render() app.UI {
 										return app.Th().
 											Text(column.Name)
 									}),
-									app.If(len(t.rowActions) > 0, func() app.UI {
+									app.If(len(t.IRowActions) > 0, func() app.UI {
 										return app.Th().
 											Text("Actions")
 									}),
@@ -289,11 +291,11 @@ func (t *MyUITable[T]) Render() app.UI {
 													}),
 												)
 										}),
-										app.If(len(t.rowActions) > 0, func() app.UI {
+										app.If(len(t.IRowActions) > 0, func() app.UI {
 											return app.Td().
 												Body(
-													app.Range(t.rowActions).Slice(func(i int) app.UI {
-														rowAction := t.rowActions[i]
+													app.Range(t.IRowActions).Slice(func(i int) app.UI {
+														rowAction := t.IRowActions[i]
 														button := Button().
 															Label(rowAction.Name).
 															Icon(rowAction.Icon)
@@ -319,9 +321,9 @@ func (t *MyUITable[T]) Render() app.UI {
 					Body(
 						Button().
 							Label("Previous").
-							Disabled(t.pageIndex < 1).
+							Disabled(t.IPageIndex < 1).
 							On("click", func(ctx app.Context, e app.Event) {
-								t.pageIndex--
+								t.IPageIndex--
 								ctx.Update()
 							}),
 						app.Span().
@@ -334,8 +336,8 @@ func (t *MyUITable[T]) Render() app.UI {
 									index := pageIndexes[i]
 									return app.Option().
 										Value(index).
-										Selected(index == t.pageIndex).
-										Text(fmt.Sprintf("%d", index+1)).Selected(index == t.pageIndex)
+										Selected(index == t.IPageIndex).
+										Text(fmt.Sprintf("%d", index+1)).Selected(index == t.IPageIndex)
 								}),
 							).
 							OnChange(func(ctx app.Context, e app.Event) {
@@ -344,7 +346,7 @@ func (t *MyUITable[T]) Render() app.UI {
 								if err != nil {
 									return
 								}
-								t.pageIndex = uint(index)
+								t.IPageIndex = uint(index)
 								ctx.Update()
 							}),
 						app.Span().
@@ -353,9 +355,9 @@ func (t *MyUITable[T]) Render() app.UI {
 							Text(fmt.Sprintf("/%d", totalPages)),
 						Button().
 							Label("Next").
-							Disabled(t.pageIndex >= totalPages-1).
+							Disabled(t.IPageIndex >= totalPages-1).
 							On("click", func(ctx app.Context, e app.Event) {
-								t.pageIndex++
+								t.IPageIndex++
 								ctx.Update()
 							}),
 						app.Span().
@@ -370,8 +372,8 @@ func (t *MyUITable[T]) Render() app.UI {
 									pageSize := pageSizes[i]
 									return app.Option().
 										Value(pageSize).
-										Selected(pageSize == t.pageSize).
-										Text(fmt.Sprintf("%d", pageSize)).Selected(pageSize == t.pageSize)
+										Selected(pageSize == t.IPageSize).
+										Text(fmt.Sprintf("%d", pageSize)).Selected(pageSize == t.IPageSize)
 								}),
 							).
 							OnChange(func(ctx app.Context, e app.Event) {
@@ -380,7 +382,7 @@ func (t *MyUITable[T]) Render() app.UI {
 								if err != nil {
 									return
 								}
-								t.pageSize = uint(pageSize)
+								t.IPageSize = uint(pageSize)
 								ctx.Update()
 							}),
 					)

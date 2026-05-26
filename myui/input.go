@@ -2,89 +2,104 @@ package myui
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 
 	"github.com/maxence-charriere/go-app/v11/pkg/app"
 )
 
-func Input() *MyUIInput {
-	return &MyUIInput{}
+func Input[T any]() *MyUIInput[T] {
+	return &MyUIInput[T]{}
 }
 
-type MyUIInput struct {
+type MyUIInput[T any] struct {
 	app.Compo
 	UseEvents
-	AutoFocusValue   bool
-	TypeValue        string
-	NameValue        string
-	DisabledValue    bool
-	LabelValue       string
-	PlaceholderValue string
-	ValueValue       string
+	IAutoFocus   bool
+	IType        string
+	IName        string
+	IDisabled    bool
+	ILabel       string
+	IPlaceholder string
+	BindValue    *T
 }
 
-var _ app.Composer = (*MyUIInput)(nil)
+var _ app.Composer = (*MyUIInput[any])(nil)
 
-func (c *MyUIInput) AutoFocus(autoFocus bool) *MyUIInput {
-	c.AutoFocusValue = autoFocus
+func (c *MyUIInput[T]) AutoFocus(autoFocus bool) *MyUIInput[T] {
+	c.IAutoFocus = autoFocus
 	return c
 }
 
-func (c *MyUIInput) Name(name string) *MyUIInput {
-	c.NameValue = name
+func (c *MyUIInput[T]) Name(name string) *MyUIInput[T] {
+	c.IName = name
 	return c
 }
 
-func (c *MyUIInput) Placeholder(placeholder string) *MyUIInput {
-	c.PlaceholderValue = placeholder
+func (c *MyUIInput[T]) Placeholder(placeholder string) *MyUIInput[T] {
+	c.IPlaceholder = placeholder
 	return c
 }
 
-func (c *MyUIInput) Disabled(disabled bool) *MyUIInput {
-	c.DisabledValue = disabled
+func (c *MyUIInput[T]) Disabled(disabled bool) *MyUIInput[T] {
+	c.IDisabled = disabled
 	return c
 }
 
-func (c *MyUIInput) Type(inputType string) *MyUIInput {
-	c.TypeValue = inputType
+func (c *MyUIInput[T]) Type(inputType string) *MyUIInput[T] {
+	c.IType = inputType
 	return c
 }
 
-func (c *MyUIInput) Label(label string) *MyUIInput {
-	c.LabelValue = label
+func (c *MyUIInput[T]) Label(label string) *MyUIInput[T] {
+	c.ILabel = label
 	return c
 }
 
-func (c *MyUIInput) Value(value string) *MyUIInput {
-	c.ValueValue = value
+func (c *MyUIInput[T]) Value(value T) *MyUIInput[T] {
+	if c.BindValue == nil {
+		c.BindValue = new(T)
+	}
+	*c.BindValue = value
 	return c
 }
 
-func (c *MyUIInput) On(event string, function func(ctx app.Context, e app.Event)) *MyUIInput {
+func (c *MyUIInput[T]) Bind(valuePointer *T) *MyUIInput[T] {
+	c.BindValue = valuePointer
+	return c
+}
+
+func (c *MyUIInput[T]) On(event string, function func(ctx app.Context, e app.Event)) *MyUIInput[T] {
 	c.UseEvents.On(event, function)
 	return c
 }
 
-func (c *MyUIInput) Render() app.UI {
-	slog.InfoContext(context.TODO(), "MyUIInput: Render", "label", c.LabelValue, "type", c.TypeValue, "value", c.ValueValue, "placeholder", c.PlaceholderValue, "disabled", c.DisabledValue)
+func (c *MyUIInput[T]) Render() app.UI {
+	slog.InfoContext(context.TODO(), "MyUIInput: Render", "label", c.ILabel, "type", c.IType, "value", c.BindValue, "placeholder", c.IPlaceholder, "disabled", c.IDisabled)
+
+	value := ""
+	if c.BindValue != nil {
+		value = fmt.Sprintf("%v", *c.BindValue)
+	}
 
 	return app.Span().
 		Class("myui-input").
 		Body(
-			app.If(c.LabelValue != "", func() app.UI {
+			app.If(c.ILabel != "", func() app.UI {
 				return app.Span().
 					Class("myui-input-label").
-					Text(c.LabelValue)
+					Text(c.ILabel)
 			}),
 			c.UseEvents.Wrap(
 				app.Input().
 					Class("myui-input-input").
-					Disabled(c.DisabledValue).
-					AutoFocus(c.AutoFocusValue).
-					Name(c.NameValue).
-					Type(c.TypeValue).
-					Value(c.ValueValue).
-					Placeholder(c.PlaceholderValue),
+					Disabled(c.IDisabled).
+					AutoFocus(c.IAutoFocus).
+					Name(c.IName).
+					Type(c.IType).
+					Value(value).
+					Placeholder(c.IPlaceholder).
+					On("change", c.ValueTo(c.BindValue)),
 			),
 		)
 }

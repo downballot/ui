@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
-	"strconv"
 	"strings"
 
 	"github.com/downballot/downballot/downballotapi"
@@ -50,27 +49,23 @@ func (c *OrganizationIDPersonFieldNewPage) Render() app.UI {
 	slog.InfoContext(context.TODO(), "OrganizationIDPersonFieldNewPage: Render")
 
 	return myui.Page().Body(
-		myui.Input().
+		myui.Input[string]().
 			Label("Name").
 			Type("text").
-			Value(c.Name).
-			On("change", c.ValueTo(&c.Name)),
-		myui.Input().
+			Bind(&c.Name),
+		myui.Input[string]().
 			Label("Type").
 			Type("text").
-			Value(c.Type).
-			On("change", c.ValueTo(&c.Type)),
-		myui.Input().
+			Bind(&c.Type),
+		myui.Input[bool]().
 			Label("Allow Empty").
 			Type("checkbox").
-			Value(strconv.FormatBool(c.AllowEmpty)).
-			On("change", c.ValueTo(&c.AllowEmpty)),
-		myui.Input().
+			Bind(&c.AllowEmpty),
+		myui.Input[string]().
 			Label("Allowed Regex").
 			Type("text").
-			Value(c.AllowedRegex).
-			On("change", c.ValueTo(&c.AllowedRegex)),
-		myui.Input().
+			Bind(&c.AllowedRegex),
+		myui.Input[string]().
 			Label("Allowed Values").
 			Type("text").
 			Value(strings.Join(c.AllowedValues, ",")).

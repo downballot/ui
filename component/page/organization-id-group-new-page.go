@@ -70,17 +70,17 @@ func (c *OrganizationIDGroupNewPage) Render() app.UI {
 			Style("display", "flex").
 			Style("flex-direction", "column").
 			Body(
-				myui.Input().
+				myui.Input[string]().
 					Label("Name").
 					Type("text").
 					Value(c.Name).
 					On("change", c.ValueTo(&c.Name)),
-				myui.Input().
+				myui.Input[string]().
 					Label("Parent").
 					Type("text").
 					Value(c.ParentID).
 					On("change", c.ValueTo(&c.ParentID)),
-				myui.Input().
+				myui.Input[string]().
 					Label("Filter").
 					Type("text").
 					Value(c.Filter).

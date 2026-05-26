@@ -43,21 +43,18 @@ func (c *OrganizationIDFilterNewPage) Render() app.UI {
 			Style("display", "flex").
 			Style("flex-direction", "column").
 			Body(
-				myui.Input().
+				myui.Input[string]().
 					Label("Name").
 					Type("text").
-					Value(c.Name).
-					On("change", c.ValueTo(&c.Name)),
-				myui.Input().
+					Bind(&c.Name),
+				myui.Input[string]().
 					Label("Description").
 					Type("text").
-					Value(c.Description).
-					On("change", c.ValueTo(&c.Description)),
-				myui.Input().
+					Bind(&c.Description),
+				myui.Input[string]().
 					Label("Filter").
 					Type("text").
-					Value(c.Filter).
-					On("change", c.ValueTo(&c.Filter)),
+					Bind(&c.Filter),
 				app.Div().Body(
 					myui.Button().
 						Label("Create").
