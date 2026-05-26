@@ -132,6 +132,34 @@ func (t *MyUITable[T]) Render() app.UI {
 		popoverSelectedColumns = append(popoverSelectedColumns, column.Name)
 	}
 
+	tableMenuItems := []app.UI{}
+	if t.IBindVisibleColumnNames != nil {
+		tableMenuItems = append(tableMenuItems, Item().
+			Icon("list").
+			Name("Select columns...").
+			On("click", func(ctx app.Context, e app.Event) {
+				slog.InfoContext(ctx.Context, "MyUITable: Render: item clicked")
+
+				thisElement := ctx.JSSrc()
+				slog.InfoContext(ctx.Context, "MyUITable: Render", "thisElement", thisElement.Get("className").String())
+				parentElement := ctx.JSSrc().Call("closest", ".myui-table-header")
+				slog.InfoContext(ctx.Context, "MyUITable: Render", "parentElement", parentElement.Get("className").String())
+				if parentElement.IsNull() {
+					return
+				}
+				popoverElement := parentElement.Call("querySelector", "[popover][data-popover-name='table-columns-menu']")
+				if popoverElement.IsNull() {
+					return
+				}
+				slog.InfoContext(ctx.Context, "MyUITable: Render", "popoverElement", popoverElement)
+				options := app.ValueOf(map[string]any{})
+				options.Set("source", thisElement)
+
+				popoverElement.Call("togglePopover", options)
+			}),
+		)
+	}
+
 	return app.Div().
 		Class("myui-table").
 		Body(
@@ -142,56 +170,38 @@ func (t *MyUITable[T]) Render() app.UI {
 						Class("myui-table-title").
 						Text(t.ITitle),
 					app.Span().Style("flex", "1"),
-					Button().
-						Round(true).
-						Flat(true).
-						Icon("ellipsis-vertical").
-						On("click", func(ctx app.Context, e app.Event) {
-							thisElement := ctx.JSSrc()
-							slog.InfoContext(ctx.Context, "MyUITable: Render", "thisElement", thisElement.Get("className").String())
-							parentElement := ctx.JSSrc().Call("closest", ".myui-table-header")
-							slog.InfoContext(ctx.Context, "MyUITable: Render", "parentElement", parentElement.Get("className").String())
-							if parentElement.IsNull() {
-								return
-							}
-							popoverElement := parentElement.Call("querySelector", "[popover][data-popover-name='table-menu']")
-							if popoverElement.IsNull() {
-								return
-							}
-							slog.InfoContext(ctx.Context, "MyUITable: Render", "popoverElement", popoverElement)
-							options := app.ValueOf(map[string]any{})
-							options.Set("source", thisElement)
+					app.If(len(tableMenuItems) > 0, func() app.UI {
+						return Button().
+							Round(true).
+							Flat(true).
+							Icon("ellipsis-vertical").
+							On("click", func(ctx app.Context, e app.Event) {
+								thisElement := ctx.JSSrc()
+								slog.InfoContext(ctx.Context, "MyUITable: Render", "thisElement", thisElement.Get("className").String())
+								parentElement := ctx.JSSrc().Call("closest", ".myui-table-header")
+								slog.InfoContext(ctx.Context, "MyUITable: Render", "parentElement", parentElement.Get("className").String())
+								if parentElement.IsNull() {
+									return
+								}
+								popoverElement := parentElement.Call("querySelector", "[popover][data-popover-name='table-menu']")
+								if popoverElement.IsNull() {
+									return
+								}
+								slog.InfoContext(ctx.Context, "MyUITable: Render", "popoverElement", popoverElement)
+								options := app.ValueOf(map[string]any{})
+								options.Set("source", thisElement)
 
-							popoverElement.Call("togglePopover", options)
-						}),
-					app.Div().
-						Attr("popover", "auto").
-						DataSet("popover-name", "table-menu").
-						Body(
-							Item().
-								Icon("list").
-								Name("Select columns...").
-								On("click", func(ctx app.Context, e app.Event) {
-									slog.InfoContext(ctx.Context, "MyUITable: Render: item clicked")
-
-									thisElement := ctx.JSSrc()
-									slog.InfoContext(ctx.Context, "MyUITable: Render", "thisElement", thisElement.Get("className").String())
-									parentElement := ctx.JSSrc().Call("closest", ".myui-table-header")
-									slog.InfoContext(ctx.Context, "MyUITable: Render", "parentElement", parentElement.Get("className").String())
-									if parentElement.IsNull() {
-										return
-									}
-									popoverElement := parentElement.Call("querySelector", "[popover][data-popover-name='table-columns-menu']")
-									if popoverElement.IsNull() {
-										return
-									}
-									slog.InfoContext(ctx.Context, "MyUITable: Render", "popoverElement", popoverElement)
-									options := app.ValueOf(map[string]any{})
-									options.Set("source", thisElement)
-
-									popoverElement.Call("togglePopover", options)
-								}),
-						),
+								popoverElement.Call("togglePopover", options)
+							})
+					}),
+					app.If(len(tableMenuItems) > 0, func() app.UI {
+						return app.Div().
+							Attr("popover", "auto").
+							DataSet("popover-name", "table-menu").
+							Body(
+								tableMenuItems...,
+							)
+					}),
 					app.Div().
 						Attr("popover", "auto").
 						DataSet("popover-name", "table-columns-menu").
