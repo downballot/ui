@@ -33,6 +33,11 @@ func (c *MyUIItem) To(to string) *MyUIItem {
 	return c
 }
 
+func (c *MyUIItem) On(event string, function func(ctx app.Context, e app.Event)) *MyUIItem {
+	c.UseEvents.On(event, function)
+	return c
+}
+
 func (c *MyUIItem) Render() app.UI {
 	return c.UseEvents.Wrap(
 		app.Div().

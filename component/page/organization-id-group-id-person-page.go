@@ -32,12 +32,12 @@ type OrganizationIDGroupIDPersonPage struct {
 	Filter         string
 	Limit          uint
 	PossibleFields []string
-	SelectedFields []string
 	Error          string
 	Persons        []*downballotapi.Person
 	Filters        []*downballotapi.Filter
 
-	PersonsTable *myui.MyUITable[*downballotapi.Person]
+	PersonsTable               *myui.MyUITable[*downballotapi.Person]
+	PersonsTableVisibleColumns []string
 
 	SubGroupsOpen bool
 	FilterOpen    bool
@@ -146,14 +146,18 @@ func (c *OrganizationIDGroupIDPersonPage) OnUpdate(ctx app.Context) {
 				slog.InfoContext(ctx.Context, "Dispatch: Setting person fields", "person fields", output.PersonFields)
 				c.PossibleFields = possibleFields
 
-				c.SelectedFields = []string{
+				c.PersonsTableVisibleColumns = []string{
+					"Voter ID",
 					"name",
 					"phone_number",
 					"residential_address",
 					"residential_address_development",
 					"candidate.notes",
 				}
-				slices.Sort(c.SelectedFields)
+				slices.Sort(c.PersonsTableVisibleColumns)
+
+				c.PersonsTable.VisibleColumns(c.PersonsTableVisibleColumns)
+				c.PersonsTable.BindVisibleColumns(&c.PersonsTableVisibleColumns)
 			})
 		})
 		wg.Wait()
@@ -319,20 +323,6 @@ func (c *OrganizationIDGroupIDPersonPage) Render() app.UI {
 									c.ValueTo(&c.Limit)(ctx, e)
 									ctx.SetState("persist-organization-id-group-id-person-page-limit", c.Limit).Persist()
 								}),
-							myui.Multiselect().
-								Label("Fields").
-								AllowedValue(func() []myui.SelectOption {
-									selectOptions := []myui.SelectOption{}
-									for _, field := range c.PossibleFields {
-										selectOptions = append(selectOptions, myui.SelectOption{
-											Label: field,
-											Value: field,
-										})
-									}
-									return selectOptions
-								}()...).
-								SelectedValue(c.SelectedFields...).
-								On("change", myui.SelectedValuesTo(&c.SelectedFields)),
 						),
 				),
 			app.Div().
@@ -369,7 +359,7 @@ func (c *OrganizationIDGroupIDPersonPage) Render() app.UI {
 				Body(
 					app.Text("Total: "+fmt.Sprintf("%d", len(c.Persons))),
 				),
-			c.PersonsTable.Render(),
+			c.PersonsTable,
 		)
 }
 
@@ -410,7 +400,7 @@ func (c *OrganizationIDGroupIDPersonPage) search(ctx app.Context, e app.Event) {
 			},
 		}
 
-		for _, name := range c.SelectedFields {
+		for _, name := range c.PossibleFields {
 			columns = append(columns, myui.TableColumn[*downballotapi.Person]{
 				Name: name,
 				Value: func(row *downballotapi.Person) any {
@@ -428,7 +418,6 @@ func (c *OrganizationIDGroupIDPersonPage) csv(ctx app.Context, e app.Event) {
 	queryParameters := url.Values{}
 	queryParameters.Set("filter", c.Filter)
 	queryParameters.Set("limit", fmt.Sprintf("%d", c.Limit))
-	queryParameters.Set("fields", strings.Join(c.SelectedFields, ","))
 	var output restapiclient.RawBytes
 	err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.OrganizationID+"/group/"+c.GroupID+"/person?"+queryParameters.Encode(), nil, &output, restapiclient.OptionHeader("Accept", "text/csv"))
 	if err != nil {

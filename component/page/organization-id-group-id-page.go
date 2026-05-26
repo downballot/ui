@@ -18,11 +18,12 @@ type OrganizationIDGroupIDPage struct {
 
 	Loaded bool
 
-	OrganizationID string `route:"organization_id"`
-	Organization   *downballotapi.Organization
-	GroupID        string `route:"group_id"`
-	Group          *downballotapi.Group
-	Children       []*downballotapi.Group
+	OrganizationID          string `route:"organization_id"`
+	Organization            *downballotapi.Organization
+	GroupID                 string `route:"group_id"`
+	Group                   *downballotapi.Group
+	Children                []*downballotapi.Group
+	IChildrenVisibleColumns []string
 }
 
 var _ app.Navigator = (*OrganizationIDGroupIDPage)(nil)
@@ -128,6 +129,8 @@ func (c *OrganizationIDGroupIDPage) Render() app.UI {
 						},
 					},
 				}).
+				VisibleColumns(c.IChildrenVisibleColumns).
+				BindVisibleColumns(&c.IChildrenVisibleColumns).
 				Action(myui.TableAction{
 					Name: "New group",
 					Icon: "plus",
@@ -148,7 +151,6 @@ func (c *OrganizationIDGroupIDPage) Render() app.UI {
 					To: func(row *downballotapi.Group) string {
 						return fmt.Sprintf("/organization/%s/group/%s/edit", c.OrganizationID, row.ID)
 					},
-				}).
-				Render(),
+				}),
 		)
 }
