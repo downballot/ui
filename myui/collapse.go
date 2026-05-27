@@ -14,11 +14,12 @@ func Collapse() *MyUICollapse {
 type MyUICollapse struct {
 	app.Compo
 	UseEvents
-	ILabel    string
-	IDisabled bool
-	ISummary  []app.UI
-	IBody     []app.UI
-	BindOpen  *bool
+	ILabel       string
+	IDisabled    bool
+	ISummaryText string
+	ISummary     []app.UI
+	IBody        []app.UI
+	BindOpen     *bool
 }
 
 var _ app.Composer = (*MyUICollapse)(nil)
@@ -47,6 +48,11 @@ func (c *MyUICollapse) Open(open bool) *MyUICollapse {
 
 func (c *MyUICollapse) Label(label string) *MyUICollapse {
 	c.ILabel = label
+	return c
+}
+
+func (c *MyUICollapse) SummaryText(summaryText string) *MyUICollapse {
+	c.ISummaryText = summaryText
 	return c
 }
 
@@ -107,6 +113,11 @@ func (c *MyUICollapse) Render() app.UI {
 						return app.Span().
 							Class("myui-collapse__summary").
 							Body(c.ISummary...)
+					}).Else(func() app.UI {
+						return app.Span().
+							Class("myui-collapse__summary-text").
+							Text(c.ISummaryText).
+							Title(c.ISummaryText)
 					}),
 					app.Span().Style("flex", "1"),
 					app.Span().

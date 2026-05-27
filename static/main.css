@@ -173,6 +173,14 @@ h1, h2, h3, h4, h5, h6 {
     flex-direction: row;
 }
 
+.myui-collapse__summary-text {
+    max-width: 40em;
+    overflow-x: hidden;
+    display: inline-block;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
 .myui-collapse__label {
     font-weight: bold;
     margin-right: 1em;

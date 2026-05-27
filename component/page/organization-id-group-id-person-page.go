@@ -297,26 +297,23 @@ func (c *OrganizationIDGroupIDPersonPage) Render() app.UI {
 			myui.Collapse().
 				Label("Filter").
 				Bind(&c.FilterOpen).
-				Summary(
-					app.Span().
-						Text(func() string {
-							summary := "Filter: "
-							if c.Filter == "" {
-								summary += "n/a"
-							} else {
-								summary += c.Filter
-							}
+				SummaryText(func() string {
+					summary := "Filter: "
+					if c.Filter == "" {
+						summary += "n/a"
+					} else {
+						summary += c.Filter
+					}
 
-							summary += " | Limit: "
-							if c.Limit == 0 {
-								summary += "n/a"
-							} else {
-								summary += fmt.Sprintf("%d", c.Limit)
-							}
+					summary += " | Limit: "
+					if c.Limit == 0 {
+						summary += "n/a"
+					} else {
+						summary += fmt.Sprintf("%d", c.Limit)
+					}
 
-							return summary
-						}()),
-				).
+					return summary
+				}()).
 				Body(
 					app.Div().
 						Style("display", "flex").
@@ -390,16 +387,10 @@ func (c *OrganizationIDGroupIDPersonPage) Render() app.UI {
 								Markers(markers),
 						),
 				),
-			app.Div().
-				Body(
-					app.Text("Total: "+fmt.Sprintf("%d", len(c.Persons))),
-				),
 			myui.Collapse().
 				Label("Results").
 				Bind(&c.ResultsOpen).
-				Summary(
-					app.Text("Results: "+fmt.Sprintf("%d", len(c.Persons))),
-				).
+				SummaryText("Results: "+fmt.Sprintf("%d", len(c.Persons))).
 				Body(
 					myui.Table[*downballotapi.Person]().
 						Bind(&c.BindPersonsTable).
