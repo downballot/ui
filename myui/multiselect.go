@@ -52,7 +52,7 @@ func (c *MyUIMultiselect) Render() app.UI {
 		Body(
 			app.If(c.LabelValue != "", func() app.UI {
 				return app.Span().
-					Class("myui-input-label").
+					Class("myui-input__label").
 					Text(c.LabelValue)
 			}),
 			c.UseEvents.Wrap(

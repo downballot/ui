@@ -87,6 +87,7 @@ func (c *UseEvents) Wrap(element app.UI, firstEvents ...eventHandlerEvent) app.U
 			return
 		}
 
+		eventHandledMap := map[string]bool{}
 		for _, event := range c.events {
 			//slog.Debug("REGISTERING EVENT", "name", event.name)
 
@@ -106,6 +107,27 @@ func (c *UseEvents) Wrap(element app.UI, firstEvents ...eventHandlerEvent) app.U
 				reflectOptions = append(reflectOptions, reflect.ValueOf(option))
 			}
 			methodValue.Call(reflectOptions)
+
+			eventHandledMap[event.name] = true
+		}
+
+		for _, event := range firstEvents {
+			if eventHandledMap[event.name] {
+				continue
+			}
+
+			actualEventHandler := event.eventHandler
+
+			reflectOptions := []reflect.Value{
+				reflect.ValueOf(event.name),
+				reflect.ValueOf(actualEventHandler), // Use our custom one.
+			}
+			for _, option := range event.options {
+				reflectOptions = append(reflectOptions, reflect.ValueOf(option))
+			}
+			methodValue.Call(reflectOptions)
+
+			eventHandledMap[event.name] = true
 		}
 	}()
 	return element

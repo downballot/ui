@@ -12,11 +12,11 @@ import (
 type LoginPage struct {
 	app.Compo
 
-	username         string
-	readyForPassword bool
-	password         string
-	error            string
-	message          string
+	IUsername         string
+	IReadyForPassword bool
+	IPassword         string
+	IError            string
+	IMessage          string
 }
 
 func (c *LoginPage) OnNav(ctx app.Context) {
@@ -38,66 +38,68 @@ func (c *LoginPage) Render() app.UI {
 			Label("E-mail address").
 			Name("email").
 			Type("text").
-			Disabled(c.readyForPassword).
-			AutoFocus(!c.readyForPassword).
-			Bind(&c.username),
-		app.If(c.readyForPassword, func() app.UI {
-			return app.If(c.message != "", func() app.UI {
+			Disabled(c.IReadyForPassword).
+			AutoFocus(!c.IReadyForPassword).
+			Bind(&c.IUsername),
+		app.If(c.IReadyForPassword, func() app.UI {
+			return app.If(c.IMessage != "", func() app.UI {
 				return myui.StatusBar().
-					Text(c.message)
+					Text(c.IMessage)
 			})
 		}),
-		app.If(c.readyForPassword, func() app.UI {
+		app.If(c.IReadyForPassword, func() app.UI {
 			return myui.Input[string]().
 				Label("Password").
 				Name("password").
 				Type("password").
 				AutoFocus(true).
-				Bind(&c.password)
+				Bind(&c.IPassword)
 		}),
-		app.If(c.error != "", func() app.UI {
+		app.If(c.IError != "", func() app.UI {
 			return myui.StatusBar().
-				Text(c.error).
+				Text(c.IError).
 				Bad()
 		}),
 		app.Div().
 			Class("login-page-actions").
 			Body(
-				app.If(c.readyForPassword, func() app.UI {
+				app.If(c.IReadyForPassword, func() app.UI {
 					return myui.Button().
 						Label("Cancel").
 						On("click", func(ctx app.Context, e app.Event) {
-							c.error = ""
-							c.password = ""
-							c.username = ""
-							c.readyForPassword = false
-							c.message = ""
+							c.IError = ""
+							c.IPassword = ""
+							c.IUsername = ""
+							c.IReadyForPassword = false
+							c.IMessage = ""
 							ctx.Update()
 						})
 				}),
 				app.Span().Style("flex", "1"),
-				app.If(!c.readyForPassword, func() app.UI {
+				app.If(!c.IReadyForPassword, func() app.UI {
 					return myui.Button().
 						Label("Next").
 						On("click", func(ctx app.Context, e app.Event) {
+							slog.InfoContext(ctx.Context, "LoginPage: Next button clicked", "username", c.IUsername)
+
 							ctx.Async(func() {
 								client := downballotapi.New("/")
 
 								input := downballotapi.EmailRequest{
-									Email: c.username,
+									Email: c.IUsername,
 								}
 								var output downballotapi.EmailResponse
 								err := client.Do(ctx.Context, http.MethodPost, "/api/v1/authentication/email", input, &output)
 								if err != nil {
 									app.Log(err)
-									c.error = err.Error()
+									c.IError = err.Error()
 									ctx.Update()
 									return
 								}
-								c.error = ""
-								c.message = output.Message
+								c.IError = ""
+								c.IMessage = output.Message
 
-								c.readyForPassword = true
+								c.IReadyForPassword = true
 
 								ctx.Update()
 
@@ -115,7 +117,7 @@ func (c *LoginPage) Render() app.UI {
 							})
 						})
 				}),
-				app.If(c.readyForPassword, func() app.UI {
+				app.If(c.IReadyForPassword, func() app.UI {
 					return myui.Button().
 						Label("Log in").
 						On("click", func(ctx app.Context, e app.Event) {
@@ -123,19 +125,19 @@ func (c *LoginPage) Render() app.UI {
 								client := downballotapi.New("/")
 
 								input := downballotapi.LoginRequest{
-									Username: c.username,
-									Password: c.password,
+									Username: c.IUsername,
+									Password: c.IPassword,
 								}
 								var output downballotapi.LoginResponse
 								err := client.Do(ctx.Context, http.MethodPost, "/api/v1/authentication/login", input, &output)
 								if err != nil {
 									app.Log(err)
-									c.error = err.Error()
+									c.IError = err.Error()
 									ctx.Update()
 									return
 								}
-								c.error = ""
-								c.message = "Logged in successfully"
+								c.IError = ""
+								c.IMessage = "Logged in successfully"
 
 								app.Logf("request response: %+v", output)
 								ctx.SetState("api-token", output.Token).Persist()

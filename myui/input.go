@@ -87,19 +87,23 @@ func (c *MyUIInput[T]) Render() app.UI {
 		Body(
 			app.If(c.ILabel != "", func() app.UI {
 				return app.Span().
-					Class("myui-input-label").
+					Class("myui-input__label").
 					Text(c.ILabel)
 			}),
 			c.UseEvents.Wrap(
 				app.Input().
-					Class("myui-input-input").
+					Class("myui-input__input").
 					Disabled(c.IDisabled).
 					AutoFocus(c.IAutoFocus).
 					Name(c.IName).
 					Type(c.IType).
 					Value(value).
 					Placeholder(c.IPlaceholder),
-				WithOn("change", c.ValueTo(c.BindValue)),
+				//WithOn("change", c.ValueTo(c.BindValue)),
+				WithOn("change", func(ctx app.Context, e app.Event) {
+					slog.InfoContext(ctx.Context, "MyUIInput: Change", "value", value)
+					c.ValueTo(c.BindValue)(ctx, e)
+				}),
 			),
 		)
 }
