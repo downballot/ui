@@ -22,6 +22,7 @@ type MyUITable[T any] struct {
 	IPageIndex              uint
 	IActions                []TableAction
 	IRowActions             []RowAction[T]
+	IEmptyMessage           string
 	BindValue               *TableBinding[T]
 }
 
@@ -91,6 +92,11 @@ func (t *MyUITable[T]) VisibleColumns(visibleColumnNames []string) *MyUITable[T]
 func (t *MyUITable[T]) BindVisibleColumns(visibleColumnNames *[]string) *MyUITable[T] {
 	t.IBindVisibleColumnNames = visibleColumnNames
 	t.IVisibleColumnNames = *visibleColumnNames
+	return t
+}
+
+func (t *MyUITable[T]) EmptyMessage(emptyMessage string) *MyUITable[T] {
+	t.IEmptyMessage = emptyMessage
 	return t
 }
 
@@ -194,6 +200,11 @@ func (t *MyUITable[T]) Render() app.UI {
 				popoverElement.Call("togglePopover", options)
 			}),
 		)
+	}
+
+	emptyMessage := t.IEmptyMessage
+	if emptyMessage == "" {
+		emptyMessage = "No results found"
 	}
 
 	return app.Div().
@@ -323,6 +334,18 @@ func (t *MyUITable[T]) Render() app.UI {
 						),
 					app.TBody().
 						Body(
+							app.If(len(rows) == 0, func() app.UI {
+								return app.Tr().
+									Body(
+										app.Td().
+											ColSpan(len(visibleColumns)).
+											Body(
+												app.Div().
+													Class("myui-table__empty-message").
+													Text(emptyMessage),
+											),
+									)
+							}),
 							app.Range(rows).Slice(func(i int) app.UI {
 								row := rows[i]
 								return app.Tr().

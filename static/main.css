@@ -351,6 +351,11 @@ h1, h2, h3, h4, h5, h6 {
     background-color: #f1f1f1; /* Visual cue when interacting with rows */
 }
 
+.myui-table__empty-message {
+    text-align: center;
+    font-style: italic;
+}
+
 .myui-table-pagination {
     padding: 0.5em;
     display: flex;
