@@ -24,8 +24,8 @@ github.com/tekkamanendless/httperror v1.0.1 h1:lKf7qlWcb6Khdxj8ZY3H2GdBX30+J1ACM
 github.com/tekkamanendless/httperror v1.0.1/go.mod h1:tYTDnOTP2Av5x3e2CUf9t671QPMIJvgS/8ErXGQ4pK0=
 github.com/tekkamanendless/restapiclient v0.1.1 h1:l9bHkjox3YY0bP7zChHxC1aPnF6TAi+sYwwndtQSBqo=
 github.com/tekkamanendless/restapiclient v0.1.1/go.mod h1:4Y2THYYgCo5KFhCgVqdyxUmQp9SutWuFdZ74Wabedho=
-github.com/threatmate/restfulwrapper v0.1.4 h1:rJ55dULOFa8SHfpbG5B2twMUdURZbDlRO/jKjr2v15s=
-github.com/threatmate/restfulwrapper v0.1.4/go.mod h1:YPFh59HmOgFSoelAHbGyWmITXAJpDoFMydzHwR1ftUk=
+github.com/tekkamanendless/restfulwrapper v0.2.0 h1:jsO5UNfxHlyrz3nKDHZSx0x8wHoY53xG/VBw+FSOIF4=
+github.com/tekkamanendless/restfulwrapper v0.2.0/go.mod h1:HyEfpup75rxPzV/H6aWNyu5xmS+u55UqLRgkdjCyTxE=
 golang.org/x/sys v0.45.0 h1:dO4czNzziLiiXplLQgBCEpCvXQ3dnkn0SdaZSYdQ+FY=
 golang.org/x/sys v0.45.0/go.mod h1:4GL1E5IUh+htKOUEOaiffhrAeqysfVGipDYzABqnCmw=
 golang.org/x/text v0.37.0 h1:Cqjiwd9eSg8e0QAkyCaQTNHFIIzWtidPahFWR83rTrc=

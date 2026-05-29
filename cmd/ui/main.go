@@ -121,242 +121,269 @@ func main() {
 					},
 				},
 				{
-					Path: "/organization",
-					Component: func() app.Composer {
-						return &page.OrganizationPage{}
-					},
-					Meta: map[string]string{
-						"title": "Organizations",
-					},
-				},
-				{
-					Path: "/organization/:organization_id",
-					PathVariables: func(ctx app.Context, variables map[string]string) {
-						//ctx.Dispatch(func(ctx app.Context) {
-						var output downballotapi.GetOrganizationResponse
-						err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+variables["organization_id"], nil, &output)
-						if err != nil {
-							slog.ErrorContext(ctx.Context, "Could not get organization", "err", err)
-							return
-						}
-
-						variables["organization_name"] = output.Organization.Name
-						//})
-					},
-					Meta: map[string]string{
-						"autocrumbs": "true",
-					},
-					Component: func() app.Composer {
-						return &customlayout.OrganizationLayout{}
-					},
+					Path:      "/organization",
+					Component: nil,
 					Children: []router.Route{
 						{
 							Path: "/",
 							Component: func() app.Composer {
-								return &page.OrganizationIDPage{}
+								return &page.OrganizationPage{}
 							},
 							Meta: map[string]string{
-								"title": ":organization_name",
+								"title": "Organizations",
 							},
 						},
 						{
-							Path: "/filter",
-							Component: func() app.Composer {
-								return &page.OrganizationIDFilterPage{}
-							},
-							Meta: map[string]string{
-								"title": "Filters",
-							},
-						},
-						{
-							Path: "/filter/new",
-							Component: func() app.Composer {
-								return &page.OrganizationIDFilterNewPage{}
-							},
-							Meta: map[string]string{
-								"title": "New Filter",
-							},
-						},
-						{
-							Path:      "/filter/:filter_id",
-							Component: nil,
+							Path: "/:organization_id",
 							PathVariables: func(ctx app.Context, variables map[string]string) {
-								var output downballotapi.GetFilterResponse
-								err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+variables["organization_id"]+"/filter/"+variables["filter_id"], nil, &output)
+								//ctx.Dispatch(func(ctx app.Context) {
+								var output downballotapi.GetOrganizationResponse
+								err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+variables["organization_id"], nil, &output)
 								if err != nil {
-									slog.ErrorContext(ctx.Context, "Could not get filter", "err", err)
+									slog.ErrorContext(ctx.Context, "Could not get organization", "err", err)
 									return
 								}
 
-								variables["filter_name"] = output.Filter.Name
+								variables["organization_name"] = output.Organization.Name
+								//})
 							},
 							Meta: map[string]string{
-								"title": ":filter_name",
+								"autocrumbs": "true",
 							},
-							Children: []router.Route{
-								{
-									Path: "/edit",
-									Component: func() app.Composer {
-										return &page.OrganizationIDFilterIDEditPage{}
-									},
-									Meta: map[string]string{
-										"title": "Edit Filter",
-									},
-								},
-							},
-						},
-						{
-							Path: "/group",
 							Component: func() app.Composer {
-								return &page.OrganizationIDGroupPage{}
-							},
-							Meta: map[string]string{
-								"title": "Groups",
-							},
-						},
-						{
-							Path: "/group/new",
-							Component: func() app.Composer {
-								return &page.OrganizationIDGroupNewPage{}
-							},
-							Meta: map[string]string{
-								"title": "New Group",
-							},
-						},
-						{
-							Path:      "/group/:group_id",
-							Component: nil,
-							PathVariables: func(ctx app.Context, variables map[string]string) {
-								var output downballotapi.GetGroupResponse
-								err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+variables["organization_id"]+"/group/"+variables["group_id"], nil, &output)
-								if err != nil {
-									slog.ErrorContext(ctx.Context, "Could not get group", "err", err)
-									return
-								}
-
-								variables["group_name"] = output.Group.Name
-							},
-							Meta: map[string]string{
-								"title": ":group_name",
+								return &customlayout.OrganizationLayout{}
 							},
 							Children: []router.Route{
 								{
 									Path: "/",
 									Component: func() app.Composer {
-										return &page.OrganizationIDGroupIDPage{}
+										return &page.OrganizationIDPage{}
 									},
 									Meta: map[string]string{
-										"title": ":group_name",
+										"title": ":organization_name",
 									},
 								},
 								{
-									Path: "/edit",
-									Component: func() app.Composer {
-										return &page.OrganizationIDGroupIDEditPage{}
-									},
-									Meta: map[string]string{
-										"title": "Edit Group",
-									},
-								},
-								{
-									Path: "/person",
-									Component: func() app.Composer {
-										return &page.OrganizationIDGroupIDPersonPage{}
-									},
-									Meta: map[string]string{
-										"title": "Persons",
-									},
-								},
-							},
-						},
-						{
-							Path:      "/person/:voter_id",
-							Component: nil,
-							PathVariables: func(ctx app.Context, variables map[string]string) {
-								var output downballotapi.GetPersonResponse
-								err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+variables["organization_id"]+"/person/"+variables["voter_id"], nil, &output)
-								if err != nil {
-									slog.ErrorContext(ctx.Context, "Could not get person", "err", err)
-									return
-								}
+									Path:      "/filter",
+									Component: nil,
+									Children: []router.Route{
+										{
+											Path: "/",
+											Component: func() app.Composer {
+												return &page.OrganizationIDFilterPage{}
+											},
+											Meta: map[string]string{
+												"title": "Filters",
+											},
+										},
+										{
+											Path: "/new",
+											Component: func() app.Composer {
+												return &page.OrganizationIDFilterNewPage{}
+											},
+											Meta: map[string]string{
+												"title": "New Filter",
+											},
+										},
+										{
+											Path:      "/:filter_id",
+											Component: nil,
+											PathVariables: func(ctx app.Context, variables map[string]string) {
+												var output downballotapi.GetFilterResponse
+												err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+variables["organization_id"]+"/filter/"+variables["filter_id"], nil, &output)
+												if err != nil {
+													slog.ErrorContext(ctx.Context, "Could not get filter", "err", err)
+													return
+												}
 
-								for name, value := range output.Person.Fields {
-									variables["person_field_"+name] = value
-								}
-							},
-							Children: []router.Route{
-								{
-									Path: "/",
-									Component: func() app.Composer {
-										return &page.OrganizationIDPersonIDPage{}
-									},
-									Meta: map[string]string{
-										"title": ":person_field_name",
+												variables["filter_name"] = output.Filter.Name
+											},
+											Meta: map[string]string{
+												"title": ":filter_name",
+											},
+											Children: []router.Route{
+												{
+													Path: "/edit",
+													Component: func() app.Composer {
+														return &page.OrganizationIDFilterIDEditPage{}
+													},
+													Meta: map[string]string{
+														"title": "Edit Filter",
+													},
+												},
+											},
+										},
 									},
 								},
-							},
-						},
-						{
-							Path: "/person-field",
-							Component: func() app.Composer {
-								return &page.OrganizationIDPersonFieldPage{}
-							},
-							Meta: map[string]string{
-								"title": "Person Fields",
-							},
-						},
-						{
-							Path: "/person-field/new",
-							Component: func() app.Composer {
-								return &page.OrganizationIDPersonFieldNewPage{}
-							},
-							Meta: map[string]string{
-								"title": "New Person Field",
-							},
-						},
-						{
-							Path: "/person-field/:person_field_id",
-							Component: func() app.Composer {
-								return &page.OrganizationIDPersonFieldIDPage{}
-							},
-							Meta: map[string]string{
-								"title": ":person_field_name",
-							},
-							PathVariables: func(ctx app.Context, variables map[string]string) {
-								var output downballotapi.GetPersonFieldResponse
-								err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+variables["organization_id"]+"/person-field/"+variables["person_field_id"], nil, &output)
-								if err != nil {
-									slog.ErrorContext(ctx.Context, "Could not get person field", "err", err)
-									return
-								}
-								variables["person_field_name"] = output.PersonField.Name
-							},
-						},
-						{
-							Path: "/user",
-							Component: func() app.Composer {
-								return &page.OrganizationIDUserPage{}
-							},
-							Meta: map[string]string{
-								"title": "Users",
-							},
-						},
-						{
-							Path: "/user/:user_id",
-							Component: func() app.Composer {
-								return &page.OrganizationIDUserIDPage{}
-							},
-							Meta: map[string]string{
-								"title": ":user_id",
-							},
-							PathVariables: func(ctx app.Context, variables map[string]string) {
-								var output downballotapi.GetUserResponse
-								err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+variables["organization_id"]+"/user/"+variables["user_id"], nil, &output)
-								if err != nil {
-									slog.ErrorContext(ctx.Context, "Could not get user", "err", err)
-									return
-								}
-								variables["user_name"] = output.User.Name
+								{
+									Path:      "/group",
+									Component: nil,
+									Children: []router.Route{
+										{
+											Path: "/",
+											Component: func() app.Composer {
+												return &page.OrganizationIDGroupPage{}
+											},
+											Meta: map[string]string{
+												"title": "Groups",
+											},
+										},
+										{
+											Path: "/new",
+											Component: func() app.Composer {
+												return &page.OrganizationIDGroupNewPage{}
+											},
+											Meta: map[string]string{
+												"title": "New Group",
+											},
+										},
+										{
+											Path:      "/:group_id",
+											Component: nil,
+											PathVariables: func(ctx app.Context, variables map[string]string) {
+												var output downballotapi.GetGroupResponse
+												err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+variables["organization_id"]+"/group/"+variables["group_id"], nil, &output)
+												if err != nil {
+													slog.ErrorContext(ctx.Context, "Could not get group", "err", err)
+													return
+												}
+
+												variables["group_name"] = output.Group.Name
+											},
+											Children: []router.Route{
+												{
+													Path: "/",
+													Component: func() app.Composer {
+														return &page.OrganizationIDGroupIDPage{}
+													},
+													Meta: map[string]string{
+														"title": ":group_name",
+													},
+												},
+												{
+													Path: "/edit",
+													Component: func() app.Composer {
+														return &page.OrganizationIDGroupIDEditPage{}
+													},
+													Meta: map[string]string{
+														"title": "Edit Group",
+													},
+												},
+												{
+													Path: "/person",
+													Component: func() app.Composer {
+														return &page.OrganizationIDGroupIDPersonPage{}
+													},
+													Meta: map[string]string{
+														"title": "Persons",
+													},
+												},
+											},
+										},
+									},
+								},
+								{
+									Path:      "/person/:voter_id",
+									Component: nil,
+									PathVariables: func(ctx app.Context, variables map[string]string) {
+										var output downballotapi.GetPersonResponse
+										err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+variables["organization_id"]+"/person/"+variables["voter_id"], nil, &output)
+										if err != nil {
+											slog.ErrorContext(ctx.Context, "Could not get person", "err", err)
+											return
+										}
+
+										for name, value := range output.Person.Fields {
+											variables["person_field_"+name] = value
+										}
+									},
+									Children: []router.Route{
+										{
+											Path: "/",
+											Component: func() app.Composer {
+												return &page.OrganizationIDPersonIDPage{}
+											},
+											Meta: map[string]string{
+												"title": ":person_field_name",
+											},
+										},
+									},
+								},
+								{
+									Path:      "/person-field",
+									Component: nil,
+									Children: []router.Route{
+										{
+											Path: "/",
+											Component: func() app.Composer {
+												return &page.OrganizationIDPersonFieldPage{}
+											},
+											Meta: map[string]string{
+												"title": "Person Fields",
+											},
+										},
+										{
+											Path: "/new",
+											Component: func() app.Composer {
+												return &page.OrganizationIDPersonFieldNewPage{}
+											},
+											Meta: map[string]string{
+												"title": "New Person Field",
+											},
+										},
+										{
+											Path: "/:person_field_id",
+											Component: func() app.Composer {
+												return &page.OrganizationIDPersonFieldIDPage{}
+											},
+											Meta: map[string]string{
+												"title": ":person_field_name",
+											},
+											PathVariables: func(ctx app.Context, variables map[string]string) {
+												var output downballotapi.GetPersonFieldResponse
+												err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+variables["organization_id"]+"/person-field/"+variables["person_field_id"], nil, &output)
+												if err != nil {
+													slog.ErrorContext(ctx.Context, "Could not get person field", "err", err)
+													return
+												}
+												variables["person_field_name"] = output.PersonField.Name
+											},
+										},
+									},
+								},
+								{
+									Path:      "/user",
+									Component: nil,
+									Children: []router.Route{
+										{
+											Path: "/",
+											Component: func() app.Composer {
+												return &page.OrganizationIDUserPage{}
+											},
+											Meta: map[string]string{
+												"title": "Users",
+											},
+										},
+										{
+											Path: "/:user_id",
+											Component: func() app.Composer {
+												return &page.OrganizationIDUserIDPage{}
+											},
+											Meta: map[string]string{
+												"title": ":user_id",
+											},
+											PathVariables: func(ctx app.Context, variables map[string]string) {
+												var output downballotapi.GetUserResponse
+												err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+variables["organization_id"]+"/user/"+variables["user_id"], nil, &output)
+												if err != nil {
+													slog.ErrorContext(ctx.Context, "Could not get user", "err", err)
+													return
+												}
+												variables["user_name"] = output.User.Name
+											},
+										},
+									},
+								},
 							},
 						},
 					},
