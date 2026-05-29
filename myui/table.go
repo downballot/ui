@@ -338,7 +338,7 @@ func (t *MyUITable[T]) Render() app.UI {
 								return app.Tr().
 									Body(
 										app.Td().
-											ColSpan(len(visibleColumns)).
+											ColSpan(len(visibleColumns) + 1 /* +1 for the actions column */).
 											Body(
 												app.Div().
 													Class("myui-table__empty-message").
