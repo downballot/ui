@@ -46,7 +46,6 @@ func (c *MainLayout) Render() app.UI {
 						Class("main-layout-content").
 						Body(
 							app.If(c.RouterViewComponent.RouterView() != nil, func() app.UI {
-								//return c.RouterViewComponent.RouterView().Render()
 								return c.RouterViewComponent.RouterView()
 							}),
 						),

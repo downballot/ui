@@ -69,6 +69,5 @@ func (c *DownballotLayout) Render() app.UI {
 
 	slog.InfoContext(context.TODO(), "DownballotLayout: Render", "mainLayout", mainLayout)
 
-	//return mainLayout.Render()
 	return mainLayout
 }

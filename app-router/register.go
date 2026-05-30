@@ -39,8 +39,6 @@ type registeredRoute struct {
 
 var registeredRoutes []registeredRoute
 
-var globalRouteCount uint64
-
 // Register the various routes.
 func Register(ctx context.Context, routes ...Route) error {
 	flatRoutes, err := flattenRoutes(ctx, internalRoute{}, routes...)
@@ -71,9 +69,6 @@ func Register(ctx context.Context, routes ...Route) error {
 					Route:                  *route,
 					PathVariablesFunctions: r.PathVariablesFunctions,
 				}
-
-				globalRouteCount++
-				wrapper.GlobalRouteCount = globalRouteCount
 
 				slog.InfoContext(ctx, "Register: func()", "wrapper", fmt.Sprintf("%p", &wrapper), "LayoutComponent", fmt.Sprintf("%T", wrapper.LayoutComponent), "LayoutComponentPointer", fmt.Sprintf("%p", wrapper.LayoutComponent))
 				return &wrapper

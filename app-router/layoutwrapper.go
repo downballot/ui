@@ -19,31 +19,15 @@ type LayoutWrapper struct {
 	Route                  route.Route
 	RouteVariables         map[string]string
 	PathVariablesFunctions []func(ctx app.Context, variables map[string]string)
-
-	GlobalRouteCount uint64
 }
 
 func (c *LayoutWrapper) OnMount(ctx app.Context) {
 	slog.InfoContext(ctx.Context, "LayoutWrapper: OnMount", "url", ctx.Page().URL())
-
-	/*
-		if v, ok := c.LayoutComponent.(app.Mounter); ok {
-			v.OnMount(ctx)
-		}
-	*/
 }
 
 func (c *LayoutWrapper) OnNav(ctx app.Context) {
 	slog.InfoContext(ctx.Context, "LayoutWrapper: OnNav", "url", ctx.Page().URL())
 	slog.InfoContext(ctx.Context, "LayoutWrapper: OnNav", "self", fmt.Sprintf("%p", c), "LayoutComponent", fmt.Sprintf("%T", c.LayoutComponent), "LayoutComponentPointer", fmt.Sprintf("%p", c.LayoutComponent))
-	if currentRouteURL == "" {
-		currentRouteURL = ctx.Page().URL().String()
-	} else if currentRouteURL == ctx.Page().URL().String() {
-		slog.InfoContext(ctx.Context, "LayoutWrapper: OnNav: Preventing update because the URL has not changed.", "url", ctx.Page().URL())
-		ctx.PreventUpdate()
-		return
-	}
-	currentRouteURL = ctx.Page().URL().String()
 
 	matched, variables := c.Route.Match(ctx.Page().URL().Path)
 
@@ -81,17 +65,8 @@ func (c *LayoutWrapper) OnNav(ctx app.Context) {
 	}
 }
 
-var currentRouteURL string
-
 func (c *LayoutWrapper) OnUpdate(ctx app.Context) {
 	slog.InfoContext(ctx.Context, "LayoutWrapper: OnUpdate", "url", ctx.Page().URL())
-	if currentRouteURL == "" {
-		// TODO: ???
-	} else if currentRouteURL == ctx.Page().URL().String() {
-		slog.InfoContext(ctx.Context, "LayoutWrapper: OnUpdate: Preventing update because the URL has not changed.", "url", ctx.Page().URL())
-		ctx.PreventUpdate()
-		return
-	}
 }
 
 // TODO: It looks like we want to leverage OnMount (first time) and OnUpdate (subsequent times) to tell our components that something has changed.
@@ -100,6 +75,5 @@ func (c *LayoutWrapper) OnUpdate(ctx app.Context) {
 func (c *LayoutWrapper) Render() app.UI {
 	slog.InfoContext(context.TODO(), "LayoutWrapper: Render")
 
-	//return c.LayoutComponent.Render()
 	return c.LayoutComponent
 }

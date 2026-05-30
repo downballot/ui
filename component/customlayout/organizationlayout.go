@@ -10,7 +10,6 @@ import (
 	"github.com/downballot/ui/component/layout"
 	"github.com/downballot/ui/material"
 	"github.com/downballot/ui/myui"
-	"github.com/downballot/ui/panicafter"
 	"github.com/maxence-charriere/go-app/v11/pkg/app"
 )
 
@@ -168,8 +167,5 @@ func (c *OrganizationLayout) Render() app.UI {
 	}
 	mainLayout.SetRouterView(c.RouterView())
 
-	panicafter.After(100)
-
-	//return mainLayout.Render()
 	return mainLayout
 }
