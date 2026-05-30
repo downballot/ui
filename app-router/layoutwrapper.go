@@ -78,20 +78,6 @@ func (c *LayoutWrapper) OnNav(ctx app.Context) {
 				slog.WarnContext(ctx.Context, "LayoutWrapper: OnNav: Could not apply variables.", "err", err)
 			}
 		}
-		/*
-			if v, ok := c.LayoutComponent.(app.Updater); ok {
-				//v.OnUpdate(ctx)
-				ctx.Dispatch(v.OnUpdate)
-			}
-				//*/
-		/*
-			if v, ok := c.LayoutComponent.(app.Navigator); ok {
-				//v.OnNav(ctx)
-				ctx.Dispatch(v.OnNav)
-			}
-			//*/
-
-		//ctx.Update()
 	}
 }
 
@@ -106,12 +92,6 @@ func (c *LayoutWrapper) OnUpdate(ctx app.Context) {
 		ctx.PreventUpdate()
 		return
 	}
-
-	/*
-		if v, ok := c.LayoutComponent.(app.Updater); ok {
-			v.OnUpdate(ctx)
-		}
-	*/
 }
 
 // TODO: It looks like we want to leverage OnMount (first time) and OnUpdate (subsequent times) to tell our components that something has changed.

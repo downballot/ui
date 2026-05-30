@@ -18,7 +18,7 @@ type OrganizationIDFilterPage struct {
 
 	loaded bool
 
-	organizationID string `route:"organization_id"`
+	organizationID string
 	filters        []*downballotapi.Filter
 }
 

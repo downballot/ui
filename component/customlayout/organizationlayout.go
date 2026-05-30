@@ -35,26 +35,10 @@ var _ app.Mounter = (*OrganizationLayout)(nil)
 
 func (c *OrganizationLayout) OnMount(ctx app.Context) {
 	slog.InfoContext(ctx.Context, "OrganizationLayout: OnMount")
-
-	/*
-		if routerView := c.RouterViewComponent.RouterView(); routerView != nil {
-			if mounter, ok := routerView.(app.Mounter); ok {
-				mounter.OnMount(ctx)
-			}
-		}
-	*/
 }
 
 func (c *OrganizationLayout) OnUpdate(ctx app.Context) {
 	slog.InfoContext(ctx.Context, "OrganizationLayout: OnUpdate")
-
-	/*
-		if routerView := c.RouterViewComponent.RouterView(); routerView != nil {
-			if updater, ok := routerView.(app.Updater); ok {
-				updater.OnUpdate(ctx)
-			}
-		}
-	*/
 }
 
 func (c *OrganizationLayout) OnNav(ctx app.Context) {

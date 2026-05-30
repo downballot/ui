@@ -63,11 +63,4 @@ func (v *RouterViewComponent) ApplyVariables(variables map[string]string) error 
 
 func (v *RouterViewComponent) OnUpdate(ctx app.Context) {
 	slog.DebugContext(context.TODO(), "RouterViewComponent: Update.", "component", fmt.Sprintf("%T", v.IRouterViewComponent))
-	/*
-		if v.IRouterViewComponent != nil {
-			if updater, ok := v.IRouterViewComponent.(app.Updater); ok {
-				updater.OnUpdate(ctx)
-			}
-		}
-		//*/
 }
