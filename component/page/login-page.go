@@ -24,6 +24,7 @@ func (c *LoginPage) OnNav(ctx app.Context) {
 	ctx.GetState("api-token", &apiToken)
 	slog.InfoContext(ctx.Context, "State", "api-token", apiToken)
 	if apiToken != "" {
+		slog.InfoContext(ctx.Context, "LoginPage: OnNav: User is already logged in, navigating to home page")
 		ctx.Navigate("/")
 	}
 }
@@ -141,6 +142,8 @@ func (c *LoginPage) Render() app.UI {
 
 								app.Logf("request response: %+v", output)
 								ctx.SetState("api-token", output.Token).Persist()
+
+								slog.InfoContext(ctx.Context, "LoginPage: Log in button clicked: Navigating to home page")
 								ctx.Navigate("/")
 							})
 						})

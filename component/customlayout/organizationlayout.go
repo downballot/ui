@@ -10,6 +10,7 @@ import (
 	"github.com/downballot/ui/component/layout"
 	"github.com/downballot/ui/material"
 	"github.com/downballot/ui/myui"
+	"github.com/downballot/ui/panicafter"
 	"github.com/maxence-charriere/go-app/v11/pkg/app"
 )
 
@@ -17,10 +18,10 @@ type OrganizationLayout struct {
 	app.Compo
 	router.RouterViewComponent
 
-	OrganizationID   string `route:"organization_id"`
-	OrganizationName string `route:"organization_name"`
+	organizationID   string
+	organizationName string
 
-	Crumbs []Crumb
+	crumbs []Crumb
 }
 
 type Crumb struct {
@@ -35,15 +36,32 @@ var _ app.Mounter = (*OrganizationLayout)(nil)
 func (c *OrganizationLayout) OnMount(ctx app.Context) {
 	slog.InfoContext(ctx.Context, "OrganizationLayout: OnMount")
 
-	if routerView := c.RouterViewComponent.RouterView(); routerView != nil {
-		if mounter, ok := routerView.(app.Mounter); ok {
-			mounter.OnMount(ctx)
+	/*
+		if routerView := c.RouterViewComponent.RouterView(); routerView != nil {
+			if mounter, ok := routerView.(app.Mounter); ok {
+				mounter.OnMount(ctx)
+			}
 		}
-	}
+	*/
+}
+
+func (c *OrganizationLayout) OnUpdate(ctx app.Context) {
+	slog.InfoContext(ctx.Context, "OrganizationLayout: OnUpdate")
+
+	/*
+		if routerView := c.RouterViewComponent.RouterView(); routerView != nil {
+			if updater, ok := routerView.(app.Updater); ok {
+				updater.OnUpdate(ctx)
+			}
+		}
+	*/
 }
 
 func (c *OrganizationLayout) OnNav(ctx app.Context) {
 	slog.InfoContext(ctx.Context, "OrganizationLayout: OnNav", "url", ctx.Page().URL())
+
+	router.GetActiveRoute(ctx).ReadVariable("organization_id", &c.organizationID)
+	router.GetActiveRoute(ctx).ReadVariable("organization_name", &c.organizationName)
 
 	activeRoute := router.GetActiveRoute(ctx)
 	slog.InfoContext(ctx.Context, "OrganizationLayout: OnNav", "activeRoute", activeRoute)
@@ -51,10 +69,12 @@ func (c *OrganizationLayout) OnNav(ctx app.Context) {
 	var crumbs []Crumb
 
 	path := activeRoute.Path
+	pathCount := 0
 	for path != "/" {
+		pathCount++
 		route := router.GetRoute(ctx, path)
 		if route != nil {
-			slog.InfoContext(ctx.Context, "OrganizationLayout: OnNav", "route", route)
+			slog.InfoContext(ctx.Context, "OrganizationLayout: OnNav", "pathCount", pathCount, "route", route)
 			if route.Meta["autocrumbs"] != "true" {
 				break
 			}
@@ -80,7 +100,7 @@ func (c *OrganizationLayout) OnNav(ctx app.Context) {
 		if path == "" {
 			path = "/"
 		}
-		slog.InfoContext(ctx.Context, "OrganizationLayout: OnNav", "path", path)
+		slog.InfoContext(ctx.Context, "OrganizationLayout: OnNav", "pathCount", pathCount, "path", path)
 
 	}
 	slices.Reverse(crumbs)
@@ -88,21 +108,15 @@ func (c *OrganizationLayout) OnNav(ctx app.Context) {
 		crumbs[len(crumbs)-1].To = ""
 	}
 
-	c.Crumbs = crumbs
-	slog.InfoContext(ctx.Context, "OrganizationLayout: OnNav", "crumbs", c.Crumbs)
-
-	if c.RouterViewComponent.RouterView() != nil {
-		if navigator, ok := c.RouterViewComponent.RouterView().(app.Navigator); ok {
-			navigator.OnNav(ctx)
-		}
-	}
+	c.crumbs = crumbs
+	slog.InfoContext(ctx.Context, "OrganizationLayout: OnNav", "crumbs", c.crumbs)
 }
 
 func (c *OrganizationLayout) Render() app.UI {
-	slog.InfoContext(context.TODO(), "OrganizationLayout: Render", "OrganizationID", c.OrganizationID, "OrganizationName", c.OrganizationName)
+	slog.InfoContext(context.TODO(), "OrganizationLayout: Render", "OrganizationID", c.organizationID, "OrganizationName", c.organizationName)
 
 	bodyItems := []app.UI{}
-	for _, crumb := range c.Crumbs {
+	for _, crumb := range c.crumbs {
 		if len(bodyItems) > 0 {
 			bodyItems = append(bodyItems,
 				app.Text(" / "),
@@ -140,7 +154,7 @@ func (c *OrganizationLayout) Render() app.UI {
 				Body(
 					myui.Icon().Icon("bars"),
 				),
-			Headline:   c.OrganizationName,
+			Headline:   c.organizationName,
 			HeadlineUI: headline,
 		},
 		Drawer: app.Div().
@@ -149,27 +163,29 @@ func (c *OrganizationLayout) Render() app.UI {
 				myui.Item().
 					Icon("house").
 					Name("Home").
-					To("/organization/"+c.OrganizationID),
+					To("/organization/"+c.organizationID),
 				myui.Item().
 					Icon("people-group").
 					Name("Groups").
-					To("/organization/"+c.OrganizationID+"/group"),
+					To("/organization/"+c.organizationID+"/group"),
 				myui.Item().
 					Icon("filter").
 					Name("Filters").
-					To("/organization/"+c.OrganizationID+"/filter"),
+					To("/organization/"+c.organizationID+"/filter"),
 				myui.Item().
 					Icon("user-gear").
 					Name("Person Fields").
-					To("/organization/"+c.OrganizationID+"/person-field"),
+					To("/organization/"+c.organizationID+"/person-field"),
 				myui.Item().
 					Icon("user").
 					Name("Users").
-					To("/organization/"+c.OrganizationID+"/user"),
+					To("/organization/"+c.organizationID+"/user"),
 			),
 	}
 	mainLayout.SetRouterView(c.RouterView())
 
-	return mainLayout.Render()
-	//return mainLayout
+	panicafter.After(100)
+
+	//return mainLayout.Render()
+	return mainLayout
 }

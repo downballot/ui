@@ -25,7 +25,7 @@ type RouterViewInterface interface {
 // embedding component can call `RouterViewComponent` in its `Render` function to get the component
 // that should be rendered in the router view.
 type RouterViewComponent struct {
-	component app.Composer
+	IRouterViewComponent app.Composer
 }
 
 var _ RouterViewInterface = (*RouterViewComponent)(nil)
@@ -36,25 +36,25 @@ var _ app.Updater = (*RouterViewComponent)(nil)
 //
 // In Vue, this would be the `<router-view>` component.
 func (v *RouterViewComponent) RouterView() app.Composer {
-	return v.component
+	return v.IRouterViewComponent
 }
 
 // SetRouterView is used by the router to set the component that will be returned by `RouterView`.
 //
 // This should not be called by anything but the router.
 func (v *RouterViewComponent) SetRouterView(component app.Composer) {
-	v.component = component
+	v.IRouterViewComponent = component
 }
 
 func (v *RouterViewComponent) ApplyVariables(variables map[string]string) error {
-	if v.component != nil {
-		slog.DebugContext(context.TODO(), "RouterViewComponent: ApplyVariables: Applying variables.", "component", fmt.Sprintf("%T", v.component))
-		err := route.ApplyVariables(v.component, variables)
+	if v.IRouterViewComponent != nil {
+		slog.DebugContext(context.TODO(), "RouterViewComponent: ApplyVariables: Applying variables.", "component", fmt.Sprintf("%T", v.IRouterViewComponent))
+		err := route.ApplyVariables(v.IRouterViewComponent, variables)
 		if err != nil {
 			return err
 		}
 
-		if child, ok := v.component.(RouterViewInterface); ok {
+		if child, ok := v.IRouterViewComponent.(RouterViewInterface); ok {
 			child.ApplyVariables(variables)
 		}
 	}
@@ -62,10 +62,12 @@ func (v *RouterViewComponent) ApplyVariables(variables map[string]string) error 
 }
 
 func (v *RouterViewComponent) OnUpdate(ctx app.Context) {
-	slog.DebugContext(context.TODO(), "RouterViewComponent: Update.", "component", fmt.Sprintf("%T", v.component))
-	if v.component != nil {
-		if updater, ok := v.component.(app.Updater); ok {
-			updater.OnUpdate(ctx)
+	slog.DebugContext(context.TODO(), "RouterViewComponent: Update.", "component", fmt.Sprintf("%T", v.IRouterViewComponent))
+	/*
+		if v.IRouterViewComponent != nil {
+			if updater, ok := v.IRouterViewComponent.(app.Updater); ok {
+				updater.OnUpdate(ctx)
+			}
 		}
-	}
+		//*/
 }

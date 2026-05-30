@@ -21,6 +21,7 @@ type MyUIInput[T any] struct {
 	IDisabled    bool
 	ILabel       string
 	IPlaceholder string
+	IValue       T
 	BindValue    *T
 }
 
@@ -65,6 +66,7 @@ func (c *MyUIInput[T]) Value(value T) *MyUIInput[T] {
 }
 
 func (c *MyUIInput[T]) Bind(valuePointer *T) *MyUIInput[T] {
+	c.IValue = *valuePointer
 	c.BindValue = valuePointer
 	return c
 }
@@ -77,7 +79,7 @@ func (c *MyUIInput[T]) On(event string, function func(ctx app.Context, e app.Eve
 func (c *MyUIInput[T]) Render() app.UI {
 	slog.InfoContext(context.TODO(), "MyUIInput: Render", "label", c.ILabel, "type", c.IType, "value", c.BindValue, "placeholder", c.IPlaceholder, "disabled", c.IDisabled)
 
-	value := ""
+	value := fmt.Sprintf("%v", c.IValue)
 	if c.BindValue != nil {
 		value = fmt.Sprintf("%v", *c.BindValue)
 	}

@@ -23,13 +23,16 @@ type OrganizationIDGroupNewPage struct {
 	Filter         string
 }
 
-func (c *OrganizationIDGroupNewPage) OnUpdate(ctx app.Context) {
-	slog.InfoContext(ctx.Context, "OrganizationIDGroupNewPage: OnUpdate")
-	slog.InfoContext(ctx.Context, "OrganizationIDGroupNewPage: OnUpdate", "OrganizationID", c.OrganizationID)
+func (c *OrganizationIDGroupNewPage) OnNav(ctx app.Context) {
+	slog.InfoContext(ctx.Context, "OrganizationIDGroupNewPage: OnNav")
+	slog.InfoContext(ctx.Context, "OrganizationIDGroupNewPage: OnNav", "OrganizationID", c.OrganizationID)
 
 	if c.OrganizationID == "" {
 		return
 	}
+
+	c.ParentID = ctx.Page().URL().Query().Get("parent_id")
+	slog.InfoContext(ctx.Context, "OrganizationIDGroupNewPage: OnNav", "ParentID", c.ParentID)
 
 	ctx.Async(func() {
 		var output downballotapi.GetOrganizationResponse
@@ -52,14 +55,6 @@ func (c *OrganizationIDGroupNewPage) OnUpdate(ctx app.Context) {
 			c.Groups = output.Groups
 		})
 	})
-}
-
-func (c *OrganizationIDGroupNewPage) OnNav(ctx app.Context) {
-	slog.InfoContext(ctx.Context, "OrganizationIDGroupNewPage: OnNav")
-	slog.InfoContext(ctx.Context, "OrganizationIDGroupNewPage: OnNav", "OrganizationID", c.OrganizationID)
-
-	c.ParentID = ctx.Page().URL().Query().Get("parent_id")
-	slog.InfoContext(ctx.Context, "OrganizationIDGroupNewPage: OnNav", "ParentID", c.ParentID)
 }
 
 func (c *OrganizationIDGroupNewPage) Render() app.UI {
@@ -100,6 +95,7 @@ func (c *OrganizationIDGroupNewPage) Render() app.UI {
 									slog.ErrorContext(ctx.Context, "Could not create group", "err", err)
 									return
 								}
+								slog.InfoContext(ctx.Context, "OrganizationIDGroupNewPage: Create button clicked: Navigating to group page", "group_id", output.ID)
 								ctx.Navigate(fmt.Sprintf("/organization/%s/group/%s", c.OrganizationID, output.ID))
 							})
 						}),

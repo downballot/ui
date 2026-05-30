@@ -14,6 +14,19 @@ type ActiveRoute struct {
 	Variables map[string]string
 }
 
+// ReadVariable retrieves the requested variable from the active route and stores it in the provided value.
+//
+// This returns true if the variable was found and false if it was not.
+func (a ActiveRoute) ReadVariable(name string, value *string) bool {
+	v, ok := a.Variables[name]
+	if !ok {
+		*value = "" // TODO: Should we set this to a default value?
+		return false
+	}
+	*value = v
+	return true
+}
+
 // GetActiveRoute gets the active route from the context.
 func GetActiveRoute(ctx app.Context) ActiveRoute {
 	var activeRoute ActiveRoute

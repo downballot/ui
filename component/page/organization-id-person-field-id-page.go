@@ -23,10 +23,10 @@ type OrganizationIDPersonFieldIDPage struct {
 	PersonField    *downballotapi.PersonField
 }
 
-func (c *OrganizationIDPersonFieldIDPage) OnUpdate(ctx app.Context) {
-	slog.InfoContext(ctx.Context, "OrganizationIDPersonFieldIDPage: OnUpdate")
-	slog.InfoContext(ctx.Context, "OrganizationIDPersonFieldIDPage: OnUpdate", "OrganizationID", c.OrganizationID)
-	slog.InfoContext(ctx.Context, "OrganizationIDPersonFieldIDPage: OnUpdate", "PersonFieldID", c.PersonFieldID)
+func (c *OrganizationIDPersonFieldIDPage) OnNav(ctx app.Context) {
+	slog.InfoContext(ctx.Context, "OrganizationIDPersonFieldIDPage: OnNav")
+	slog.InfoContext(ctx.Context, "OrganizationIDPersonFieldIDPage: OnNav", "OrganizationID", c.OrganizationID)
+	slog.InfoContext(ctx.Context, "OrganizationIDPersonFieldIDPage: OnNav", "PersonFieldID", c.PersonFieldID)
 
 	if c.OrganizationID == "" {
 		return
@@ -67,7 +67,9 @@ func (c *OrganizationIDPersonFieldIDPage) Render() app.UI {
 	slog.InfoContext(context.TODO(), "OrganizationIDPersonFieldIDPage: Render")
 
 	if !c.Loaded {
-		return nil
+		return myui.Page().Body(
+			app.Div().Text("Loading..."),
+		)
 	}
 
 	if c.PersonField == nil {

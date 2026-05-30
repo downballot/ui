@@ -8,6 +8,7 @@ import (
 
 	"github.com/downballot/downballot/downballotapi"
 	"github.com/downballot/ui/api"
+	router "github.com/downballot/ui/app-router"
 	"github.com/downballot/ui/myui"
 	"github.com/maxence-charriere/go-app/v11/pkg/app"
 )
@@ -15,44 +16,40 @@ import (
 type OrganizationIDUserIDPage struct {
 	app.Compo
 
-	Loaded bool
+	loaded bool
 
-	OrganizationID string `route:"organization_id"`
-	Organization   *downballotapi.Organization
-	UserID         string `route:"user_id"`
-	User           *downballotapi.User
+	organizationID string
+	organization   *downballotapi.Organization
+	userID         string
+	user           *downballotapi.User
 
-	Groups []*downballotapi.Group
-
-	GroupsTable *myui.MyUITable[*downballotapi.Group]
+	groups []*downballotapi.Group
 }
 
 var _ app.Navigator = (*OrganizationIDUserIDPage)(nil)
 
 func (c *OrganizationIDUserIDPage) OnNav(ctx app.Context) {
 	slog.InfoContext(ctx.Context, "OrganizationIDUserIDPage: OnNav")
-	slog.InfoContext(ctx.Context, "OrganizationIDUserIDPage: OnNav", "OrganizationID", c.OrganizationID)
 
-	ctx.Update()
-}
+	router.GetActiveRoute(ctx).ReadVariable("organization_id", &c.organizationID)
+	router.GetActiveRoute(ctx).ReadVariable("user_id", &c.userID)
 
-func (c *OrganizationIDUserIDPage) OnUpdate(ctx app.Context) {
-	slog.InfoContext(ctx.Context, "OrganizationIDUserIDPage: OnUpdate")
-	slog.InfoContext(ctx.Context, "OrganizationIDUserIDPage: OnUpdate", "OrganizationID", c.OrganizationID)
-	slog.InfoContext(ctx.Context, "OrganizationIDUserIDPage: OnUpdate", "UserID", c.UserID)
+	slog.InfoContext(ctx.Context, "OrganizationIDUserIDPage: OnNav", "OrganizationID", c.organizationID)
+	slog.InfoContext(ctx.Context, "OrganizationIDUserIDPage: OnNav", "UserID", c.userID)
 
-	if c.OrganizationID == "" {
+	if c.organizationID == "" {
 		return
 	}
 
-	c.GroupsTable = myui.Table[*downballotapi.Group]().
-		PageSize(10)
+	if c.userID == "" {
+		return
+	}
 
 	ctx.Async(func() {
 		var wg sync.WaitGroup
 		wg.Go(func() {
 			var output downballotapi.GetOrganizationResponse
-			err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.OrganizationID, nil, &output)
+			err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.organizationID, nil, &output)
 			if err != nil {
 				slog.ErrorContext(ctx.Context, "Could not get organizations", "err", err)
 				return
@@ -60,7 +57,7 @@ func (c *OrganizationIDUserIDPage) OnUpdate(ctx app.Context) {
 		})
 		wg.Go(func() {
 			var output downballotapi.GetUserResponse
-			err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.OrganizationID+"/user/"+c.UserID, nil, &output)
+			err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.organizationID+"/user/"+c.userID, nil, &output)
 			if err != nil {
 				slog.ErrorContext(ctx.Context, "Could not get user", "err", err)
 				return
@@ -68,14 +65,14 @@ func (c *OrganizationIDUserIDPage) OnUpdate(ctx app.Context) {
 
 			ctx.Dispatch(func(ctx app.Context) {
 				slog.InfoContext(ctx.Context, "Dispatch: Setting user", "user", output.User)
-				c.User = output.User
+				c.user = output.User
 			})
 		})
 		// TODO: GET THE GROUPS FOR THE USER
 		wg.Wait()
 
 		ctx.Dispatch(func(ctx app.Context) {
-			c.Loaded = true
+			c.loaded = true
 		})
 	})
 }
@@ -83,11 +80,13 @@ func (c *OrganizationIDUserIDPage) OnUpdate(ctx app.Context) {
 func (c *OrganizationIDUserIDPage) Render() app.UI {
 	slog.InfoContext(context.TODO(), "OrganizationIDUserIDPage: Render")
 
-	if !c.Loaded {
-		return nil
+	if !c.loaded {
+		return myui.Page().Body(
+			app.Div().Text("Loading..."),
+		)
 	}
 
-	if c.User == nil {
+	if c.user == nil {
 		return myui.StatusBar().
 			Text("Not found").
 			Bad()
@@ -97,8 +96,8 @@ func (c *OrganizationIDUserIDPage) Render() app.UI {
 		Body(
 			app.Div().
 				Body(
-					app.Div().Text("Name: "+c.User.Name),
-					app.Div().Text("E-mail address: "+c.User.Username),
+					app.Div().Text("Name: "+c.user.Name),
+					app.Div().Text("E-mail address: "+c.user.Username),
 				),
 		)
 }

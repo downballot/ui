@@ -20,11 +20,15 @@ type OrganizationIDPage struct {
 	Organization   *downballotapi.Organization
 }
 
-func (c *OrganizationIDPage) OnUpdate(ctx app.Context) {
-	slog.InfoContext(ctx.Context, "OrganizationIDPage: OnUpdate")
-	slog.InfoContext(ctx.Context, "OrganizationIDPage: OnUpdate", "OrganizationID", c.OrganizationID)
+func (c *OrganizationIDPage) OnNav(ctx app.Context) {
+	slog.InfoContext(ctx.Context, "OrganizationIDPage: OnNav")
+	slog.InfoContext(ctx.Context, "OrganizationIDPage: OnNav", "OrganizationID", c.OrganizationID)
 
 	if c.OrganizationID == "" {
+		return
+	}
+
+	if c.Organization != nil && c.Organization.ID == c.OrganizationID {
 		return
 	}
 
@@ -49,7 +53,9 @@ func (c *OrganizationIDPage) Render() app.UI {
 	slog.InfoContext(context.TODO(), "OrganizationIDPage: Render")
 
 	if !c.Loaded {
-		return nil
+		return myui.Page().Body(
+			app.Div().Text("Loading..."),
+		)
 	}
 
 	if c.Organization == nil {

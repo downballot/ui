@@ -22,6 +22,7 @@ func (c *SignupPage) OnNav(ctx app.Context) {
 	ctx.GetState("api-token", &apiToken)
 	slog.InfoContext(ctx.Context, "State", "api-token", apiToken)
 	if apiToken != "" {
+		slog.InfoContext(ctx.Context, "SignupPage: OnNav: User is already logged in, navigating to home page")
 		ctx.Navigate("/")
 	}
 }
@@ -72,6 +73,8 @@ func (c *SignupPage) Render() app.UI {
 							c.error = ""
 
 							app.Logf("request response: %+v", output)
+
+							slog.InfoContext(ctx.Context, "SignupPage: Sign up button clicked: Navigating to login page")
 							ctx.Navigate("/login")
 						})
 					}),

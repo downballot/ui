@@ -8,7 +8,6 @@ import (
 	"github.com/downballot/downballot/downballotapi"
 	"github.com/downballot/ui/api"
 	"github.com/downballot/ui/myui"
-	"github.com/google/uuid"
 	"github.com/maxence-charriere/go-app/v11/pkg/app"
 )
 
@@ -31,46 +30,10 @@ type AddFieldDialog struct {
 	ValueValue         string
 }
 
-func (c *AddFieldDialog) OnUpdate(ctx app.Context) {
-	slog.InfoContext(ctx.Context, "AddFieldDialog: OnUpdate")
-	slog.InfoContext(ctx.Context, "AddFieldDialog: OnUpdate", "OrganizationID", c.OrganizationID)
-	slog.InfoContext(ctx.Context, "AddFieldDialog: OnUpdate", "VoterID", c.VoterID)
-
-	if c.OrganizationID == "" {
-		return
-	}
-
-	c.DialogID = "id-" + uuid.New().String()
-
-	ctx.Async(func() {
-		var output downballotapi.GetPersonResponse
-		err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.OrganizationID+"/person/"+c.VoterID, nil, &output)
-		if err != nil {
-			slog.ErrorContext(ctx.Context, "Could not get person", "err", err)
-			return
-		}
-
-		ctx.Dispatch(func(ctx app.Context) {
-			slog.InfoContext(ctx.Context, "Dispatch: Setting person", "person", output.Person)
-			c.Person = output.Person
-		})
-	})
-	ctx.Async(func() {
-		var output downballotapi.ListPersonFieldsResponse
-		err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.OrganizationID+"/person-field", nil, &output)
-		if err != nil {
-			slog.ErrorContext(ctx.Context, "Could not get person fields", "err", err)
-			return
-		}
-
-		ctx.Dispatch(func(ctx app.Context) {
-			slog.InfoContext(ctx.Context, "Dispatch: Setting person fields", "person fields", output.PersonFields)
-			c.PersonFields = output.PersonFields
-		})
-	})
-}
-
 func (c *AddFieldDialog) Open(ctx app.Context) {
+	slog.InfoContext(ctx.Context, "AddFieldDialog: Open", "DialogID", c.DialogID)
+	slog.InfoContext(ctx.Context, "AddFieldDialog: Open", "JSValue", c.JSValue(), "JSValue", app.Window().Get("JSON").Call("stringify", c.JSValue()))
+
 	dialogElement := app.Window().GetElementByID(c.DialogID)
 	if dialogElement == nil || dialogElement.IsNull() {
 		slog.ErrorContext(context.TODO(), "Could not get dialog element", "dialogID", c.DialogID)

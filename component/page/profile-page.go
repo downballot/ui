@@ -18,7 +18,7 @@ type ProfilePage struct {
 	AuthenticatedUser *downballotapi.AuthenticationStatusUser
 }
 
-func (c *ProfilePage) OnUpdate(ctx app.Context) {
+func (c *ProfilePage) OnNav(ctx app.Context) {
 	ctx.Async(func() {
 		var output downballotapi.AuthenticationStatusResponse
 		err := api.Do(ctx, http.MethodGet, "/api/v1/authentication/status", nil, &output)
@@ -36,7 +36,9 @@ func (c *ProfilePage) OnUpdate(ctx app.Context) {
 
 func (c *ProfilePage) Render() app.UI {
 	if !c.Loaded {
-		return nil
+		return myui.Page().Body(
+			app.Div().Text("Loading..."),
+		)
 	}
 
 	if c.AuthenticatedUser == nil {

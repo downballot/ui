@@ -23,9 +23,9 @@ type OrganizationIDGroupIDEditPage struct {
 	Filter         string
 }
 
-func (c *OrganizationIDGroupIDEditPage) OnUpdate(ctx app.Context) {
-	slog.InfoContext(ctx.Context, "OrganizationIDGroupIDEditPage: OnUpdate")
-	slog.InfoContext(ctx.Context, "OrganizationIDGroupIDEditPage: OnUpdate", "OrganizationID", c.OrganizationID)
+func (c *OrganizationIDGroupIDEditPage) OnNav(ctx app.Context) {
+	slog.InfoContext(ctx.Context, "OrganizationIDGroupIDEditPage: OnNav")
+	slog.InfoContext(ctx.Context, "OrganizationIDGroupIDEditPage: OnNav", "OrganizationID", c.OrganizationID)
 
 	if c.OrganizationID == "" {
 		return
@@ -63,11 +63,6 @@ func (c *OrganizationIDGroupIDEditPage) Reload(ctx app.Context) {
 
 		ctx.Update()
 	})
-}
-
-func (c *OrganizationIDGroupIDEditPage) OnNav(ctx app.Context) {
-	slog.InfoContext(ctx.Context, "OrganizationIDGroupIDEditPage: OnNav")
-	slog.InfoContext(ctx.Context, "OrganizationIDGroupIDEditPage: OnNav", "OrganizationID", c.OrganizationID)
 }
 
 func (c *OrganizationIDGroupIDEditPage) Render() app.UI {

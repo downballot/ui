@@ -50,6 +50,15 @@ var _ app.Navigator = (*OrganizationIDGroupIDPersonPage)(nil)
 func (c *OrganizationIDGroupIDPersonPage) OnNav(ctx app.Context) {
 	slog.InfoContext(ctx.Context, "OrganizationIDGroupIDPersonPage: OnNav")
 	slog.InfoContext(ctx.Context, "OrganizationIDGroupIDPersonPage: OnNav", "OrganizationID", c.OrganizationID)
+	slog.InfoContext(ctx.Context, "OrganizationIDGroupIDPersonPage: OnNav", "GroupID", c.GroupID)
+
+	if c.OrganizationID == "" {
+		return
+	}
+
+	if c.GroupID == "" {
+		return
+	}
 
 	var persistFilter string
 	ctx.GetState("persist-organization-id-group-id-person-page-filter", &persistFilter)
@@ -73,18 +82,6 @@ func (c *OrganizationIDGroupIDPersonPage) OnNav(ctx app.Context) {
 		} else {
 			c.Limit = uint(uintValue)
 		}
-	}
-
-	ctx.Update()
-}
-
-func (c *OrganizationIDGroupIDPersonPage) OnUpdate(ctx app.Context) {
-	slog.InfoContext(ctx.Context, "OrganizationIDGroupIDPersonPage: OnUpdate")
-	slog.InfoContext(ctx.Context, "OrganizationIDGroupIDPersonPage: OnUpdate", "OrganizationID", c.OrganizationID)
-	slog.InfoContext(ctx.Context, "OrganizationIDGroupIDPersonPage: OnUpdate", "GroupID", c.GroupID)
-
-	if c.OrganizationID == "" {
-		return
 	}
 
 	c.Limit = 1000
@@ -157,10 +154,10 @@ func (c *OrganizationIDGroupIDPersonPage) OnUpdate(ctx app.Context) {
 				})
 			}
 
-			slog.InfoContext(ctx.Context, "OrganizationIDGroupIDPersonPage: OnUpdate: Async", "len(PersonsTableColumns)", len(c.PersonsTableColumns))
+			slog.InfoContext(ctx.Context, "OrganizationIDGroupIDPersonPage: OnNav: Async", "len(PersonsTableColumns)", len(c.PersonsTableColumns))
 
 			c.PossibleFields = possibleFields
-			slog.InfoContext(ctx.Context, "OrganizationIDGroupIDPersonPage: OnUpdate: Async", "len(PossibleFields)", len(c.PossibleFields))
+			slog.InfoContext(ctx.Context, "OrganizationIDGroupIDPersonPage: OnNav: Async", "len(PossibleFields)", len(c.PossibleFields))
 
 			c.PersonsTableVisibleColumns = []string{
 				"Voter ID",
@@ -171,7 +168,7 @@ func (c *OrganizationIDGroupIDPersonPage) OnUpdate(ctx app.Context) {
 				"candidate.notes",
 			}
 			slices.Sort(c.PersonsTableVisibleColumns)
-			slog.InfoContext(ctx.Context, "OrganizationIDGroupIDPersonPage: OnUpdate: Async", "len(PersonsTableVisibleColumns)", len(c.PersonsTableVisibleColumns))
+			slog.InfoContext(ctx.Context, "OrganizationIDGroupIDPersonPage: OnNav: Async", "len(PersonsTableVisibleColumns)", len(c.PersonsTableVisibleColumns))
 		})
 		wg.Wait()
 
@@ -280,7 +277,9 @@ func (c *OrganizationIDGroupIDPersonPage) Render() app.UI {
 	slices.Sort(allPossibleFilterStrings)
 
 	if !c.Loaded {
-		return nil
+		return myui.Page().Body(
+			app.Div().Text("Loading..."),
+		)
 	}
 
 	if c.Group == nil {

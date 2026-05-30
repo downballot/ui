@@ -27,9 +27,9 @@ type OrganizationIDPersonFieldNewPage struct {
 	Error string
 }
 
-func (c *OrganizationIDPersonFieldNewPage) OnUpdate(ctx app.Context) {
-	slog.InfoContext(ctx.Context, "OrganizationIDPersonFieldNewPage: OnUpdate")
-	slog.InfoContext(ctx.Context, "OrganizationIDPersonFieldNewPage: OnUpdate", "OrganizationID", c.OrganizationID)
+func (c *OrganizationIDPersonFieldNewPage) OnNav(ctx app.Context) {
+	slog.InfoContext(ctx.Context, "OrganizationIDPersonFieldNewPage: OnNav")
+	slog.InfoContext(ctx.Context, "OrganizationIDPersonFieldNewPage: OnNav", "OrganizationID", c.OrganizationID)
 
 	if c.OrganizationID == "" {
 		return
@@ -90,6 +90,7 @@ func (c *OrganizationIDPersonFieldNewPage) Render() app.UI {
 					slog.ErrorContext(ctx.Context, "Could not create person field", "err", err)
 					return
 				}
+				slog.InfoContext(ctx.Context, "OrganizationIDPersonFieldNewPage: Create button clicked: Navigating to person field page", "person_field_id", output.PersonField.ID)
 				ctx.Navigate(fmt.Sprintf("/organization/%s/person-field/%s", c.OrganizationID, output.PersonField.ID))
 			}),
 	)

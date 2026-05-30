@@ -19,9 +19,9 @@ type OrganizationIDPersonFieldPage struct {
 	PersonFields   []*downballotapi.PersonField
 }
 
-func (c *OrganizationIDPersonFieldPage) OnUpdate(ctx app.Context) {
-	slog.InfoContext(ctx.Context, "OrganizationIDPersonFieldPage: OnUpdate")
-	slog.InfoContext(ctx.Context, "OrganizationIDPersonFieldPage: OnUpdate", "OrganizationID", c.OrganizationID)
+func (c *OrganizationIDPersonFieldPage) OnNav(ctx app.Context) {
+	slog.InfoContext(ctx.Context, "OrganizationIDPersonFieldPage: OnNav")
+	slog.InfoContext(ctx.Context, "OrganizationIDPersonFieldPage: OnNav", "OrganizationID", c.OrganizationID)
 
 	if c.OrganizationID == "" {
 		return
@@ -96,7 +96,6 @@ func (c *OrganizationIDPersonFieldPage) Render() app.UI {
 					slog.InfoContext(context.TODO(), "TableAction: New Person Field", "OrganizationID", c.OrganizationID)
 					return fmt.Sprintf("/organization/%s/person-field/new", c.OrganizationID)
 				},
-			}).
-			Render(),
+			}),
 	)
 }

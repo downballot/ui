@@ -8,6 +8,7 @@ import (
 
 	"github.com/downballot/downballot/downballotapi"
 	"github.com/downballot/ui/api"
+	router "github.com/downballot/ui/app-router"
 	"github.com/downballot/ui/myui"
 	"github.com/maxence-charriere/go-app/v11/pkg/app"
 )
@@ -16,36 +17,43 @@ type OrganizationIDUserPage struct {
 	app.Compo
 	myui.EmbeddedPage
 
-	OrganizationID string `route:"organization_id"`
-	Users          []*downballotapi.User
+	loaded bool
+
+	organizationID string
+	users          []*downballotapi.User
 }
 
 var _ app.Mounter = (*OrganizationIDUserPage)(nil)
 
 func (c *OrganizationIDUserPage) OnMount(ctx app.Context) {
 	slog.InfoContext(ctx.Context, "OrganizationIDUserPage: OnMount")
+
+	slog.InfoContext(ctx.Context, "OrganizationIDUserPage: Setting up embedded page")
 	c.EmbeddedPage.Setup(ctx)
 }
 
-func (c *OrganizationIDUserPage) OnUpdate(ctx app.Context) {
-	slog.InfoContext(ctx.Context, "OrganizationIDUserPage: OnUpdate")
-	slog.InfoContext(ctx.Context, "OrganizationIDUserPage: OnUpdate", "OrganizationID", c.OrganizationID)
+func (c *OrganizationIDUserPage) OnNav(ctx app.Context) {
+	slog.InfoContext(ctx.Context, "OrganizationIDUserPage: OnNav")
 
-	if c.OrganizationID == "" {
+	router.GetActiveRoute(ctx).ReadVariable("organization_id", &c.organizationID)
+
+	slog.InfoContext(ctx.Context, "OrganizationIDUserPage: OnNav", "OrganizationID", c.organizationID)
+
+	if c.organizationID == "" {
 		return
 	}
 
 	ctx.Async(func() {
 		var output downballotapi.ListUsersResponse
-		err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.OrganizationID+"/user", nil, &output)
+		err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.organizationID+"/user", nil, &output)
 		if err != nil {
 			slog.ErrorContext(ctx.Context, "Could not get users", "err", err)
 			return
 		}
 
 		ctx.Dispatch(func(ctx app.Context) {
-			slog.InfoContext(ctx.Context, "Dispatch: Setting users", "users", output.Users)
-			c.Users = output.Users
+			c.loaded = true
+			c.users = output.Users
 		})
 	})
 }
@@ -53,9 +61,15 @@ func (c *OrganizationIDUserPage) OnUpdate(ctx app.Context) {
 func (c *OrganizationIDUserPage) Render() app.UI {
 	slog.InfoContext(context.TODO(), "OrganizationIDUserPage: Render")
 
+	if !c.loaded {
+		return myui.Page().Body(
+			app.Div().Text("Loading..."),
+		)
+	}
+
 	return c.EmbeddedPage.Wrap(
 		myui.Table[*downballotapi.User]().
-			Rows(c.Users).
+			Rows(c.users).
 			Columns([]myui.TableColumn[*downballotapi.User]{
 				{
 					Name: "ID",
@@ -69,7 +83,7 @@ func (c *OrganizationIDUserPage) Render() app.UI {
 						return row.Name
 					},
 					To: func(row *downballotapi.User) string {
-						return fmt.Sprintf("/organization/%s/user/%s", c.OrganizationID, row.ID)
+						return fmt.Sprintf("/organization/%s/user/%s", c.organizationID, row.ID)
 					},
 				},
 			}),

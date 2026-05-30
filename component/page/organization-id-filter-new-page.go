@@ -21,15 +21,6 @@ type OrganizationIDFilterNewPage struct {
 	Filter         string
 }
 
-func (c *OrganizationIDFilterNewPage) OnUpdate(ctx app.Context) {
-	slog.InfoContext(ctx.Context, "OrganizationIDFilterNewPage: OnUpdate")
-	slog.InfoContext(ctx.Context, "OrganizationIDFilterNewPage: OnUpdate", "OrganizationID", c.OrganizationID)
-
-	if c.OrganizationID == "" {
-		return
-	}
-}
-
 func (c *OrganizationIDFilterNewPage) OnNav(ctx app.Context) {
 	slog.InfoContext(ctx.Context, "OrganizationIDFilterNewPage: OnNav")
 	slog.InfoContext(ctx.Context, "OrganizationIDFilterNewPage: OnNav", "OrganizationID", c.OrganizationID)
@@ -70,6 +61,7 @@ func (c *OrganizationIDFilterNewPage) Render() app.UI {
 									slog.ErrorContext(ctx.Context, "Could not create filter", "err", err)
 									return
 								}
+								slog.InfoContext(ctx.Context, "OrganizationIDFilterNewPage: Create button clicked: Navigating to filter page", "filter_id", output.ID)
 								ctx.Navigate(fmt.Sprintf("/organization/%s/filter/%s", c.OrganizationID, output.ID))
 							})
 						}),

@@ -14,10 +14,12 @@ import (
 type OrganizationPage struct {
 	app.Compo
 
-	Organizations []*downballotapi.Organization
+	loaded bool
+
+	organizations []*downballotapi.Organization
 }
 
-func (c *OrganizationPage) OnUpdate(ctx app.Context) {
+func (c *OrganizationPage) OnNav(ctx app.Context) {
 	ctx.Async(func() {
 		var output downballotapi.ListOrganizationsResponse
 		err := api.Do(ctx, http.MethodGet, "/api/v1/organization", nil, &output)
@@ -27,19 +29,26 @@ func (c *OrganizationPage) OnUpdate(ctx app.Context) {
 		}
 
 		ctx.Dispatch(func(ctx app.Context) {
-			c.Organizations = output.Organizations
+			c.loaded = true
+			c.organizations = output.Organizations
 		})
 	})
 }
 
 func (c *OrganizationPage) Render() app.UI {
+	if !c.loaded {
+		return myui.Page().Body(
+			app.Div().Text("Loading..."),
+		)
+	}
+
 	return myui.Page().
 		Body(
 			app.Div().Text(
 				"These are the organizations that you are a part of.",
 			),
 			myui.Table[*downballotapi.Organization]().
-				Rows(c.Organizations).
+				Rows(c.organizations).
 				Columns([]myui.TableColumn[*downballotapi.Organization]{
 					{
 						Name: "ID",

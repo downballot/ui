@@ -198,10 +198,16 @@ func main() {
 
 												variables["filter_name"] = output.Filter.Name
 											},
-											Meta: map[string]string{
-												"title": ":filter_name",
-											},
 											Children: []router.Route{
+												{
+													Path: "/",
+													Component: func() app.Composer {
+														return &page.OrganizationIDFilterIDEditPage{} // TODO: CHANGE THIS
+													},
+													Meta: map[string]string{
+														"title": ":filter_name",
+													},
+												},
 												{
 													Path: "/edit",
 													Component: func() app.Composer {
@@ -365,13 +371,8 @@ func main() {
 											},
 										},
 										{
-											Path: "/:user_id",
-											Component: func() app.Composer {
-												return &page.OrganizationIDUserIDPage{}
-											},
-											Meta: map[string]string{
-												"title": ":user_id",
-											},
+											Path:      "/:user_id",
+											Component: nil,
 											PathVariables: func(ctx app.Context, variables map[string]string) {
 												var output downballotapi.GetUserResponse
 												err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+variables["organization_id"]+"/user/"+variables["user_id"], nil, &output)
@@ -380,6 +381,17 @@ func main() {
 													return
 												}
 												variables["user_name"] = output.User.Name
+											},
+											Children: []router.Route{
+												{
+													Path: "/",
+													Component: func() app.Composer {
+														return &page.OrganizationIDUserIDPage{}
+													},
+													Meta: map[string]string{
+														"title": ":user_name",
+													},
+												},
 											},
 										},
 									},

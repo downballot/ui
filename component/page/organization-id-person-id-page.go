@@ -11,6 +11,7 @@ import (
 
 	"github.com/downballot/downballot/downballotapi"
 	"github.com/downballot/ui/api"
+	router "github.com/downballot/ui/app-router"
 	"github.com/downballot/ui/component"
 	"github.com/downballot/ui/myui"
 	"github.com/google/uuid"
@@ -20,55 +21,65 @@ import (
 type OrganizationIDPersonIDPage struct {
 	app.Compo
 
-	Loaded bool
+	loaded bool
 
-	OrganizationID string `route:"organization_id"`
-	VoterID        string `route:"voter_id"`
-	Person         *downballotapi.Person
-	Audits         []*downballotapi.PersonAudit
+	organizationID string
+	voterID        string
+	person         *downballotapi.Person
+	audits         []*downballotapi.PersonAudit
 
-	AddFieldDialog component.AddFieldDialog
+	addFieldDialog component.AddFieldDialog
 }
 
-func (c *OrganizationIDPersonIDPage) OnUpdate(ctx app.Context) {
-	slog.InfoContext(ctx.Context, "OrganizationIDPersonIDPage: OnUpdate")
-	slog.InfoContext(ctx.Context, "OrganizationIDPersonIDPage: OnUpdate", "OrganizationID", c.OrganizationID)
-	slog.InfoContext(ctx.Context, "OrganizationIDPersonIDPage: OnUpdate", "VoterID", c.VoterID)
+func (c *OrganizationIDPersonIDPage) OnNav(ctx app.Context) {
+	slog.InfoContext(ctx.Context, "OrganizationIDPersonIDPage: OnNav")
 
-	if c.OrganizationID == "" {
+	router.GetActiveRoute(ctx).ReadVariable("organization_id", &c.organizationID)
+	router.GetActiveRoute(ctx).ReadVariable("voter_id", &c.voterID)
+
+	slog.InfoContext(ctx.Context, "OrganizationIDPersonIDPage: OnNav", "OrganizationID", c.organizationID)
+	slog.InfoContext(ctx.Context, "OrganizationIDPersonIDPage: OnNav", "VoterID", c.voterID)
+
+	if c.organizationID == "" {
 		return
 	}
 
-	c.AddFieldDialog = component.AddFieldDialog{
-		OrganizationID: c.OrganizationID,
-		VoterID:        c.VoterID,
+	if c.voterID == "" {
+		return
+	}
+
+	c.addFieldDialog = component.AddFieldDialog{
+		OrganizationID: c.organizationID,
+		VoterID:        c.voterID,
 		DialogID:       "id-" + uuid.New().String(),
 	}
 
-	c.AddFieldDialog.SubmitFunctionValue = func(ctx app.Context) error {
-		slog.InfoContext(ctx.Context, "AddFieldDialog: SubmitFunctionValue", "SelectedFieldValue", c.AddFieldDialog.SelectedFieldValue, "ValueValue", c.AddFieldDialog.ValueValue)
+	c.addFieldDialog.SubmitFunctionValue = func(ctx app.Context) error {
+		slog.InfoContext(ctx.Context, "AddFieldDialog: SubmitFunctionValue", "SelectedFieldValue", c.addFieldDialog.SelectedFieldValue, "ValueValue", c.addFieldDialog.ValueValue)
 		input := downballotapi.PatchPersonRequest{
 			Fields: map[string]*string{},
 		}
-		input.Fields[c.AddFieldDialog.SelectedFieldValue] = &c.AddFieldDialog.ValueValue
+		input.Fields[c.addFieldDialog.SelectedFieldValue] = &c.addFieldDialog.ValueValue
 		var output downballotapi.PatchPersonRequest
-		err := api.Do(ctx, http.MethodPatch, "/api/v1/organization/"+c.OrganizationID+"/person/"+c.VoterID, input, &output)
+		err := api.Do(ctx, http.MethodPatch, "/api/v1/organization/"+c.organizationID+"/person/"+c.voterID, input, &output)
 		if err != nil {
 			slog.ErrorContext(ctx.Context, "Could not update person", "err", err)
 			return err
 		}
 
-		ctx.Dispatch(func(ctx app.Context) {
-			c.OnUpdate(ctx)
-		})
+		c.Reload(ctx)
 		return nil
 	}
 
+	c.Reload(ctx)
+}
+
+func (c *OrganizationIDPersonIDPage) Reload(ctx app.Context) {
 	ctx.Async(func() {
 		var wg sync.WaitGroup
 		wg.Go(func() {
 			var output downballotapi.GetPersonResponse
-			err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.OrganizationID+"/person/"+c.VoterID, nil, &output)
+			err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.organizationID+"/person/"+c.voterID, nil, &output)
 			if err != nil {
 				slog.ErrorContext(ctx.Context, "Could not get person", "err", err)
 				return
@@ -76,12 +87,12 @@ func (c *OrganizationIDPersonIDPage) OnUpdate(ctx app.Context) {
 
 			ctx.Dispatch(func(ctx app.Context) {
 				slog.InfoContext(ctx.Context, "Dispatch: Setting person", "person", output.Person)
-				c.Person = output.Person
+				c.person = output.Person
 			})
 		})
 		wg.Go(func() {
 			var output downballotapi.ListPersonAuditsResponse
-			err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.OrganizationID+"/person/"+c.VoterID+"/audit", nil, &output)
+			err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.organizationID+"/person/"+c.voterID+"/audit", nil, &output)
 			if err != nil {
 				slog.ErrorContext(ctx.Context, "Could not get person audits", "err", err)
 				return
@@ -89,26 +100,28 @@ func (c *OrganizationIDPersonIDPage) OnUpdate(ctx app.Context) {
 
 			ctx.Dispatch(func(ctx app.Context) {
 				slog.InfoContext(ctx.Context, "Dispatch: Setting person audits", "Audits", output.Audits)
-				c.Audits = output.Audits
+				c.audits = output.Audits
 			})
 		})
 
 		wg.Wait()
 
 		ctx.Dispatch(func(ctx app.Context) {
-			c.Loaded = true
+			c.loaded = true
 		})
 	})
 }
 
 func (c *OrganizationIDPersonIDPage) Render() app.UI {
-	slog.InfoContext(context.TODO(), "OrganizationIDPersonIDPage: Render", "OrganizationID", c.OrganizationID, "VoterID", c.VoterID, "Person", c.Person)
+	slog.InfoContext(context.TODO(), "OrganizationIDPersonIDPage: Render", "OrganizationID", c.organizationID, "VoterID", c.voterID, "Person", c.person)
 
-	if !c.Loaded {
-		return nil
+	if !c.loaded {
+		return myui.Page().Body(
+			app.Div().Text("Loading..."),
+		)
 	}
 
-	if c.Person == nil {
+	if c.person == nil {
 		return myui.StatusBar().
 			Text("Not found").
 			Bad()
@@ -135,8 +148,8 @@ func (c *OrganizationIDPersonIDPage) Render() app.UI {
 	}
 
 	rows := []Record{}
-	for name := range c.Person.Fields {
-		rows = append(rows, Record{Field: name, Value: c.Person.Fields[name]})
+	for name := range c.person.Fields {
+		rows = append(rows, Record{Field: name, Value: c.person.Fields[name]})
 	}
 	slices.SortFunc(rows, func(left, right Record) int {
 		return strings.Compare(left.Field, right.Field)
@@ -151,23 +164,22 @@ func (c *OrganizationIDPersonIDPage) Render() app.UI {
 				Name: "Add Field",
 				Icon: "plus",
 				Function: func(ctx app.Context) {
-					c.AddFieldDialog.Open(ctx)
+					c.addFieldDialog.Open(ctx)
 				},
 			}).
 			RowAction(myui.RowAction[Record]{
 				Name: "Edit",
 				Icon: "edit",
 				Function: func(ctx app.Context, row Record) {
-					c.AddFieldDialog.SelectedFieldValue = row.Field
-					c.AddFieldDialog.ValueValue = row.Value
-					c.AddFieldDialog.Open(ctx)
+					c.addFieldDialog.SelectedFieldValue = row.Field
+					c.addFieldDialog.ValueValue = row.Value
+					c.addFieldDialog.Open(ctx)
 				},
-			}).
-			Render(),
-		c.AddFieldDialog.Render(),
+			}),
+		&c.addFieldDialog,
 		myui.Table[*downballotapi.PersonAudit]().
 			Title("Audit Log").
-			Rows(c.Audits).
+			Rows(c.audits).
 			Columns([]myui.TableColumn[*downballotapi.PersonAudit]{
 				{
 					Name: "ID",

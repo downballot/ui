@@ -19,9 +19,9 @@ type OrganizationIDFilterPage struct {
 	Filters        []*downballotapi.Filter
 }
 
-func (c *OrganizationIDFilterPage) OnUpdate(ctx app.Context) {
-	slog.InfoContext(ctx.Context, "OrganizationIDFilterPage: OnUpdate")
-	slog.InfoContext(ctx.Context, "OrganizationIDFilterPage: OnUpdate", "OrganizationID", c.OrganizationID)
+func (c *OrganizationIDFilterPage) OnNav(ctx app.Context) {
+	slog.InfoContext(ctx.Context, "OrganizationIDFilterPage: OnNav")
+	slog.InfoContext(ctx.Context, "OrganizationIDFilterPage: OnNav", "OrganizationID", c.OrganizationID)
 
 	if c.OrganizationID == "" {
 		return
@@ -90,7 +90,6 @@ func (c *OrganizationIDFilterPage) Render() app.UI {
 				To: func(row *downballotapi.Filter) string {
 					return fmt.Sprintf("/organization/%s/filter/%s/edit", c.OrganizationID, row.ID)
 				},
-			}).
-			Render(),
+			}),
 	)
 }

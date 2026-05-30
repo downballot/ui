@@ -22,11 +22,13 @@ var _ app.Mounter = (*DownballotLayout)(nil)
 func (c *DownballotLayout) OnMount(ctx app.Context) {
 	slog.InfoContext(ctx.Context, "DownballotLayout: OnMount")
 
-	if routerView := c.RouterViewComponent.RouterView(); routerView != nil {
-		if mounter, ok := routerView.(app.Mounter); ok {
-			mounter.OnMount(ctx)
+	/*
+		if routerView := c.RouterViewComponent.RouterView(); routerView != nil {
+			if mounter, ok := routerView.(app.Mounter); ok {
+				mounter.OnMount(ctx)
+			}
 		}
-	}
+	*/
 }
 
 func (c *DownballotLayout) OnNav(ctx app.Context) {
@@ -36,14 +38,9 @@ func (c *DownballotLayout) OnNav(ctx app.Context) {
 	ctx.GetState("api-token", &apiToken)
 	slog.InfoContext(ctx.Context, "State", "api-token", apiToken)
 	if apiToken == "" {
+		slog.InfoContext(ctx.Context, "DownballotLayout: OnNav: User is not logged in, navigating to login page")
 		ctx.Navigate("/login")
 		return
-	}
-
-	if component := c.RouterViewComponent.RouterView(); component != nil {
-		if v, ok := component.(app.Navigator); ok {
-			v.OnNav(ctx)
-		}
 	}
 }
 
@@ -72,5 +69,6 @@ func (c *DownballotLayout) Render() app.UI {
 
 	slog.InfoContext(context.TODO(), "DownballotLayout: Render", "mainLayout", mainLayout)
 
-	return mainLayout.Render()
+	//return mainLayout.Render()
+	return mainLayout
 }

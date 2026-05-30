@@ -33,6 +33,7 @@ func (c *MyUICollapse) OnUpdate(ctx app.Context) {
 		slog.InfoContext(ctx.Context, "MyUICollapse: OnUpdate: BindOpen is nil.")
 	}
 }
+
 func (c *MyUICollapse) Disabled(disabled bool) *MyUICollapse {
 	c.IDisabled = disabled
 	return c

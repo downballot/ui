@@ -19,9 +19,9 @@ type OrganizationIDGroupPage struct {
 	Groups         []*downballotapi.Group
 }
 
-func (c *OrganizationIDGroupPage) OnUpdate(ctx app.Context) {
-	slog.InfoContext(ctx.Context, "OrganizationIDGroupPage: OnUpdate")
-	slog.InfoContext(ctx.Context, "OrganizationIDGroupPage: OnUpdate", "OrganizationID", c.OrganizationID)
+func (c *OrganizationIDGroupPage) OnNav(ctx app.Context) {
+	slog.InfoContext(ctx.Context, "OrganizationIDGroupPage: OnNav")
+	slog.InfoContext(ctx.Context, "OrganizationIDGroupPage: OnNav", "OrganizationID", c.OrganizationID)
 
 	if c.OrganizationID == "" {
 		return
