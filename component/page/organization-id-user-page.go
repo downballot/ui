@@ -72,6 +72,6 @@ func (c *OrganizationIDUserPage) Render() app.UI {
 						return fmt.Sprintf("/organization/%s/user/%s", c.OrganizationID, row.ID)
 					},
 				},
-			}).Render(),
+			}),
 	)
 }

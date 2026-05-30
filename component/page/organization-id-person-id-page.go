@@ -211,6 +211,6 @@ func (c *OrganizationIDPersonIDPage) Render() app.UI {
 						return row.Username
 					},
 				},
-			}).Render(),
+			}),
 	)
 }

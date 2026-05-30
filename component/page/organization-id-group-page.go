@@ -70,6 +70,6 @@ func (c *OrganizationIDGroupPage) Render() app.UI {
 						return row.Filter
 					},
 				},
-			}).Render(),
+			}),
 	)
 }

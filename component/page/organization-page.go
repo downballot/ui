@@ -56,6 +56,6 @@ func (c *OrganizationPage) Render() app.UI {
 							return fmt.Sprintf("/organization/%s", row.ID)
 						},
 					},
-				}).Render(),
+				}),
 		)
 }

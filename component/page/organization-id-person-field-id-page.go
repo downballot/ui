@@ -120,6 +120,6 @@ func (c *OrganizationIDPersonFieldIDPage) Render() app.UI {
 							return row.AllowedValues
 						},
 					},
-				}).Render(),
+				}),
 		)
 }
