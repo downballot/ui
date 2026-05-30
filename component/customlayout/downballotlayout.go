@@ -21,6 +21,12 @@ var _ app.Mounter = (*DownballotLayout)(nil)
 
 func (c *DownballotLayout) OnMount(ctx app.Context) {
 	slog.InfoContext(ctx.Context, "DownballotLayout: OnMount")
+
+	if routerView := c.RouterViewComponent.RouterView(); routerView != nil {
+		if mounter, ok := routerView.(app.Mounter); ok {
+			mounter.OnMount(ctx)
+		}
+	}
 }
 
 func (c *DownballotLayout) OnNav(ctx app.Context) {

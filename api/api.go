@@ -28,6 +28,8 @@ func Do(ctx app.Context, method string, path string, input any, output any, opti
 			slog.InfoContext(ctx.Context, "API wrapper; user is not logged in", "err", err)
 			ctx.Navigate("/login")
 		}
+		slog.DebugContext(ctx.Context, "API wrapper: setting api-error", "err", err)
+		ctx.SetState("api-error", err.Error())
 		return err
 	}
 	return nil

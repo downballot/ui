@@ -14,9 +14,17 @@ import (
 
 type OrganizationIDUserPage struct {
 	app.Compo
+	myui.EmbeddedPage
 
 	OrganizationID string `route:"organization_id"`
 	Users          []*downballotapi.User
+}
+
+var _ app.Mounter = (*OrganizationIDUserPage)(nil)
+
+func (c *OrganizationIDUserPage) OnMount(ctx app.Context) {
+	slog.InfoContext(ctx.Context, "OrganizationIDUserPage: OnMount")
+	c.EmbeddedPage.Setup(ctx)
 }
 
 func (c *OrganizationIDUserPage) OnUpdate(ctx app.Context) {
@@ -45,7 +53,7 @@ func (c *OrganizationIDUserPage) OnUpdate(ctx app.Context) {
 func (c *OrganizationIDUserPage) Render() app.UI {
 	slog.InfoContext(context.TODO(), "OrganizationIDUserPage: Render")
 
-	return myui.Page().Body(
+	return c.EmbeddedPage.Wrap(
 		myui.Table[*downballotapi.User]().
 			Rows(c.Users).
 			Columns([]myui.TableColumn[*downballotapi.User]{

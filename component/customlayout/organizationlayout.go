@@ -30,6 +30,17 @@ type Crumb struct {
 
 var _ router.RouterViewInterface = (*OrganizationLayout)(nil)
 var _ app.Navigator = (*OrganizationLayout)(nil)
+var _ app.Mounter = (*OrganizationLayout)(nil)
+
+func (c *OrganizationLayout) OnMount(ctx app.Context) {
+	slog.InfoContext(ctx.Context, "OrganizationLayout: OnMount")
+
+	if routerView := c.RouterViewComponent.RouterView(); routerView != nil {
+		if mounter, ok := routerView.(app.Mounter); ok {
+			mounter.OnMount(ctx)
+		}
+	}
+}
 
 func (c *OrganizationLayout) OnNav(ctx app.Context) {
 	slog.InfoContext(ctx.Context, "OrganizationLayout: OnNav", "url", ctx.Page().URL())
@@ -160,4 +171,5 @@ func (c *OrganizationLayout) Render() app.UI {
 	mainLayout.SetRouterView(c.RouterView())
 
 	return mainLayout.Render()
+	//return mainLayout
 }
