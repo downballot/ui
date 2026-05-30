@@ -7,6 +7,7 @@ import (
 
 	"github.com/downballot/downballot/downballotapi"
 	"github.com/downballot/ui/api"
+	router "github.com/downballot/ui/app-router"
 	"github.com/downballot/ui/myui"
 	"github.com/maxence-charriere/go-app/v11/pkg/app"
 )
@@ -14,37 +15,36 @@ import (
 type OrganizationIDPage struct {
 	app.Compo
 
-	Loaded bool
+	loaded bool
 
-	OrganizationID string `route:"organization_id"`
-	Organization   *downballotapi.Organization
+	organizationID string
+	organization   *downballotapi.Organization
 }
 
 func (c *OrganizationIDPage) OnNav(ctx app.Context) {
 	slog.InfoContext(ctx.Context, "OrganizationIDPage: OnNav")
-	slog.InfoContext(ctx.Context, "OrganizationIDPage: OnNav", "OrganizationID", c.OrganizationID)
 
-	if c.OrganizationID == "" {
-		return
-	}
+	router.GetActiveRoute(ctx).ReadVariable("organization_id", &c.organizationID)
 
-	if c.Organization != nil && c.Organization.ID == c.OrganizationID {
+	slog.InfoContext(ctx.Context, "OrganizationIDPage: OnNav", "OrganizationID", c.organizationID)
+
+	if c.organizationID == "" {
 		return
 	}
 
 	ctx.Async(func() {
 		var output downballotapi.GetOrganizationResponse
-		err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.OrganizationID, nil, &output)
+		err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.organizationID, nil, &output)
 		if err != nil {
 			slog.ErrorContext(ctx.Context, "Could not get organizations", "err", err)
 			return
 		}
 
 		ctx.Dispatch(func(ctx app.Context) {
-			c.Loaded = true
+			c.loaded = true
 
 			slog.InfoContext(ctx.Context, "Dispatch: Setting organization", "organization", output.Organization)
-			c.Organization = &output.Organization
+			c.organization = &output.Organization
 		})
 	})
 }
@@ -52,13 +52,13 @@ func (c *OrganizationIDPage) OnNav(ctx app.Context) {
 func (c *OrganizationIDPage) Render() app.UI {
 	slog.InfoContext(context.TODO(), "OrganizationIDPage: Render")
 
-	if !c.Loaded {
+	if !c.loaded {
 		return myui.Page().Body(
 			app.Div().Text("Loading..."),
 		)
 	}
 
-	if c.Organization == nil {
+	if c.organization == nil {
 		return myui.StatusBar().
 			Text("Not found").
 			Bad()
@@ -66,7 +66,7 @@ func (c *OrganizationIDPage) Render() app.UI {
 
 	return myui.Page().
 		Body(
-			app.Div().Text("ID: "+c.Organization.ID),
-			app.Div().Text("Name: "+c.Organization.Name),
+			app.Div().Text("ID: "+c.organization.ID),
+			app.Div().Text("Name: "+c.organization.Name),
 		)
 }

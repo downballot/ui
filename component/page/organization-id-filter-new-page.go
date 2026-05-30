@@ -8,6 +8,7 @@ import (
 
 	"github.com/downballot/downballot/downballotapi"
 	"github.com/downballot/ui/api"
+	router "github.com/downballot/ui/app-router"
 	"github.com/downballot/ui/myui"
 	"github.com/maxence-charriere/go-app/v11/pkg/app"
 )
@@ -15,15 +16,23 @@ import (
 type OrganizationIDFilterNewPage struct {
 	app.Compo
 
-	OrganizationID string `route:"organization_id"`
-	Name           string
-	Description    string
-	Filter         string
+	organizationID string
+
+	Name        string
+	Description string
+	Filter      string
 }
 
 func (c *OrganizationIDFilterNewPage) OnNav(ctx app.Context) {
 	slog.InfoContext(ctx.Context, "OrganizationIDFilterNewPage: OnNav")
-	slog.InfoContext(ctx.Context, "OrganizationIDFilterNewPage: OnNav", "OrganizationID", c.OrganizationID)
+
+	router.GetActiveRoute(ctx).ReadVariable("organization_id", &c.organizationID)
+
+	slog.InfoContext(ctx.Context, "OrganizationIDFilterNewPage: OnNav", "OrganizationID", c.organizationID)
+
+	if c.organizationID == "" {
+		return
+	}
 }
 
 func (c *OrganizationIDFilterNewPage) Render() app.UI {
@@ -56,13 +65,13 @@ func (c *OrganizationIDFilterNewPage) Render() app.UI {
 								input.Description = c.Description
 								input.Filter = c.Filter
 								var output downballotapi.CreateFilterResponse
-								err := api.Do(ctx, http.MethodPost, "/api/v1/organization/"+c.OrganizationID+"/filter", input, &output)
+								err := api.Do(ctx, http.MethodPost, "/api/v1/organization/"+c.organizationID+"/filter", input, &output)
 								if err != nil {
 									slog.ErrorContext(ctx.Context, "Could not create filter", "err", err)
 									return
 								}
 								slog.InfoContext(ctx.Context, "OrganizationIDFilterNewPage: Create button clicked: Navigating to filter page", "filter_id", output.ID)
-								ctx.Navigate(fmt.Sprintf("/organization/%s/filter/%s", c.OrganizationID, output.ID))
+								ctx.Navigate(fmt.Sprintf("/organization/%s/filter/%s", c.organizationID, output.ID))
 							})
 						}),
 				),

@@ -9,6 +9,7 @@ import (
 
 	"github.com/downballot/downballot/downballotapi"
 	"github.com/downballot/ui/api"
+	router "github.com/downballot/ui/app-router"
 	"github.com/downballot/ui/myui"
 	"github.com/maxence-charriere/go-app/v11/pkg/app"
 )
@@ -16,19 +17,27 @@ import (
 type OrganizationIDPersonFieldIDPage struct {
 	app.Compo
 
-	Loaded bool
+	loaded bool
 
-	OrganizationID string `route:"organization_id"`
-	PersonFieldID  string `route:"person_field_id"`
-	PersonField    *downballotapi.PersonField
+	organizationID string
+	personFieldID  string
+	personField    *downballotapi.PersonField
 }
 
 func (c *OrganizationIDPersonFieldIDPage) OnNav(ctx app.Context) {
 	slog.InfoContext(ctx.Context, "OrganizationIDPersonFieldIDPage: OnNav")
-	slog.InfoContext(ctx.Context, "OrganizationIDPersonFieldIDPage: OnNav", "OrganizationID", c.OrganizationID)
-	slog.InfoContext(ctx.Context, "OrganizationIDPersonFieldIDPage: OnNav", "PersonFieldID", c.PersonFieldID)
 
-	if c.OrganizationID == "" {
+	router.GetActiveRoute(ctx).ReadVariable("organization_id", &c.organizationID)
+	router.GetActiveRoute(ctx).ReadVariable("person_field_id", &c.personFieldID)
+
+	slog.InfoContext(ctx.Context, "OrganizationIDPersonFieldIDPage: OnNav", "OrganizationID", c.organizationID)
+	slog.InfoContext(ctx.Context, "OrganizationIDPersonFieldIDPage: OnNav", "PersonFieldID", c.personFieldID)
+
+	if c.organizationID == "" {
+		return
+	}
+
+	if c.personFieldID == "" {
 		return
 	}
 
@@ -36,7 +45,7 @@ func (c *OrganizationIDPersonFieldIDPage) OnNav(ctx app.Context) {
 		var wg sync.WaitGroup
 		wg.Go(func() {
 			var output downballotapi.GetOrganizationResponse
-			err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.OrganizationID, nil, &output)
+			err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.organizationID, nil, &output)
 			if err != nil {
 				slog.ErrorContext(ctx.Context, "Could not get organizations", "err", err)
 				return
@@ -44,7 +53,7 @@ func (c *OrganizationIDPersonFieldIDPage) OnNav(ctx app.Context) {
 		})
 		wg.Go(func() {
 			var output downballotapi.GetPersonFieldResponse
-			err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.OrganizationID+"/person-field/"+c.PersonFieldID, nil, &output)
+			err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.organizationID+"/person-field/"+c.personFieldID, nil, &output)
 			if err != nil {
 				slog.ErrorContext(ctx.Context, "Could not get person field", "err", err)
 				return
@@ -52,13 +61,13 @@ func (c *OrganizationIDPersonFieldIDPage) OnNav(ctx app.Context) {
 
 			ctx.Dispatch(func(ctx app.Context) {
 				slog.InfoContext(ctx.Context, "Dispatch: Setting person field", "person field", output.PersonField)
-				c.PersonField = output.PersonField
+				c.personField = output.PersonField
 			})
 		})
 		wg.Wait()
 
 		ctx.Dispatch(func(ctx app.Context) {
-			c.Loaded = true
+			c.loaded = true
 		})
 	})
 }
@@ -66,13 +75,13 @@ func (c *OrganizationIDPersonFieldIDPage) OnNav(ctx app.Context) {
 func (c *OrganizationIDPersonFieldIDPage) Render() app.UI {
 	slog.InfoContext(context.TODO(), "OrganizationIDPersonFieldIDPage: Render")
 
-	if !c.Loaded {
+	if !c.loaded {
 		return myui.Page().Body(
 			app.Div().Text("Loading..."),
 		)
 	}
 
-	if c.PersonField == nil {
+	if c.personField == nil {
 		return myui.StatusBar().
 			Text("Not found").
 			Bad()
@@ -81,7 +90,7 @@ func (c *OrganizationIDPersonFieldIDPage) Render() app.UI {
 	return myui.Page().
 		Body(
 			myui.Table[*downballotapi.PersonField]().
-				Rows([]*downballotapi.PersonField{c.PersonField}).
+				Rows([]*downballotapi.PersonField{c.personField}).
 				Columns([]myui.TableColumn[*downballotapi.PersonField]{
 					{
 						Name: "ID",
@@ -95,7 +104,7 @@ func (c *OrganizationIDPersonFieldIDPage) Render() app.UI {
 							return row.Name
 						},
 						To: func(row *downballotapi.PersonField) string {
-							return fmt.Sprintf("/organization/%s/person-field/%s", c.OrganizationID, row.ID)
+							return fmt.Sprintf("/organization/%s/person-field/%s", c.organizationID, row.ID)
 						},
 					},
 					{

@@ -8,6 +8,7 @@ import (
 
 	"github.com/downballot/downballot/downballotapi"
 	"github.com/downballot/ui/api"
+	router "github.com/downballot/ui/app-router"
 	"github.com/downballot/ui/myui"
 	"github.com/maxence-charriere/go-app/v11/pkg/app"
 )
@@ -15,41 +16,55 @@ import (
 type OrganizationIDGroupIDEditPage struct {
 	app.Compo
 
-	OrganizationID string `route:"organization_id"`
-	GroupID        string `route:"group_id"`
-	Groups         []*downballotapi.Group
-	ParentID       string
-	Name           string
-	Filter         string
+	organizationID string
+	groupID        string
+
+	groups []*downballotapi.Group
+
+	ParentID string
+	Name     string
+	Filter   string
 }
 
 func (c *OrganizationIDGroupIDEditPage) OnNav(ctx app.Context) {
 	slog.InfoContext(ctx.Context, "OrganizationIDGroupIDEditPage: OnNav")
-	slog.InfoContext(ctx.Context, "OrganizationIDGroupIDEditPage: OnNav", "OrganizationID", c.OrganizationID)
 
-	if c.OrganizationID == "" {
-		return
-	}
+	router.GetActiveRoute(ctx).ReadVariable("organization_id", &c.organizationID)
+	router.GetActiveRoute(ctx).ReadVariable("group_id", &c.groupID)
+
+	slog.InfoContext(ctx.Context, "OrganizationIDGroupIDEditPage: OnNav", "OrganizationID", c.organizationID)
+	slog.InfoContext(ctx.Context, "OrganizationIDGroupIDEditPage: OnNav", "GroupID", c.groupID)
 
 	c.Reload(ctx)
 }
 
 func (c *OrganizationIDGroupIDEditPage) Reload(ctx app.Context) {
+	slog.InfoContext(ctx.Context, "OrganizationIDGroupIDEditPage: Reload", "OrganizationID", c.organizationID)
+	slog.InfoContext(ctx.Context, "OrganizationIDGroupIDEditPage: Reload", "GroupID", c.groupID)
+
+	if c.organizationID == "" {
+		return
+	}
+
+	if c.groupID == "" {
+		return
+	}
+
 	ctx.Async(func() {
 		var wg sync.WaitGroup
 		wg.Go(func() {
 			var output downballotapi.ListGroupsResponse
-			err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.OrganizationID+"/group", nil, &output)
+			err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.organizationID+"/group", nil, &output)
 			if err != nil {
 				slog.ErrorContext(ctx.Context, "Could not get groups", "err", err)
 				return
 			}
 
-			c.Groups = output.Groups
+			c.groups = output.Groups
 		})
 		wg.Go(func() {
 			var output downballotapi.GetGroupResponse
-			err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.OrganizationID+"/group/"+c.GroupID, nil, &output)
+			err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.organizationID+"/group/"+c.groupID, nil, &output)
 			if err != nil {
 				slog.ErrorContext(ctx.Context, "Could not get group", "err", err)
 				return
@@ -95,7 +110,7 @@ func (c *OrganizationIDGroupIDEditPage) Render() app.UI {
 								input.ParentID = &c.ParentID
 								input.Filter = &c.Filter
 								var output downballotapi.PatchGroupResponse
-								err := api.Do(ctx, http.MethodPatch, "/api/v1/organization/"+c.OrganizationID+"/group/"+c.GroupID, input, &output)
+								err := api.Do(ctx, http.MethodPatch, "/api/v1/organization/"+c.organizationID+"/group/"+c.groupID, input, &output)
 								if err != nil {
 									slog.ErrorContext(ctx.Context, "Could not patch group", "err", err)
 									return

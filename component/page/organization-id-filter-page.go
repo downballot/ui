@@ -8,6 +8,7 @@ import (
 
 	"github.com/downballot/downballot/downballotapi"
 	"github.com/downballot/ui/api"
+	router "github.com/downballot/ui/app-router"
 	"github.com/downballot/ui/myui"
 	"github.com/maxence-charriere/go-app/v11/pkg/app"
 )
@@ -15,29 +16,36 @@ import (
 type OrganizationIDFilterPage struct {
 	app.Compo
 
-	OrganizationID string `route:"organization_id"`
-	Filters        []*downballotapi.Filter
+	loaded bool
+
+	organizationID string `route:"organization_id"`
+	filters        []*downballotapi.Filter
 }
 
 func (c *OrganizationIDFilterPage) OnNav(ctx app.Context) {
 	slog.InfoContext(ctx.Context, "OrganizationIDFilterPage: OnNav")
-	slog.InfoContext(ctx.Context, "OrganizationIDFilterPage: OnNav", "OrganizationID", c.OrganizationID)
 
-	if c.OrganizationID == "" {
+	router.GetActiveRoute(ctx).ReadVariable("organization_id", &c.organizationID)
+
+	slog.InfoContext(ctx.Context, "OrganizationIDFilterPage: OnNav", "OrganizationID", c.organizationID)
+
+	if c.organizationID == "" {
 		return
 	}
 
 	ctx.Async(func() {
 		var output downballotapi.ListFiltersResponse
-		err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.OrganizationID+"/filter", nil, &output)
+		err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.organizationID+"/filter", nil, &output)
 		if err != nil {
 			slog.ErrorContext(ctx.Context, "Could not get filters", "err", err)
 			return
 		}
 
 		ctx.Dispatch(func(ctx app.Context) {
+			c.loaded = true
+
 			slog.InfoContext(ctx.Context, "Dispatch: Setting filters", "filters", output.Filters)
-			c.Filters = output.Filters
+			c.filters = output.Filters
 		})
 	})
 }
@@ -45,9 +53,15 @@ func (c *OrganizationIDFilterPage) OnNav(ctx app.Context) {
 func (c *OrganizationIDFilterPage) Render() app.UI {
 	slog.InfoContext(context.TODO(), "OrganizationIDFilterPage: Render")
 
+	if !c.loaded {
+		return myui.Page().Body(
+			app.Div().Text("Loading..."),
+		)
+	}
+
 	return myui.Page().Body(
 		myui.Table[*downballotapi.Filter]().
-			Rows(c.Filters).
+			Rows(c.filters).
 			Columns([]myui.TableColumn[*downballotapi.Filter]{
 				{
 					Name: "ID",
@@ -61,7 +75,7 @@ func (c *OrganizationIDFilterPage) Render() app.UI {
 						return row.Name
 					},
 					To: func(row *downballotapi.Filter) string {
-						return fmt.Sprintf("/organization/%s/filter/%s", c.OrganizationID, row.ID)
+						return fmt.Sprintf("/organization/%s/filter/%s", c.organizationID, row.ID)
 					},
 				},
 				{
@@ -81,14 +95,14 @@ func (c *OrganizationIDFilterPage) Render() app.UI {
 				Name: "New filter",
 				Icon: "plus",
 				To: func() string {
-					return fmt.Sprintf("/organization/%s/filter/new", c.OrganizationID)
+					return fmt.Sprintf("/organization/%s/filter/new", c.organizationID)
 				},
 			}).
 			RowAction(myui.RowAction[*downballotapi.Filter]{
 				Name: "Edit",
 				Icon: "edit",
 				To: func(row *downballotapi.Filter) string {
-					return fmt.Sprintf("/organization/%s/filter/%s/edit", c.OrganizationID, row.ID)
+					return fmt.Sprintf("/organization/%s/filter/%s/edit", c.organizationID, row.ID)
 				},
 			}),
 	)

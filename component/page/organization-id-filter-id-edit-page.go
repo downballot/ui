@@ -8,6 +8,7 @@ import (
 
 	"github.com/downballot/downballot/downballotapi"
 	"github.com/downballot/ui/api"
+	router "github.com/downballot/ui/app-router"
 	"github.com/downballot/ui/myui"
 	"github.com/maxence-charriere/go-app/v11/pkg/app"
 )
@@ -15,22 +16,37 @@ import (
 type OrganizationIDFilterIDEditPage struct {
 	app.Compo
 
-	OrganizationID string `route:"organization_id"`
-	FilterID       string `route:"filter_id"`
-	Name           string
-	Description    string
-	Filter         string
+	loaded bool
+
+	organizationID string
+	filterID       string
+
+	Name        string
+	Description string
+	Filter      string
+}
+
+func (c *OrganizationIDFilterIDEditPage) OnNav(ctx app.Context) {
+	slog.InfoContext(ctx.Context, "OrganizationIDFilterIDEditPage: OnNav")
+
+	router.GetActiveRoute(ctx).ReadVariable("organization_id", &c.organizationID)
+	router.GetActiveRoute(ctx).ReadVariable("filter_id", &c.filterID)
+
+	slog.InfoContext(ctx.Context, "OrganizationIDFilterIDEditPage: OnNav", "OrganizationID", c.organizationID)
+	slog.InfoContext(ctx.Context, "OrganizationIDFilterIDEditPage: OnNav", "FilterID", c.filterID)
+
+	c.Reload(ctx)
 }
 
 func (c *OrganizationIDFilterIDEditPage) Reload(ctx app.Context) {
-	slog.InfoContext(ctx.Context, "OrganizationIDFilterIDEditPage: Reload", "OrganizationID", c.OrganizationID)
-	slog.InfoContext(ctx.Context, "OrganizationIDFilterIDEditPage: Reload", "FilterID", c.FilterID)
+	slog.InfoContext(ctx.Context, "OrganizationIDFilterIDEditPage: Reload", "OrganizationID", c.organizationID)
+	slog.InfoContext(ctx.Context, "OrganizationIDFilterIDEditPage: Reload", "FilterID", c.filterID)
 
-	if c.OrganizationID == "" {
+	if c.organizationID == "" {
 		return
 	}
 
-	if c.FilterID == "" {
+	if c.filterID == "" {
 		return
 	}
 
@@ -38,7 +54,7 @@ func (c *OrganizationIDFilterIDEditPage) Reload(ctx app.Context) {
 		var wg sync.WaitGroup
 		wg.Go(func() {
 			var output downballotapi.GetFilterResponse
-			err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.OrganizationID+"/filter/"+c.FilterID, nil, &output)
+			err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.organizationID+"/filter/"+c.filterID, nil, &output)
 			if err != nil {
 				slog.ErrorContext(ctx.Context, "Could not get filter", "err", err)
 				return
@@ -54,21 +70,22 @@ func (c *OrganizationIDFilterIDEditPage) Reload(ctx app.Context) {
 		wg.Wait()
 
 		ctx.Dispatch(func(ctx app.Context) {
+			c.loaded = true
+
 			slog.DebugContext(ctx.Context, "OrganizationIDFilterIDEditPage: Reload: Dispatching update")
 			ctx.Update()
 		})
 	})
 }
 
-func (c *OrganizationIDFilterIDEditPage) OnNav(ctx app.Context) {
-	slog.InfoContext(ctx.Context, "OrganizationIDFilterIDEditPage: OnNav")
-	slog.InfoContext(ctx.Context, "OrganizationIDFilterIDEditPage: OnNav", "OrganizationID", c.OrganizationID)
-
-	c.Reload(ctx)
-}
-
 func (c *OrganizationIDFilterIDEditPage) Render() app.UI {
 	slog.InfoContext(context.TODO(), "OrganizationIDFilterIDEditPage: Render", "Name", c.Name, "Description", c.Description, "Filter", c.Filter)
+
+	if !c.loaded {
+		return myui.Page().Body(
+			app.Div().Text("Loading..."),
+		)
+	}
 
 	return myui.Page().
 		Body(
@@ -98,7 +115,7 @@ func (c *OrganizationIDFilterIDEditPage) Render() app.UI {
 									input.Description = &c.Description
 									input.Filter = &c.Filter
 									var output downballotapi.PatchFilterResponse
-									err := api.Do(ctx, http.MethodPatch, "/api/v1/organization/"+c.OrganizationID+"/filter/"+c.FilterID, input, &output)
+									err := api.Do(ctx, http.MethodPatch, "/api/v1/organization/"+c.organizationID+"/filter/"+c.filterID, input, &output)
 									if err != nil {
 										slog.ErrorContext(ctx.Context, "Could not patch filter", "err", err)
 										return

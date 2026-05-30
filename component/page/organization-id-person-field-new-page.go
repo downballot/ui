@@ -9,6 +9,7 @@ import (
 
 	"github.com/downballot/downballot/downballotapi"
 	"github.com/downballot/ui/api"
+	router "github.com/downballot/ui/app-router"
 	"github.com/downballot/ui/myui"
 	"github.com/maxence-charriere/go-app/v11/pkg/app"
 )
@@ -16,7 +17,7 @@ import (
 type OrganizationIDPersonFieldNewPage struct {
 	app.Compo
 
-	OrganizationID string `route:"organization_id"`
+	organizationID string
 
 	Name          string
 	Type          string
@@ -29,15 +30,18 @@ type OrganizationIDPersonFieldNewPage struct {
 
 func (c *OrganizationIDPersonFieldNewPage) OnNav(ctx app.Context) {
 	slog.InfoContext(ctx.Context, "OrganizationIDPersonFieldNewPage: OnNav")
-	slog.InfoContext(ctx.Context, "OrganizationIDPersonFieldNewPage: OnNav", "OrganizationID", c.OrganizationID)
 
-	if c.OrganizationID == "" {
+	router.GetActiveRoute(ctx).ReadVariable("organization_id", &c.organizationID)
+
+	slog.InfoContext(ctx.Context, "OrganizationIDPersonFieldNewPage: OnNav", "OrganizationID", c.organizationID)
+
+	if c.organizationID == "" {
 		return
 	}
 
 	ctx.Async(func() {
 		var output downballotapi.GetOrganizationResponse
-		err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.OrganizationID, nil, &output)
+		err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.organizationID, nil, &output)
 		if err != nil {
 			slog.ErrorContext(ctx.Context, "Could not get organizations", "err", err)
 			return
@@ -85,13 +89,13 @@ func (c *OrganizationIDPersonFieldNewPage) Render() app.UI {
 				input.AllowedRegex = c.AllowedRegex
 				input.AllowedValues = c.AllowedValues
 				var output downballotapi.CreatePersonFieldResponse
-				err := api.Do(ctx, http.MethodPost, "/api/v1/organization/"+c.OrganizationID+"/person-field", input, &output)
+				err := api.Do(ctx, http.MethodPost, "/api/v1/organization/"+c.organizationID+"/person-field", input, &output)
 				if err != nil {
 					slog.ErrorContext(ctx.Context, "Could not create person field", "err", err)
 					return
 				}
 				slog.InfoContext(ctx.Context, "OrganizationIDPersonFieldNewPage: Create button clicked: Navigating to person field page", "person_field_id", output.PersonField.ID)
-				ctx.Navigate(fmt.Sprintf("/organization/%s/person-field/%s", c.OrganizationID, output.PersonField.ID))
+				ctx.Navigate(fmt.Sprintf("/organization/%s/person-field/%s", c.organizationID, output.PersonField.ID))
 			}),
 	)
 }

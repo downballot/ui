@@ -8,6 +8,7 @@ import (
 
 	"github.com/downballot/downballot/downballotapi"
 	"github.com/downballot/ui/api"
+	router "github.com/downballot/ui/app-router"
 	"github.com/downballot/ui/myui"
 	"github.com/maxence-charriere/go-app/v11/pkg/app"
 )
@@ -15,40 +16,54 @@ import (
 type OrganizationIDPersonFieldPage struct {
 	app.Compo
 
-	OrganizationID string `route:"organization_id"`
-	PersonFields   []*downballotapi.PersonField
+	loaded bool
+
+	organizationID string
+	personFields   []*downballotapi.PersonField
 }
 
 func (c *OrganizationIDPersonFieldPage) OnNav(ctx app.Context) {
 	slog.InfoContext(ctx.Context, "OrganizationIDPersonFieldPage: OnNav")
-	slog.InfoContext(ctx.Context, "OrganizationIDPersonFieldPage: OnNav", "OrganizationID", c.OrganizationID)
 
-	if c.OrganizationID == "" {
+	router.GetActiveRoute(ctx).ReadVariable("organization_id", &c.organizationID)
+
+	slog.InfoContext(ctx.Context, "OrganizationIDPersonFieldPage: OnNav", "OrganizationID", c.organizationID)
+
+	if c.organizationID == "" {
 		return
 	}
 
 	ctx.Async(func() {
 		var output downballotapi.ListPersonFieldsResponse
-		err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.OrganizationID+"/person-field", nil, &output)
+		err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.organizationID+"/person-field", nil, &output)
 		if err != nil {
 			slog.ErrorContext(ctx.Context, "Could not get person fields", "err", err)
 			return
 		}
 
 		ctx.Dispatch(func(ctx app.Context) {
+			c.loaded = true
+
 			slog.InfoContext(ctx.Context, "Dispatch: Setting person fields", "person fields", output.PersonFields)
-			c.PersonFields = output.PersonFields
+			c.personFields = output.PersonFields
 		})
 	})
 }
 
 func (c *OrganizationIDPersonFieldPage) Render() app.UI {
 	slog.InfoContext(context.TODO(), "OrganizationIDPersonFieldPage: Render")
-	slog.InfoContext(context.TODO(), "OrganizationIDPersonFieldPage: Render", "OrganizationID", c.OrganizationID)
+
+	slog.InfoContext(context.TODO(), "OrganizationIDPersonFieldPage: Render", "OrganizationID", c.organizationID)
+
+	if !c.loaded {
+		return myui.Page().Body(
+			app.Div().Text("Loading..."),
+		)
+	}
 
 	return myui.Page().Body(
 		myui.Table[*downballotapi.PersonField]().
-			Rows(c.PersonFields).
+			Rows(c.personFields).
 			Columns([]myui.TableColumn[*downballotapi.PersonField]{
 				{
 					Name: "ID",
@@ -62,7 +77,7 @@ func (c *OrganizationIDPersonFieldPage) Render() app.UI {
 						return row.Name
 					},
 					To: func(row *downballotapi.PersonField) string {
-						return fmt.Sprintf("/organization/%s/person-field/%s", c.OrganizationID, row.ID)
+						return fmt.Sprintf("/organization/%s/person-field/%s", c.organizationID, row.ID)
 					},
 				},
 				{
@@ -93,8 +108,8 @@ func (c *OrganizationIDPersonFieldPage) Render() app.UI {
 			Action(myui.TableAction{
 				Name: "New Person Field",
 				To: func() string {
-					slog.InfoContext(context.TODO(), "TableAction: New Person Field", "OrganizationID", c.OrganizationID)
-					return fmt.Sprintf("/organization/%s/person-field/new", c.OrganizationID)
+					slog.InfoContext(context.TODO(), "TableAction: New Person Field", "OrganizationID", c.organizationID)
+					return fmt.Sprintf("/organization/%s/person-field/new", c.organizationID)
 				},
 			}),
 	)

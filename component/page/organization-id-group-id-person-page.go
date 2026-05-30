@@ -13,6 +13,7 @@ import (
 
 	"github.com/downballot/downballot/downballotapi"
 	"github.com/downballot/ui/api"
+	router "github.com/downballot/ui/app-router"
 	"github.com/downballot/ui/googlemap"
 	"github.com/downballot/ui/myui"
 	"github.com/maxence-charriere/go-app/v11/pkg/app"
@@ -22,12 +23,12 @@ import (
 type OrganizationIDGroupIDPersonPage struct {
 	app.Compo
 
-	Loaded bool
+	loaded bool
 
-	OrganizationID string `route:"organization_id"`
-	Organization   *downballotapi.Organization
-	GroupID        string `route:"group_id"`
-	Group          *downballotapi.Group
+	organizationID string
+	organization   *downballotapi.Organization
+	groupID        string
+	group          *downballotapi.Group
 
 	Filter         string
 	Limit          uint
@@ -49,14 +50,18 @@ var _ app.Navigator = (*OrganizationIDGroupIDPersonPage)(nil)
 
 func (c *OrganizationIDGroupIDPersonPage) OnNav(ctx app.Context) {
 	slog.InfoContext(ctx.Context, "OrganizationIDGroupIDPersonPage: OnNav")
-	slog.InfoContext(ctx.Context, "OrganizationIDGroupIDPersonPage: OnNav", "OrganizationID", c.OrganizationID)
-	slog.InfoContext(ctx.Context, "OrganizationIDGroupIDPersonPage: OnNav", "GroupID", c.GroupID)
 
-	if c.OrganizationID == "" {
+	router.GetActiveRoute(ctx).ReadVariable("organization_id", &c.organizationID)
+	router.GetActiveRoute(ctx).ReadVariable("group_id", &c.groupID)
+
+	slog.InfoContext(ctx.Context, "OrganizationIDGroupIDPersonPage: OnNav", "OrganizationID", c.organizationID)
+	slog.InfoContext(ctx.Context, "OrganizationIDGroupIDPersonPage: OnNav", "GroupID", c.groupID)
+
+	if c.organizationID == "" {
 		return
 	}
 
-	if c.GroupID == "" {
+	if c.groupID == "" {
 		return
 	}
 
@@ -95,7 +100,7 @@ func (c *OrganizationIDGroupIDPersonPage) OnNav(ctx app.Context) {
 		var wg sync.WaitGroup
 		wg.Go(func() {
 			var output downballotapi.GetGroupResponse
-			err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.OrganizationID+"/group/"+c.GroupID, nil, &output)
+			err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.organizationID+"/group/"+c.groupID, nil, &output)
 			if err != nil {
 				slog.ErrorContext(ctx.Context, "Could not get group", "err", err)
 				return
@@ -103,12 +108,12 @@ func (c *OrganizationIDGroupIDPersonPage) OnNav(ctx app.Context) {
 
 			ctx.Dispatch(func(ctx app.Context) {
 				slog.InfoContext(ctx.Context, "Dispatch: Setting group", "group", output.Group)
-				c.Group = output.Group
+				c.group = output.Group
 			})
 		})
 		wg.Go(func() {
 			var output downballotapi.ListFiltersResponse
-			err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.OrganizationID+"/filter", nil, &output)
+			err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.organizationID+"/filter", nil, &output)
 			if err != nil {
 				slog.ErrorContext(ctx.Context, "Could not get filters", "err", err)
 				return
@@ -121,7 +126,7 @@ func (c *OrganizationIDGroupIDPersonPage) OnNav(ctx app.Context) {
 		})
 		wg.Go(func() {
 			var output downballotapi.ListPersonFieldsResponse
-			err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.OrganizationID+"/person-field", nil, &output)
+			err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.organizationID+"/person-field", nil, &output)
 			if err != nil {
 				slog.ErrorContext(ctx.Context, "Could not get person fields", "err", err)
 				return
@@ -140,7 +145,7 @@ func (c *OrganizationIDGroupIDPersonPage) OnNav(ctx app.Context) {
 						return row.VoterID
 					},
 					To: func(row *downballotapi.Person) string {
-						return fmt.Sprintf("/organization/%s/person/%s", c.OrganizationID, row.VoterID)
+						return fmt.Sprintf("/organization/%s/person/%s", c.organizationID, row.VoterID)
 					},
 				},
 			}
@@ -173,7 +178,7 @@ func (c *OrganizationIDGroupIDPersonPage) OnNav(ctx app.Context) {
 		wg.Wait()
 
 		ctx.Dispatch(func(ctx app.Context) {
-			c.Loaded = true
+			c.loaded = true
 
 			slog.InfoContext(ctx.Context, "Dispatch: Loading complete.  Searching for persons.")
 			c.search(ctx, app.Event{})
@@ -256,7 +261,7 @@ func (c *OrganizationIDGroupIDPersonPage) Render() app.UI {
 				OnClick: func(ctx app.Context, event app.Event) {
 					ctx.PreventUpdate()
 
-					app.Window().Call("open", fmt.Sprintf("/organization/%s/person/%s", c.OrganizationID, person.VoterID), "_blank")
+					app.Window().Call("open", fmt.Sprintf("/organization/%s/person/%s", c.organizationID, person.VoterID), "_blank")
 				},
 			})
 			totalLatitude += latitude
@@ -276,13 +281,13 @@ func (c *OrganizationIDGroupIDPersonPage) Render() app.UI {
 	}
 	slices.Sort(allPossibleFilterStrings)
 
-	if !c.Loaded {
+	if !c.loaded {
 		return myui.Page().Body(
 			app.Div().Text("Loading..."),
 		)
 	}
 
-	if c.Group == nil {
+	if c.group == nil {
 		return myui.StatusBar().
 			Text("Not found").
 			Bad()
@@ -405,7 +410,7 @@ func (c *OrganizationIDGroupIDPersonPage) search(ctx app.Context, e app.Event) {
 	queryParameters.Set("filter", c.Filter)
 	queryParameters.Set("limit", fmt.Sprintf("%d", c.Limit))
 	var output downballotapi.ListPersonsResponse
-	err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.OrganizationID+"/group/"+c.GroupID+"/person?"+queryParameters.Encode(), nil, &output)
+	err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.organizationID+"/group/"+c.groupID+"/person?"+queryParameters.Encode(), nil, &output)
 	if err != nil {
 		slog.ErrorContext(ctx.Context, "Could not get persons", "err", err)
 		c.Error = err.Error()
@@ -431,7 +436,7 @@ func (c *OrganizationIDGroupIDPersonPage) csv(ctx app.Context, e app.Event) {
 	queryParameters.Set("filter", c.Filter)
 	queryParameters.Set("limit", fmt.Sprintf("%d", c.Limit))
 	var output restapiclient.RawBytes
-	err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.OrganizationID+"/group/"+c.GroupID+"/person?"+queryParameters.Encode(), nil, &output, restapiclient.OptionHeader("Accept", "text/csv"))
+	err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.organizationID+"/group/"+c.groupID+"/person?"+queryParameters.Encode(), nil, &output, restapiclient.OptionHeader("Accept", "text/csv"))
 	if err != nil {
 		slog.ErrorContext(ctx.Context, "Could not get persons", "err", err)
 		return

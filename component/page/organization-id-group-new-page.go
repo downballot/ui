@@ -8,6 +8,7 @@ import (
 
 	"github.com/downballot/downballot/downballotapi"
 	"github.com/downballot/ui/api"
+	router "github.com/downballot/ui/app-router"
 	"github.com/downballot/ui/myui"
 	"github.com/maxence-charriere/go-app/v11/pkg/app"
 )
@@ -15,28 +16,33 @@ import (
 type OrganizationIDGroupNewPage struct {
 	app.Compo
 
-	OrganizationID string `route:"organization_id"`
-	Groups         []*downballotapi.Group
-	ParentID       string `query:"parent_id"`
-	Parent         *downballotapi.Group
-	Name           string
-	Filter         string
+	organizationID string
+	groups         []*downballotapi.Group
+
+	parentID string
+	parent   *downballotapi.Group
+
+	Name   string
+	Filter string
 }
 
 func (c *OrganizationIDGroupNewPage) OnNav(ctx app.Context) {
 	slog.InfoContext(ctx.Context, "OrganizationIDGroupNewPage: OnNav")
-	slog.InfoContext(ctx.Context, "OrganizationIDGroupNewPage: OnNav", "OrganizationID", c.OrganizationID)
 
-	if c.OrganizationID == "" {
+	router.GetActiveRoute(ctx).ReadVariable("organization_id", &c.organizationID)
+
+	slog.InfoContext(ctx.Context, "OrganizationIDGroupNewPage: OnNav", "OrganizationID", c.organizationID)
+
+	if c.organizationID == "" {
 		return
 	}
 
-	c.ParentID = ctx.Page().URL().Query().Get("parent_id")
-	slog.InfoContext(ctx.Context, "OrganizationIDGroupNewPage: OnNav", "ParentID", c.ParentID)
+	c.parentID = ctx.Page().URL().Query().Get("parent_id")
+	slog.InfoContext(ctx.Context, "OrganizationIDGroupNewPage: OnNav", "ParentID", c.parentID)
 
 	ctx.Async(func() {
 		var output downballotapi.GetOrganizationResponse
-		err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.OrganizationID, nil, &output)
+		err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.organizationID, nil, &output)
 		if err != nil {
 			slog.ErrorContext(ctx.Context, "Could not get organizations", "err", err)
 			return
@@ -44,7 +50,7 @@ func (c *OrganizationIDGroupNewPage) OnNav(ctx app.Context) {
 	})
 	ctx.Async(func() {
 		var output downballotapi.ListGroupsResponse
-		err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.OrganizationID+"/group", nil, &output)
+		err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.organizationID+"/group", nil, &output)
 		if err != nil {
 			slog.ErrorContext(ctx.Context, "Could not get groups", "err", err)
 			return
@@ -52,7 +58,7 @@ func (c *OrganizationIDGroupNewPage) OnNav(ctx app.Context) {
 
 		ctx.Dispatch(func(ctx app.Context) {
 			slog.InfoContext(ctx.Context, "Dispatch: Setting groups", "groups", output.Groups)
-			c.Groups = output.Groups
+			c.groups = output.Groups
 		})
 	})
 }
@@ -73,8 +79,8 @@ func (c *OrganizationIDGroupNewPage) Render() app.UI {
 				myui.Input[string]().
 					Label("Parent").
 					Type("text").
-					Value(c.ParentID).
-					On("change", c.ValueTo(&c.ParentID)),
+					Value(c.parentID).
+					On("change", c.ValueTo(&c.parentID)),
 				myui.Input[string]().
 					Label("Filter").
 					Type("text").
@@ -87,16 +93,16 @@ func (c *OrganizationIDGroupNewPage) Render() app.UI {
 							ctx.Async(func() {
 								var input downballotapi.CreateGroupRequest
 								input.Name = c.Name
-								input.ParentID = c.ParentID
+								input.ParentID = c.parentID
 								input.Filter = c.Filter
 								var output downballotapi.CreateGroupResponse
-								err := api.Do(ctx, http.MethodPost, "/api/v1/organization/"+c.OrganizationID+"/group", input, &output)
+								err := api.Do(ctx, http.MethodPost, "/api/v1/organization/"+c.organizationID+"/group", input, &output)
 								if err != nil {
 									slog.ErrorContext(ctx.Context, "Could not create group", "err", err)
 									return
 								}
 								slog.InfoContext(ctx.Context, "OrganizationIDGroupNewPage: Create button clicked: Navigating to group page", "group_id", output.ID)
-								ctx.Navigate(fmt.Sprintf("/organization/%s/group/%s", c.OrganizationID, output.ID))
+								ctx.Navigate(fmt.Sprintf("/organization/%s/group/%s", c.organizationID, output.ID))
 							})
 						}),
 				),
