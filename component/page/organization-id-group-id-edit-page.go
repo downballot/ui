@@ -16,8 +16,11 @@ import (
 type OrganizationIDGroupIDEditPage struct {
 	app.Compo
 
+	loaded bool
+
 	organizationID string
 	groupID        string
+	group          *downballotapi.Group
 
 	groups []*downballotapi.Group
 
@@ -70,18 +73,34 @@ func (c *OrganizationIDGroupIDEditPage) Reload(ctx app.Context) {
 				return
 			}
 
+			c.group = output.Group
+
 			c.ParentID = output.Group.ParentID
 			c.Name = output.Group.Name
 			c.Filter = output.Group.Filter
 		})
 		wg.Wait()
 
-		ctx.Update()
+		ctx.Dispatch(func(ctx app.Context) {
+			c.loaded = true
+		})
 	})
 }
 
 func (c *OrganizationIDGroupIDEditPage) Render() app.UI {
 	slog.InfoContext(context.TODO(), "OrganizationIDGroupIDEditPage: Render")
+
+	if !c.loaded {
+		return myui.Page().Body(
+			app.Div().Text("Loading..."),
+		)
+	}
+
+	if c.group == nil {
+		return myui.Page().Body(
+			app.Div().Text("Group not found"),
+		)
+	}
 
 	return myui.Page().Body(
 		app.Div().
@@ -102,8 +121,34 @@ func (c *OrganizationIDGroupIDEditPage) Render() app.UI {
 					Bind(&c.Filter),
 				app.Div().Body(
 					myui.Button().
-						Label("Save").
+						Label("Delete").
+						Icon("trash").
 						On("click", func(ctx app.Context, e app.Event) {
+							ctx.PreventUpdate()
+
+							result := app.Window().Call("confirm", "Are you sure you want to delete this group?")
+							slog.InfoContext(ctx.Context, "OrganizationIDGroupIDEditPage: Delete button clicked", "result", result.Bool())
+							if !result.Bool() {
+								slog.InfoContext(ctx.Context, "OrganizationIDGroupIDEditPage: Delete button clicked: User cancelled", "result", result.Bool())
+								return
+							}
+
+							ctx.Async(func() {
+								err := api.Do(ctx, http.MethodDelete, "/api/v1/organization/"+c.organizationID+"/group/"+c.groupID, nil, nil)
+								if err != nil {
+									slog.ErrorContext(ctx.Context, "Could not delete group", "err", err)
+									return
+								}
+
+								ctx.Navigate("/organization/" + c.organizationID + "/group")
+							})
+						}),
+					myui.Button().
+						Label("Save").
+						Icon("save").
+						On("click", func(ctx app.Context, e app.Event) {
+							ctx.PreventUpdate()
+
 							ctx.Async(func() {
 								var input downballotapi.PatchGroupRequest
 								input.Name = &c.Name
