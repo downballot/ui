@@ -25,14 +25,15 @@ bin/web/main.css: bin/web static/main.css
 bin/web/robots.txt: bin/web static/robots.txt
 	cp static/robots.txt $@
 
-
 .PHONY: run
 run: binaries
 	cd bin && ./ui
 
 .PHONY: watch-run
 watch-run:
-	@while true; do \
+	@PID=; \
+	trap 'kill $$PID' TERM INT; \
+	while true; do \
 		$(MAKE) binaries; \
 		ok=$$?; \
 		command=$$(if [ $$ok -eq 0 ]; then echo "./ui"; else echo "sleep infinity"; fi); \

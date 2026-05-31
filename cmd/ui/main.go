@@ -2,13 +2,13 @@ package main
 
 import (
 	"context"
-	"log"
 	"log/slog"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/downballot/downballot/downballotapi"
@@ -76,6 +76,16 @@ func main() {
 		slog.SetDefault(slog.New(slog.NewMultiHandler(
 			handler,
 		)))
+	}
+
+	disableServiceWorker := false
+	if value := os.Getenv("DISABLE_SERVICE_WORKER"); value != "" {
+		v, err := strconv.ParseBool(value)
+		if err != nil {
+			slog.ErrorContext(ctx, "Could not parse DISABLE_SERVICE_WORKER", "err", err)
+		} else {
+			disableServiceWorker = v
+		}
 	}
 
 	router.Register(ctx,
@@ -464,11 +474,14 @@ func main() {
 		reverseProxy.ServeHTTP(w, r)
 	})
 
-	// Disable the service worker by replacing it with an empty one.
-	mux.HandleFunc("/app-worker.js", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/javascript")
-		w.Write([]byte(""))
-	})
+	slog.InfoContext(ctx, "Disable service worker?", "disableServiceWorker", disableServiceWorker)
+	if disableServiceWorker {
+		// Disable the service worker by replacing it with an empty one.
+		mux.HandleFunc("/app-worker.js", func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "application/javascript")
+			w.Write([]byte(""))
+		})
+	}
 
 	wrapper := http.NewServeMux()
 	wrapper.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -486,7 +499,8 @@ func main() {
 		port = "8000"
 	}
 	if err := http.ListenAndServe(":"+port, wrapper); err != nil {
-		log.Fatal(err)
+		slog.ErrorContext(ctx, "Could not start server", "err", err)
+		os.Exit(1)
 	}
 }
 
