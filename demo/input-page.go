@@ -18,6 +18,14 @@ type InputPage struct {
 	boolValue   bool
 }
 
+func (c *InputPage) OnMount(ctx app.Context) {
+	c.stringValue = "Hello, World!"
+	c.intValue = 123
+	c.floatValue = 123.456
+	c.uintValue = 123
+	c.boolValue = true
+}
+
 func (c *InputPage) OnNav(ctx app.Context) {
 	slog.InfoContext(ctx.Context, "InputPage: OnNav")
 }
