@@ -1,0 +1,41 @@
+.material-app-bar {
+    display: flex;
+    gap: 0.5em;
+    justify-content: space-between;
+    align-items: left;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.5em;
+    background-color: var(--material-theme-primary);
+    color: var(--material-theme-on-primary);
+    font-size: 1.5em;
+}
+
+.material-app-bar-leading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.material-app-bar-content {
+    flex: 1;
+}
+
+.material-app-bar-headline {
+    font-weight: bold;
+}
+
+.material-app-bar-headline-text {
+}
+
+.material-app-bar-subtitle {
+    font-size: 0.8em;
+}
+
+.material-app-bar-subtitle-text {
+    font-size: 1em;
+    font-weight: normal;
+}
+
+.material-app-bar-trailer {
+}

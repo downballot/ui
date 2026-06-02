@@ -2,7 +2,7 @@ all: binaries
 
 SHELL := /bin/bash
 
-ALL_GO_FILES := $(shell find ./ -name '*.go')
+ALL_GO_FILES := $(shell find ./ -name '*.go') $(shell find ./ -type f -wholename '*/embedded/*')
 
 .PHONY: binaries
 binaries: binaries_ui binaries_ui-demo

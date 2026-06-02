@@ -17,6 +17,8 @@ import (
 	"github.com/downballot/ui/component/customlayout"
 	"github.com/downballot/ui/component/layout"
 	"github.com/downballot/ui/component/page"
+	"github.com/downballot/ui/material"
+	"github.com/downballot/ui/myui"
 	"github.com/joho/godotenv"
 	"github.com/lmittmann/tint"
 	"github.com/mattn/go-isatty"
@@ -451,6 +453,8 @@ func main() {
 		Title:       "Downballot",
 		Styles: []string{
 			"/web/main.css",
+			"/web/material.css",
+			"/web/myui.css",
 		},
 		RawHeaders: []string{
 			`<script src="https://kit.fontawesome.com/a71e001119.js" crossorigin="anonymous"></script>`,
@@ -459,6 +463,8 @@ func main() {
 			"GOOGLE_MAPS_API_KEY": os.Getenv("GOOGLE_MAPS_API_KEY"),
 		},
 	})
+	mux.Handle("/web/material.css", material.CSS())
+	mux.Handle("/web/myui.css", myui.CSS())
 
 	// Send all API requests to the API server.
 	mux.HandleFunc("/api/", func(w http.ResponseWriter, r *http.Request) {

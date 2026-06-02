@@ -11,6 +11,8 @@ import (
 
 	router "github.com/downballot/ui/app-router"
 	"github.com/downballot/ui/demo"
+	"github.com/downballot/ui/material"
+	"github.com/downballot/ui/myui"
 	"github.com/joho/godotenv"
 	"github.com/lmittmann/tint"
 	"github.com/mattn/go-isatty"
@@ -124,12 +126,16 @@ func main() {
 		Title:       "UI Demo",
 		Styles: []string{
 			"/web/main.css",
+			"/web/material.css",
+			"/web/myui.css",
 		},
 		RawHeaders: []string{
 			`<script src="https://kit.fontawesome.com/a71e001119.js" crossorigin="anonymous"></script>`,
 		},
 		Env: map[string]string{},
 	})
+	mux.Handle("/web/material.css", material.CSS())
+	mux.Handle("/web/myui.css", myui.CSS())
 
 	slog.InfoContext(ctx, "Disable service worker?", "disableServiceWorker", disableServiceWorker)
 	if disableServiceWorker {
