@@ -5,29 +5,53 @@ SHELL := /bin/bash
 ALL_GO_FILES := $(shell find ./ -name '*.go')
 
 .PHONY: binaries
-binaries: bin/ui bin/web/app.wasm bin/web/main.css
+binaries: binaries_ui binaries_ui-demo
+
+.PHONY: binaries_ui
+binaries_ui: bin/ui/app bin/ui/web/app.wasm bin/ui/web/main.css
+
+.PHONY: binaries_ui-demo
+binaries_ui-demo: bin/ui-demo/app bin/ui-demo/web/app.wasm bin/ui-demo/web/main.css
 
 bin:
 	mkdir -p $@
 
-bin/ui: bin $(ALL_GO_FILES)
-	go build -o $@ ./cmd/ui/...
-
-bin/web: bin
+bin/ui: bin
 	mkdir -p $@
 
-bin/web/app.wasm: bin/web $(ALL_GO_FILES)
+bin/ui/app: bin/ui $(ALL_GO_FILES)
+	go build -o $@ ./cmd/ui/...
+
+bin/ui/web: bin/ui
+	mkdir -p $@
+
+bin/ui/web/app.wasm: bin/ui/web $(ALL_GO_FILES)
 	GOARCH=wasm GOOS=js go build -o $@ ./cmd/ui/...
 
-bin/web/main.css: bin/web static/main.css
+bin/ui/web/main.css: bin/ui/web static/main.css
 	cp static/main.css $@
 
-bin/web/robots.txt: bin/web static/robots.txt
+bin/ui/web/robots.txt: bin/ui/web static/robots.txt
 	cp static/robots.txt $@
+
+bin/ui-demo: bin
+	mkdir -p $@
+
+bin/ui-demo/app: bin/ui-demo $(ALL_GO_FILES)
+	go build -o $@ ./cmd/ui-demo/...
+
+bin/ui-demo/web: bin/ui-demo
+	mkdir -p $@
+
+bin/ui-demo/web/app.wasm: bin/ui-demo/web $(ALL_GO_FILES)
+	GOARCH=wasm GOOS=js go build -o $@ ./cmd/ui-demo/...
+
+bin/ui-demo/web/main.css: bin/ui-demo/web static/main.css
+	cp static/main.css $@
 
 .PHONY: run
 run: binaries
-	cd bin && ./ui
+	cd bin && ./ui/app
 
 .PHONY: watch-run
 watch-run:
@@ -36,18 +60,39 @@ watch-run:
 	while true; do \
 		$(MAKE) binaries; \
 		ok=$$?; \
-		command=$$(if [ $$ok -eq 0 ]; then echo "./ui"; else echo "sleep infinity"; fi); \
-		pushd bin; \
+		command=$$(if [ $$ok -eq 0 ]; then echo "./app"; else echo "sleep infinity"; fi); \
+		pushd bin/ui; \
 		$$command & PID=$$!; \
 		popd; \
 		inotifywait -qre close_write .; \
 		kill $$PID; \
 	done
 
+.PHONY: run-demo
+run: binaries
+	cd bin && ./ui-demo/app
+
+.PHONY: watch-run-demo
+watch-run-demo:
+	@PID=; \
+	trap 'kill $$PID' TERM INT; \
+	while true; do \
+		$(MAKE) binaries; \
+		ok=$$?; \
+		command=$$(if [ $$ok -eq 0 ]; then echo "./app"; else echo "sleep infinity"; fi); \
+		pushd bin/ui-demo; \
+		$$command & PID=$$!; \
+		popd; \
+		inotifywait -qre close_write .; \
+		kill $$PID; \
+	done
 
 .PHONY: clean
 clean:
-	rm -f bin/ui
-	rm -f bin/web/app.wasm
-	rm -rf bin/web
-	rm -rf 
+	rm -f bin/ui/app
+	rm -f bin/ui/web/app.wasm
+	rm -rf bin/ui/web
+	rm -f bin/ui-demo/app
+	rm -f bin/ui-demo/web/app.wasm
+	rm -rf bin/ui-demo/web
+
