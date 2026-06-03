@@ -95,6 +95,12 @@ func main() {
 						return &demo.InputPage{}
 					},
 				},
+				{
+					Path: "/select",
+					Component: func() app.Composer {
+						return &demo.SelectPage{}
+					},
+				},
 			},
 		},
 	)

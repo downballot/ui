@@ -140,13 +140,13 @@ func (c *MyUIInput[T]) Render() app.UI {
 					//slog.InfoContext(ctx.Context, "MyUIInput: Change", "value", value)
 					//slog.InfoContext(ctx.Context, "MyUIInput: Change", "e.target.checked", e.Get("target").Get("checked").String())
 
-					if kind == reflect.Bool {
-						if c.BindValue != nil {
+					if c.BindValue != nil {
+						if kind == reflect.Bool {
 							boolValue := reflect.ValueOf(e.Get("target").Get("checked").Bool())
 							*c.BindValue = boolValue.Convert(reflect.TypeOf(c.IValue)).Interface().(T)
+						} else {
+							c.ValueTo(c.BindValue)(ctx, e)
 						}
-					} else {
-						c.ValueTo(c.BindValue)(ctx, e)
 					}
 				}),
 			),

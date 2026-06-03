@@ -265,8 +265,7 @@ func (t *MyUITable[T]) Render() app.UI {
 									}
 									return columns
 								}()...).
-								SelectedValue(popoverSelectedColumns...).
-								On("change", SelectedValuesTo(&popoverSelectedColumns)),
+								Bind(&popoverSelectedColumns),
 							Button().
 								Label("Apply").
 								On("click", func(ctx app.Context, e app.Event) {

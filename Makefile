@@ -50,7 +50,7 @@ bin/ui-demo/web/main.css: bin/ui-demo/web static/main.css
 	cp static/main.css $@
 
 .PHONY: run
-run: binaries
+run: binaries_ui
 	cd bin && ./ui/app
 
 .PHONY: watch-run
@@ -58,7 +58,7 @@ watch-run:
 	@PID=; \
 	trap 'kill $$PID' TERM INT; \
 	while true; do \
-		$(MAKE) binaries; \
+		$(MAKE) binaries_ui; \
 		ok=$$?; \
 		command=$$(if [ $$ok -eq 0 ]; then echo "./app"; else echo "sleep infinity"; fi); \
 		pushd bin/ui; \
@@ -69,7 +69,7 @@ watch-run:
 	done
 
 .PHONY: run-demo
-run: binaries
+run: binaries_ui-demo
 	cd bin && ./ui-demo/app
 
 .PHONY: watch-run-demo
@@ -77,7 +77,7 @@ watch-run-demo:
 	@PID=; \
 	trap 'kill $$PID' TERM INT; \
 	while true; do \
-		$(MAKE) binaries; \
+		$(MAKE) binaries_ui-demo; \
 		ok=$$?; \
 		command=$$(if [ $$ok -eq 0 ]; then echo "./app"; else echo "sleep infinity"; fi); \
 		pushd bin/ui-demo; \
