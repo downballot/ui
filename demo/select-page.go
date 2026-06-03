@@ -44,6 +44,7 @@ func (c *SelectPage) Render() app.UI {
 							myui.SelectOption{Label: "Option 1", Value: "option1"},
 							myui.SelectOption{Label: "Option 2", Value: "option2"},
 							myui.SelectOption{Label: "Option 3", Value: "option3"},
+							myui.SelectOption{Label: "Option 4", Value: "option4", Disabled: true},
 						).
 						Bind(&c.single),
 					myui.Multiselect().
@@ -52,13 +53,14 @@ func (c *SelectPage) Render() app.UI {
 							myui.SelectOption{Label: "Option 1", Value: "option1"},
 							myui.SelectOption{Label: "Option 2", Value: "option2"},
 							myui.SelectOption{Label: "Option 3", Value: "option3"},
+							myui.SelectOption{Label: "Option 4", Value: "option4", Disabled: true},
 						).
 						Bind(&c.multiple),
 				),
 			app.FieldSet().
 				Body(
 					app.Legend().Text("Output"),
-					app.Div().Text("Single"),
+					app.Div().Text("Select"),
 					app.Pre().Text(c.single),
 					app.Div().Text("Multiselect"),
 					app.Pre().Text(strings.Join(c.multiple, ", ")),
