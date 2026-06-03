@@ -106,63 +106,47 @@ func (c *AddFieldDialog) Render() app.UI {
 				Label("Value").
 				Type("date").
 				Placeholder("Value").
-				Value(c.ValueValue).
-				On("change", c.ValueTo(&c.ValueValue))
+				Bind(&c.ValueValue)
 		case downballotapi.PersonFieldDefinitionTypeEnum:
-			valueElement = app.Select().
-				Body(
-					app.Option().
-						Value("").
-						Disabled(true).
-						Selected(c.ValueValue == ""),
-					app.Range(selectedPersonField.AllowedValues).Slice(func(i int) app.UI {
-						allowedValue := selectedPersonField.AllowedValues[i]
-						return app.Option().
-							Text(allowedValue).
-							Value(allowedValue).
-							Selected(c.ValueValue == allowedValue)
-					}),
+			valueElement = myui.Select().
+				AllowedValue(
+					myui.SelectOption{Label: "", Value: "", Disabled: true},
 				).
-				OnChange(c.ValueTo(&c.ValueValue))
+				AllowedValue(
+					func() []myui.SelectOption {
+						var allowedValues []myui.SelectOption
+						for _, allowedValue := range selectedPersonField.AllowedValues {
+							allowedValues = append(allowedValues, myui.SelectOption{Label: allowedValue, Value: allowedValue})
+						}
+						return allowedValues
+					}()...).
+				Bind(&c.ValueValue)
 		case downballotapi.PersonFieldDefinitionTypeString:
 			valueElement = myui.Input[string]().
 				Label("Value").
 				Type("text").
 				Placeholder("Value").
-				Value(c.ValueValue).
-				On("change", c.ValueTo(&c.ValueValue))
+				Bind(&c.ValueValue)
 		case downballotapi.PersonFieldDefinitionTypeInteger:
 			valueElement = myui.Input[string]().
 				Label("Value").
 				Type("number").
 				Placeholder("Value").
-				Value(c.ValueValue).
-				On("change", c.ValueTo(&c.ValueValue))
+				Bind(&c.ValueValue)
 		case downballotapi.PersonFieldDefinitionTypeBoolean:
-			valueElement = app.Select().
-				Body(
-					app.Option().
-						Text("").
-						Value("").
-						Disabled(true).
-						Selected(c.ValueValue == ""),
-					app.Option().
-						Text("true").
-						Value("true").
-						Selected(c.ValueValue == "true"),
-					app.Option().
-						Text("false").
-						Value("false").
-						Selected(c.ValueValue == "false"),
+			valueElement = myui.Select().
+				AllowedValue(
+					myui.SelectOption{Label: "", Value: "", Disabled: true},
+					myui.SelectOption{Label: "true", Value: "true"},
+					myui.SelectOption{Label: "false", Value: "false"},
 				).
-				OnChange(c.ValueTo(&c.ValueValue))
+				Bind(&c.ValueValue)
 		default:
 			valueElement = myui.Input[string]().
 				Label("Value").
 				Type("text").
 				Placeholder("Value").
-				Value(c.ValueValue).
-				On("change", c.ValueTo(&c.ValueValue))
+				Bind(&c.ValueValue)
 		}
 	}
 
@@ -172,24 +156,22 @@ func (c *AddFieldDialog) Render() app.UI {
 			app.H2().Text("Add Field"),
 			app.Div().
 				Body(
-					app.Select().
+					myui.Select().
 						Name("field").
-						Body(
-							app.Option().
-								Text("").
-								Value("").
-								Disabled(true).
-								Selected(c.SelectedFieldValue == ""),
-							app.Range(c.PersonFields).Slice(func(i int) app.UI {
-								personField := c.PersonFields[i]
-								return app.Option().
-									Text(personField.Name).
-									Value(personField.Name).
-									Selected(c.SelectedFieldValue == personField.Name)
-							}),
+						Label("Field").
+						AllowedValue(
+							myui.SelectOption{Label: "", Value: "", Disabled: true},
 						).
-						OnChange(func(ctx app.Context, e app.Event) {
-							c.ValueTo(&c.SelectedFieldValue)(ctx, e)
+						AllowedValue(
+							func() []myui.SelectOption {
+								var allowedValues []myui.SelectOption
+								for _, personField := range c.PersonFields {
+									allowedValues = append(allowedValues, myui.SelectOption{Label: personField.Name, Value: personField.Name})
+								}
+								return allowedValues
+							}()...).
+						Bind(&c.SelectedFieldValue).
+						On("change", func(ctx app.Context, e app.Event) {
 							slog.InfoContext(ctx.Context, "AddFieldDialog: OnChange", "SelectedFieldValue", c.SelectedFieldValue)
 
 							if c.SelectedFieldValue == "" {

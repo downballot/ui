@@ -323,22 +323,20 @@ func (c *OrganizationIDGroupIDPersonPage) Render() app.UI {
 						Style("display", "flex").
 						Style("flex-direction", "column").
 						Body(
-							app.Select().
+							myui.Select().
 								Name("saved_filter").
-								Body(
-									app.Option().
-										Text("Select a filter or create your own").
-										Value("").
-										//Disabled(true).
-										Selected(c.Filter == "" || slices.Contains(allPossibleFilterStrings, c.Filter)),
-									app.Range(c.Filters).Slice(func(i int) app.UI {
-										filter := c.Filters[i]
-										return app.Option().
-											Text(filter.Name).
-											Value(filter.Filter).
-											Selected(c.Filter == filter.Filter)
-									}),
+								Label("Saved Filter").
+								AllowedValue(
+									myui.SelectOption{Label: "Select a filter or create your own", Value: ""},
 								).
+								AllowedValue(func() []myui.SelectOption {
+									var allowedValues []myui.SelectOption
+									for _, filter := range c.Filters {
+										allowedValues = append(allowedValues, myui.SelectOption{Label: filter.Name, Value: filter.Filter})
+									}
+									return allowedValues
+								}()...).
+								Bind(&c.Filter).
 								On("change", func(ctx app.Context, e app.Event) {
 									c.ValueTo(&c.Filter)(ctx, e)
 									ctx.SetState("persist-organization-id-group-id-person-page-filter", c.Filter).Persist()

@@ -15,15 +15,11 @@ func Multiselect() *MyUIMultiselect {
 type MyUIMultiselect struct {
 	app.Compo
 	UseEvents
+	IName              string
 	ILabel             string
 	IAllowedValues     []SelectOption
 	ISelectedValues    []string
 	BindSelectedValues *[]string
-}
-
-type SelectOption struct {
-	Label string
-	Value string
 }
 
 var _ app.Composer = (*MyUIMultiselect)(nil)
@@ -31,6 +27,11 @@ var _ app.Updater = (*MyUIMultiselect)(nil)
 
 func (c *MyUIMultiselect) OnUpdate(ctx app.Context) {
 	slog.InfoContext(ctx.Context, "MyUIMultiselect: OnUpdate")
+}
+
+func (c *MyUIMultiselect) Name(name string) *MyUIMultiselect {
+	c.IName = name
+	return c
 }
 
 func (c *MyUIMultiselect) Label(label string) *MyUIMultiselect {
@@ -57,7 +58,6 @@ func (c *MyUIMultiselect) Bind(bindSelectedValues *[]string) *MyUIMultiselect {
 		c.ISelectedValues = make([]string, len(*c.BindSelectedValues))
 		copy(c.ISelectedValues, *c.BindSelectedValues)
 	}
-	slog.InfoContext(context.TODO(), "MyUIMultiselect: Bind", "bindSelectedValues", c.BindSelectedValues, "selectedValues", c.ISelectedValues)
 	return c
 }
 
@@ -68,16 +68,13 @@ func (c *MyUIMultiselect) On(event string, function func(ctx app.Context, e app.
 
 func (c *MyUIMultiselect) Render() app.UI {
 	slog.InfoContext(context.TODO(), "MyUIMultiselect: Render", "label", c.ILabel, "allowedValues", c.IAllowedValues, "selectedValues", c.ISelectedValues, "bindSelectedValues", c.BindSelectedValues)
-	return app.Span().
+	return InputWrapper().
 		Class("myui-multiselect").
+		Label(c.ILabel).
 		Body(
-			app.If(c.ILabel != "", func() app.UI {
-				return app.Span().
-					Class("myui-input__label").
-					Text(c.ILabel)
-			}),
 			c.UseEvents.Wrap(
 				app.Select().
+					Name(c.IName).
 					Class("myui-multiselect__select").
 					Multiple(true).
 					Body(
@@ -86,6 +83,7 @@ func (c *MyUIMultiselect) Render() app.UI {
 							return app.Option().
 								Value(allowedValue.Value).
 								Text(allowedValue.Label).
+								Disabled(allowedValue.Disabled).
 								Selected(slices.Contains(c.ISelectedValues, allowedValue.Value))
 						}),
 					),
@@ -95,6 +93,7 @@ func (c *MyUIMultiselect) Render() app.UI {
 						*c.BindSelectedValues = make([]string, len(c.ISelectedValues))
 						copy(*c.BindSelectedValues, c.ISelectedValues)
 					}
+					ctx.PreventUpdate()
 				}),
 			),
 		)

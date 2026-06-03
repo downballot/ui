@@ -117,14 +117,10 @@ func (c *MyUIInput[T]) Render() app.UI {
 		}
 	}
 
-	return app.Span().
+	return InputWrapper().
 		Class("myui-input").
+		Label(c.ILabel).
 		Body(
-			app.If(c.ILabel != "", func() app.UI {
-				return app.Span().
-					Class("myui-input__label").
-					Text(c.ILabel)
-			}),
 			c.UseEvents.Wrap(
 				app.Input().
 					Class("myui-input__input").
