@@ -9,10 +9,10 @@ import (
 	"strconv"
 	"strings"
 
-	router "github.com/downballot/ui/app-router"
 	"github.com/downballot/ui/demo"
 	"github.com/downballot/ui/material"
 	"github.com/downballot/ui/myui"
+	"github.com/go-app-blazar/router"
 	"github.com/joho/godotenv"
 	"github.com/lmittmann/tint"
 	"github.com/mattn/go-isatty"

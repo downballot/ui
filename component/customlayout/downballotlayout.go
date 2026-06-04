@@ -4,10 +4,10 @@ import (
 	"context"
 	"log/slog"
 
-	router "github.com/downballot/ui/app-router"
 	"github.com/downballot/ui/component/layout"
 	"github.com/downballot/ui/material"
 	"github.com/downballot/ui/myui"
+	"github.com/go-app-blazar/router"
 	"github.com/maxence-charriere/go-app/v11/pkg/app"
 )
 

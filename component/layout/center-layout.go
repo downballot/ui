@@ -4,7 +4,7 @@ import (
 	"context"
 	"log/slog"
 
-	router "github.com/downballot/ui/app-router"
+	"github.com/go-app-blazar/router"
 	"github.com/maxence-charriere/go-app/v11/pkg/app"
 )
 

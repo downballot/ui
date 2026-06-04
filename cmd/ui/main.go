@@ -13,12 +13,12 @@ import (
 
 	"github.com/downballot/downballot/downballotapi"
 	"github.com/downballot/ui/api"
-	router "github.com/downballot/ui/app-router"
 	"github.com/downballot/ui/component/customlayout"
 	"github.com/downballot/ui/component/layout"
 	"github.com/downballot/ui/component/page"
 	"github.com/downballot/ui/material"
 	"github.com/downballot/ui/myui"
+	"github.com/go-app-blazar/router"
 	"github.com/joho/godotenv"
 	"github.com/lmittmann/tint"
 	"github.com/mattn/go-isatty"
