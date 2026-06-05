@@ -3,6 +3,7 @@ package api
 import (
 	"errors"
 	"log/slog"
+	"time"
 
 	"github.com/downballot/downballot/downballotapi"
 	"github.com/maxence-charriere/go-app/v11/pkg/app"
@@ -29,7 +30,7 @@ func Do(ctx app.Context, method string, path string, input any, output any, opti
 			ctx.Navigate("/login")
 		}
 		slog.DebugContext(ctx.Context, "API wrapper: setting api-error", "err", err)
-		ctx.SetState("api-error", err.Error())
+		ctx.SetState("api-error", err.Error()).ExpiresIn(1 * time.Millisecond)
 		return err
 	}
 	return nil

@@ -10,6 +10,13 @@ type EmbeddedPage struct {
 	IError string
 }
 
+func (c *EmbeddedPage) OnMount(ctx app.Context) {
+	slog.InfoContext(ctx.Context, "EmbeddedPage: OnMount")
+
+	slog.InfoContext(ctx.Context, "EmbeddedPage: Setting up embedded page")
+	c.Setup(ctx)
+}
+
 func (c *EmbeddedPage) Setup(ctx app.Context) {
 	slog.InfoContext(ctx.Context, "EmbeddedPage: Setup")
 
@@ -24,14 +31,20 @@ func (c *EmbeddedPage) Setup(ctx app.Context) {
 		})
 }
 
-func (c *EmbeddedPage) Wrap(content app.UI) app.UI {
+func (c *EmbeddedPage) Wrap(content ...app.UI) app.UI {
+	var allElements []app.UI
+	if c.IError != "" {
+		allElements = append(allElements, StatusBar().
+			Text(c.IError).
+			Bad(),
+		)
+	}
+	for _, element := range content {
+		allElements = append(allElements, element)
+	}
+
 	return Page().
 		Body(
-			app.If(c.IError != "", func() app.UI {
-				return StatusBar().
-					Text(c.IError).
-					Bad()
-			}),
-			content,
+			allElements...,
 		)
 }

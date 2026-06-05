@@ -383,6 +383,15 @@ func main() {
 											},
 										},
 										{
+											Path: "/new",
+											Component: func() app.Composer {
+												return &page.OrganizationIDUserNewPage{}
+											},
+											Meta: map[string]string{
+												"title": "Add User",
+											},
+										},
+										{
 											Path:      "/:user_id",
 											Component: nil,
 											PathVariables: func(ctx app.Context, variables map[string]string) {
