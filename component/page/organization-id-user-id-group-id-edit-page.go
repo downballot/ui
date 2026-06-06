@@ -103,19 +103,19 @@ func (c *OrganizationIDUserIDGroupIDEditPage) Render() app.UI {
 	slog.InfoContext(context.TODO(), "OrganizationIDUserIDGroupIDEditPage: Render")
 
 	if !c.loaded {
-		return myui.Page().Body(
+		return c.EmbeddedPage.Wrap(
 			app.Div().Text("Loading..."),
 		)
 	}
 
 	if c.user == nil {
-		return myui.Page().Body(
+		return c.EmbeddedPage.Wrap(
 			app.Div().Text("User not found"),
 		)
 	}
 
 	if c.group == nil {
-		return myui.Page().Body(
+		return c.EmbeddedPage.Wrap(
 			app.Div().Text("Group not found"),
 		)
 	}

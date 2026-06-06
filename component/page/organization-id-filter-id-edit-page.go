@@ -15,6 +15,7 @@ import (
 
 type OrganizationIDFilterIDEditPage struct {
 	app.Compo
+	myui.EmbeddedPage
 
 	loaded bool
 
@@ -82,49 +83,48 @@ func (c *OrganizationIDFilterIDEditPage) Render() app.UI {
 	slog.InfoContext(context.TODO(), "OrganizationIDFilterIDEditPage: Render", "Name", c.Name, "Description", c.Description, "Filter", c.Filter)
 
 	if !c.loaded {
-		return myui.Page().Body(
+		return c.EmbeddedPage.Wrap(
 			app.Div().Text("Loading..."),
 		)
 	}
 
-	return myui.Page().
-		Body(
-			app.Div().
-				Style("display", "flex").
-				Style("flex-direction", "column").
-				Body(
-					myui.Input[string]().
-						Label("Name").
-						Type("text").
-						Bind(&c.Name),
-					myui.Input[string]().
-						Label("Description").
-						Type("text").
-						Bind(&c.Description),
-					myui.Input[string]().
-						Label("Filter").
-						Type("text").
-						Bind(&c.Filter),
-					app.Div().Body(
-						myui.Button().
-							Label("Save").
-							On("click", func(ctx app.Context, e app.Event) {
-								ctx.Async(func() {
-									var input downballotapi.PatchFilterRequest
-									input.Name = &c.Name
-									input.Description = &c.Description
-									input.Filter = &c.Filter
-									var output downballotapi.PatchFilterResponse
-									err := api.Do(ctx, http.MethodPatch, "/api/v1/organization/"+c.organizationID+"/filter/"+c.filterID, input, &output)
-									if err != nil {
-										slog.ErrorContext(ctx.Context, "Could not patch filter", "err", err)
-										return
-									}
+	return c.EmbeddedPage.Wrap(
+		app.Div().
+			Style("display", "flex").
+			Style("flex-direction", "column").
+			Body(
+				myui.Input[string]().
+					Label("Name").
+					Type("text").
+					Bind(&c.Name),
+				myui.Input[string]().
+					Label("Description").
+					Type("text").
+					Bind(&c.Description),
+				myui.Input[string]().
+					Label("Filter").
+					Type("text").
+					Bind(&c.Filter),
+				app.Div().Body(
+					myui.Button().
+						Label("Save").
+						On("click", func(ctx app.Context, e app.Event) {
+							ctx.Async(func() {
+								var input downballotapi.PatchFilterRequest
+								input.Name = &c.Name
+								input.Description = &c.Description
+								input.Filter = &c.Filter
+								var output downballotapi.PatchFilterResponse
+								err := api.Do(ctx, http.MethodPatch, "/api/v1/organization/"+c.organizationID+"/filter/"+c.filterID, input, &output)
+								if err != nil {
+									slog.ErrorContext(ctx.Context, "Could not patch filter", "err", err)
+									return
+								}
 
-									c.Reload(ctx)
-								})
-							}),
-					),
+								c.Reload(ctx)
+							})
+						}),
 				),
-		)
+			),
+	)
 }

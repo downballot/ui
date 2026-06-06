@@ -16,6 +16,7 @@ import (
 
 type OrganizationIDPersonFieldNewPage struct {
 	app.Compo
+	myui.EmbeddedPage
 
 	organizationID string
 
@@ -52,7 +53,7 @@ func (c *OrganizationIDPersonFieldNewPage) OnNav(ctx app.Context) {
 func (c *OrganizationIDPersonFieldNewPage) Render() app.UI {
 	slog.InfoContext(context.TODO(), "OrganizationIDPersonFieldNewPage: Render")
 
-	return myui.Page().Body(
+	return c.EmbeddedPage.Wrap(
 		myui.Input[string]().
 			Label("Name").
 			Type("text").

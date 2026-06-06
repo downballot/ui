@@ -66,7 +66,7 @@ func (c *OrganizationIDUserIDEditPage) Render() app.UI {
 	slog.InfoContext(context.TODO(), "OrganizationIDUserIDEditPage: Render")
 
 	if c.user == nil {
-		return myui.Page().Body(
+		return c.EmbeddedPage.Wrap(
 			app.Div().Text("Loading..."),
 		)
 	}

@@ -15,6 +15,7 @@ import (
 
 type OrganizationIDGroupIDEditPage struct {
 	app.Compo
+	myui.EmbeddedPage
 
 	loaded bool
 
@@ -91,18 +92,18 @@ func (c *OrganizationIDGroupIDEditPage) Render() app.UI {
 	slog.InfoContext(context.TODO(), "OrganizationIDGroupIDEditPage: Render")
 
 	if !c.loaded {
-		return myui.Page().Body(
+		return c.EmbeddedPage.Wrap(
 			app.Div().Text("Loading..."),
 		)
 	}
 
 	if c.group == nil {
-		return myui.Page().Body(
+		return c.EmbeddedPage.Wrap(
 			app.Div().Text("Group not found"),
 		)
 	}
 
-	return myui.Page().Body(
+	return c.EmbeddedPage.Wrap(
 		app.Div().
 			Style("display", "flex").
 			Style("flex-direction", "column").

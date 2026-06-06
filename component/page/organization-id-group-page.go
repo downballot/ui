@@ -15,6 +15,7 @@ import (
 
 type OrganizationIDGroupPage struct {
 	app.Compo
+	myui.EmbeddedPage
 
 	loaded bool
 
@@ -54,12 +55,12 @@ func (c *OrganizationIDGroupPage) Render() app.UI {
 	slog.InfoContext(context.TODO(), "OrganizationIDGroupPage: Render")
 
 	if !c.loaded {
-		return myui.Page().Body(
+		return c.EmbeddedPage.Wrap(
 			app.Div().Text("Loading..."),
 		)
 	}
 
-	return myui.Page().Body(
+	return c.EmbeddedPage.Wrap(
 		myui.Table[*downballotapi.Group]().
 			Rows(c.groups).
 			Columns([]myui.TableColumn[*downballotapi.Group]{

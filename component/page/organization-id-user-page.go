@@ -57,7 +57,7 @@ func (c *OrganizationIDUserPage) Render() app.UI {
 	slog.InfoContext(context.TODO(), "OrganizationIDUserPage: Render")
 
 	if !c.loaded {
-		return myui.Page().Body(
+		return c.EmbeddedPage.Wrap(
 			app.Div().Text("Loading..."),
 		)
 	}

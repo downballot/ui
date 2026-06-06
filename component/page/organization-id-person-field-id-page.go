@@ -16,6 +16,7 @@ import (
 
 type OrganizationIDPersonFieldIDPage struct {
 	app.Compo
+	myui.EmbeddedPage
 
 	loaded bool
 
@@ -76,61 +77,62 @@ func (c *OrganizationIDPersonFieldIDPage) Render() app.UI {
 	slog.InfoContext(context.TODO(), "OrganizationIDPersonFieldIDPage: Render")
 
 	if !c.loaded {
-		return myui.Page().Body(
+		return c.EmbeddedPage.Wrap(
 			app.Div().Text("Loading..."),
 		)
 	}
 
 	if c.personField == nil {
-		return myui.StatusBar().
-			Text("Not found").
-			Bad()
+		return c.EmbeddedPage.Wrap(
+			myui.StatusBar().
+				Text("Not found").
+				Bad(),
+		)
 	}
 
-	return myui.Page().
-		Body(
-			myui.Table[*downballotapi.PersonField]().
-				Rows([]*downballotapi.PersonField{c.personField}).
-				Columns([]myui.TableColumn[*downballotapi.PersonField]{
-					{
-						Name: "ID",
-						Value: func(row *downballotapi.PersonField) any {
-							return row.ID
-						},
+	return c.EmbeddedPage.Wrap(
+		myui.Table[*downballotapi.PersonField]().
+			Rows([]*downballotapi.PersonField{c.personField}).
+			Columns([]myui.TableColumn[*downballotapi.PersonField]{
+				{
+					Name: "ID",
+					Value: func(row *downballotapi.PersonField) any {
+						return row.ID
 					},
-					{
-						Name: "Name",
-						Value: func(row *downballotapi.PersonField) any {
-							return row.Name
-						},
-						To: func(row *downballotapi.PersonField) string {
-							return fmt.Sprintf("/organization/%s/person-field/%s", c.organizationID, row.ID)
-						},
+				},
+				{
+					Name: "Name",
+					Value: func(row *downballotapi.PersonField) any {
+						return row.Name
 					},
-					{
-						Name: "Type",
-						Value: func(row *downballotapi.PersonField) any {
-							return row.Type
-						},
+					To: func(row *downballotapi.PersonField) string {
+						return fmt.Sprintf("/organization/%s/person-field/%s", c.organizationID, row.ID)
 					},
-					{
-						Name: "Allow Empty",
-						Value: func(row *downballotapi.PersonField) any {
-							return row.AllowEmpty
-						},
+				},
+				{
+					Name: "Type",
+					Value: func(row *downballotapi.PersonField) any {
+						return row.Type
 					},
-					{
-						Name: "Allowed Regex",
-						Value: func(row *downballotapi.PersonField) any {
-							return row.AllowedRegex
-						},
+				},
+				{
+					Name: "Allow Empty",
+					Value: func(row *downballotapi.PersonField) any {
+						return row.AllowEmpty
 					},
-					{
-						Name: "Allowed Values",
-						Value: func(row *downballotapi.PersonField) any {
-							return row.AllowedValues
-						},
+				},
+				{
+					Name: "Allowed Regex",
+					Value: func(row *downballotapi.PersonField) any {
+						return row.AllowedRegex
 					},
-				}),
-		)
+				},
+				{
+					Name: "Allowed Values",
+					Value: func(row *downballotapi.PersonField) any {
+						return row.AllowedValues
+					},
+				},
+			}),
+	)
 }

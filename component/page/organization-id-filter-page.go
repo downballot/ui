@@ -15,6 +15,7 @@ import (
 
 type OrganizationIDFilterPage struct {
 	app.Compo
+	myui.EmbeddedPage
 
 	loaded bool
 
@@ -54,12 +55,12 @@ func (c *OrganizationIDFilterPage) Render() app.UI {
 	slog.InfoContext(context.TODO(), "OrganizationIDFilterPage: Render")
 
 	if !c.loaded {
-		return myui.Page().Body(
+		return c.EmbeddedPage.Wrap(
 			app.Div().Text("Loading..."),
 		)
 	}
 
-	return myui.Page().Body(
+	return c.EmbeddedPage.Wrap(
 		myui.Table[*downballotapi.Filter]().
 			Rows(c.filters).
 			Columns([]myui.TableColumn[*downballotapi.Filter]{

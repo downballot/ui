@@ -13,6 +13,7 @@ import (
 
 type OrganizationPage struct {
 	app.Compo
+	myui.EmbeddedPage
 
 	loaded bool
 
@@ -37,34 +38,33 @@ func (c *OrganizationPage) OnNav(ctx app.Context) {
 
 func (c *OrganizationPage) Render() app.UI {
 	if !c.loaded {
-		return myui.Page().Body(
+		return c.EmbeddedPage.Wrap(
 			app.Div().Text("Loading..."),
 		)
 	}
 
-	return myui.Page().
-		Body(
-			app.Div().Text(
-				"These are the organizations that you are a part of.",
-			),
-			myui.Table[*downballotapi.Organization]().
-				Rows(c.organizations).
-				Columns([]myui.TableColumn[*downballotapi.Organization]{
-					{
-						Name: "ID",
-						Value: func(row *downballotapi.Organization) any {
-							return row.ID
-						},
+	return c.EmbeddedPage.Wrap(
+		app.Div().Text(
+			"These are the organizations that you are a part of.",
+		),
+		myui.Table[*downballotapi.Organization]().
+			Rows(c.organizations).
+			Columns([]myui.TableColumn[*downballotapi.Organization]{
+				{
+					Name: "ID",
+					Value: func(row *downballotapi.Organization) any {
+						return row.ID
 					},
-					{
-						Name: "Name",
-						Value: func(row *downballotapi.Organization) any {
-							return row.Name
-						},
-						To: func(row *downballotapi.Organization) string {
-							return fmt.Sprintf("/organization/%s", row.ID)
-						},
+				},
+				{
+					Name: "Name",
+					Value: func(row *downballotapi.Organization) any {
+						return row.Name
 					},
-				}),
-		)
+					To: func(row *downballotapi.Organization) string {
+						return fmt.Sprintf("/organization/%s", row.ID)
+					},
+				},
+			}),
+	)
 }

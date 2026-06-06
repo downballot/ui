@@ -16,6 +16,7 @@ import (
 
 type OrganizationIDGroupIDPage struct {
 	app.Compo
+	myui.EmbeddedPage
 
 	IChildrenVisibleColumns []string
 
@@ -91,69 +92,70 @@ func (c *OrganizationIDGroupIDPage) Render() app.UI {
 	slog.InfoContext(context.TODO(), "OrganizationIDGroupIDPage: Render", "self", fmt.Sprintf("%p", c), "c", *c)
 
 	if !c.loaded {
-		return myui.Page().Body(
+		return c.EmbeddedPage.Wrap(
 			app.Div().Text("Loading..."),
 		)
 	}
 
 	if c.group == nil {
-		return myui.StatusBar().
-			Text("Not found").
-			Bad()
+		return c.EmbeddedPage.Wrap(
+			myui.StatusBar().
+				Text("Not found").
+				Bad(),
+		)
 	}
 
-	return myui.Page().
-		Body(
-			app.Div().
-				Class("page-actions").
-				Body(
-					myui.Button().
-						Label("Persons").
-						Icon("people-group").
-						To(fmt.Sprintf("/organization/%s/group/%s/person", c.organizationID, c.groupID)),
-				),
-			myui.Table[*downballotapi.Group]().
-				Title("Sub-groups").
-				Rows(c.children).
-				Columns([]myui.TableColumn[*downballotapi.Group]{
-					{
-						Name: "ID",
-						Value: func(row *downballotapi.Group) any {
-							return row.ID
-						},
+	return c.EmbeddedPage.Wrap(
+		app.Div().
+			Class("page-actions").
+			Body(
+				myui.Button().
+					Label("Persons").
+					Icon("people-group").
+					To(fmt.Sprintf("/organization/%s/group/%s/person", c.organizationID, c.groupID)),
+			),
+		myui.Table[*downballotapi.Group]().
+			Title("Sub-groups").
+			Rows(c.children).
+			Columns([]myui.TableColumn[*downballotapi.Group]{
+				{
+					Name: "ID",
+					Value: func(row *downballotapi.Group) any {
+						return row.ID
 					},
-					{
-						Name: "Name",
-						Value: func(row *downballotapi.Group) any {
-							return row.Name
-						},
-						To: func(row *downballotapi.Group) string {
-							return fmt.Sprintf("/organization/%s/group/%s", c.organizationID, row.ID)
-						},
+				},
+				{
+					Name: "Name",
+					Value: func(row *downballotapi.Group) any {
+						return row.Name
 					},
-				}).
-				VisibleColumns(c.IChildrenVisibleColumns).
-				BindVisibleColumns(&c.IChildrenVisibleColumns).
-				Action(myui.TableAction{
-					Name: "New group",
-					Icon: "plus",
-					To: func() string {
-						return fmt.Sprintf("/organization/%s/group/new?parent_id=%s", c.organizationID, c.groupID)
-					},
-				}).
-				RowAction(myui.RowAction[*downballotapi.Group]{
-					Name: "Persons",
-					Icon: "people-group",
 					To: func(row *downballotapi.Group) string {
-						return fmt.Sprintf("/organization/%s/group/%s/person", c.organizationID, row.ID)
+						return fmt.Sprintf("/organization/%s/group/%s", c.organizationID, row.ID)
 					},
-				}).
-				RowAction(myui.RowAction[*downballotapi.Group]{
-					Name: "Edit",
-					Icon: "edit",
-					To: func(row *downballotapi.Group) string {
-						return fmt.Sprintf("/organization/%s/group/%s/edit", c.organizationID, row.ID)
-					},
-				}),
-		)
+				},
+			}).
+			VisibleColumns(c.IChildrenVisibleColumns).
+			BindVisibleColumns(&c.IChildrenVisibleColumns).
+			Action(myui.TableAction{
+				Name: "New group",
+				Icon: "plus",
+				To: func() string {
+					return fmt.Sprintf("/organization/%s/group/new?parent_id=%s", c.organizationID, c.groupID)
+				},
+			}).
+			RowAction(myui.RowAction[*downballotapi.Group]{
+				Name: "Persons",
+				Icon: "people-group",
+				To: func(row *downballotapi.Group) string {
+					return fmt.Sprintf("/organization/%s/group/%s/person", c.organizationID, row.ID)
+				},
+			}).
+			RowAction(myui.RowAction[*downballotapi.Group]{
+				Name: "Edit",
+				Icon: "edit",
+				To: func(row *downballotapi.Group) string {
+					return fmt.Sprintf("/organization/%s/group/%s/edit", c.organizationID, row.ID)
+				},
+			}),
+	)
 }

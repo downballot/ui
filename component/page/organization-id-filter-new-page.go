@@ -15,6 +15,7 @@ import (
 
 type OrganizationIDFilterNewPage struct {
 	app.Compo
+	myui.EmbeddedPage
 
 	organizationID string
 
@@ -29,16 +30,12 @@ func (c *OrganizationIDFilterNewPage) OnNav(ctx app.Context) {
 	router.GetActiveRoute(ctx).ReadVariable("organization_id", &c.organizationID)
 
 	slog.InfoContext(ctx.Context, "OrganizationIDFilterNewPage: OnNav", "OrganizationID", c.organizationID)
-
-	if c.organizationID == "" {
-		return
-	}
 }
 
 func (c *OrganizationIDFilterNewPage) Render() app.UI {
 	slog.InfoContext(context.TODO(), "OrganizationIDFilterNewPage: Render")
 
-	return myui.Page().Body(
+	return c.EmbeddedPage.Wrap(
 		app.Div().
 			Style("display", "flex").
 			Style("flex-direction", "column").

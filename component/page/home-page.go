@@ -9,6 +9,7 @@ import (
 
 type HomePage struct {
 	app.Compo
+	myui.EmbeddedPage
 }
 
 func (c *HomePage) OnNav(ctx app.Context) {
@@ -17,9 +18,8 @@ func (c *HomePage) OnNav(ctx app.Context) {
 }
 
 func (c *HomePage) Render() app.UI {
-	return myui.Page().
-		Body(
-			app.Span().
-				Text("Home page (this should not be visible)"),
-		)
+	return c.EmbeddedPage.Wrap(
+		app.Span().
+			Text("Home page (this should not be visible)"),
+	)
 }

@@ -20,6 +20,7 @@ import (
 
 type OrganizationIDPersonIDPage struct {
 	app.Compo
+	myui.EmbeddedPage
 
 	loaded bool
 
@@ -116,15 +117,17 @@ func (c *OrganizationIDPersonIDPage) Render() app.UI {
 	slog.InfoContext(context.TODO(), "OrganizationIDPersonIDPage: Render", "OrganizationID", c.organizationID, "VoterID", c.voterID, "Person", c.person)
 
 	if !c.loaded {
-		return myui.Page().Body(
+		return c.EmbeddedPage.Wrap(
 			app.Div().Text("Loading..."),
 		)
 	}
 
 	if c.person == nil {
-		return myui.StatusBar().
-			Text("Not found").
-			Bad()
+		return c.EmbeddedPage.Wrap(
+			myui.StatusBar().
+				Text("Not found").
+				Bad(),
+		)
 	}
 
 	type Record struct {
@@ -155,7 +158,7 @@ func (c *OrganizationIDPersonIDPage) Render() app.UI {
 		return strings.Compare(left.Field, right.Field)
 	})
 
-	return myui.Page().Body(
+	return c.EmbeddedPage.Wrap(
 		myui.Table[Record]().
 			Title("Fields").
 			Rows(rows).

@@ -99,86 +99,87 @@ func (c *OrganizationIDUserIDPage) Render() app.UI {
 	slog.InfoContext(context.TODO(), "OrganizationIDUserIDPage: Render")
 
 	if !c.loaded {
-		return myui.Page().Body(
+		return c.EmbeddedPage.Wrap(
 			app.Div().Text("Loading..."),
 		)
 	}
 
 	if c.user == nil {
-		return myui.StatusBar().
-			Text("Not found").
-			Bad()
+		return c.EmbeddedPage.Wrap(
+			myui.StatusBar().
+				Text("Not found").
+				Bad(),
+		)
 	}
 
-	return c.EmbeddedPage.
-		Wrap(
-			app.Div().
-				Body(
-					app.Div().Text("Name: "+c.user.Name),
-					app.Div().Text("E-mail address: "+c.user.Username),
-				),
-			myui.Table[*downballotapi.UserGroup]().
-				Rows(c.userGroups).
-				Columns([]myui.TableColumn[*downballotapi.UserGroup]{
-					{
-						Name: "ID",
-						Value: func(row *downballotapi.UserGroup) any {
-							return row.ID
-						},
+	return c.EmbeddedPage.Wrap(
+		app.Div().
+			Body(
+				app.Div().Text("Name: "+c.user.Name),
+				app.Div().Text("E-mail address: "+c.user.Username),
+			),
+		myui.Table[*downballotapi.UserGroup]().
+			Rows(c.userGroups).
+			Columns([]myui.TableColumn[*downballotapi.UserGroup]{
+				{
+					Name: "ID",
+					Value: func(row *downballotapi.UserGroup) any {
+						return row.ID
 					},
-					{
-						Name: "Name",
-						Value: func(row *downballotapi.UserGroup) any {
-							return row.Name
-						},
-						To: func(row *downballotapi.UserGroup) string {
-							return fmt.Sprintf("/organization/%s/group/%s", c.organizationID, row.ID)
-						},
+				},
+				{
+					Name: "Name",
+					Value: func(row *downballotapi.UserGroup) any {
+						return row.Name
 					},
-					{
-						Name: "Owner",
-						Value: func(row *downballotapi.UserGroup) any {
-							return row.Owner
-						},
-					},
-				}).
-				Action(myui.TableAction{
-					Name: "Add to group",
-					Icon: "plus",
-					To: func() string {
-						return fmt.Sprintf("/organization/%s/user/%s/group/new", c.organizationID, c.userID)
-					},
-				}).
-				RowAction(myui.RowAction[*downballotapi.UserGroup]{
-					Name: "Edit",
-					Icon: "edit",
 					To: func(row *downballotapi.UserGroup) string {
-						return fmt.Sprintf("/organization/%s/user/%s/group/%s/edit", c.organizationID, c.userID, row.ID)
+						return fmt.Sprintf("/organization/%s/group/%s", c.organizationID, row.ID)
 					},
-				}).
-				RowAction(myui.RowAction[*downballotapi.UserGroup]{
-					Name: "Remove",
-					Icon: "trash",
-					Function: func(ctx app.Context, row *downballotapi.UserGroup) {
-						ctx.PreventUpdate()
+				},
+				{
+					Name: "Owner",
+					Value: func(row *downballotapi.UserGroup) any {
+						return row.Owner
+					},
+				},
+			}).
+			Action(myui.TableAction{
+				Name: "Add to group",
+				Icon: "plus",
+				To: func() string {
+					return fmt.Sprintf("/organization/%s/user/%s/group/new", c.organizationID, c.userID)
+				},
+			}).
+			RowAction(myui.RowAction[*downballotapi.UserGroup]{
+				Name: "Edit",
+				Icon: "edit",
+				To: func(row *downballotapi.UserGroup) string {
+					return fmt.Sprintf("/organization/%s/user/%s/group/%s/edit", c.organizationID, c.userID, row.ID)
+				},
+			}).
+			RowAction(myui.RowAction[*downballotapi.UserGroup]{
+				Name: "Remove",
+				Icon: "trash",
+				Function: func(ctx app.Context, row *downballotapi.UserGroup) {
+					ctx.PreventUpdate()
 
-						result := app.Window().Call("confirm", "Are you sure you want to remove this user from this group?")
-						slog.InfoContext(ctx.Context, "OrganizationIDUserIDPage: Delete button clicked", "result", result.Bool())
-						if !result.Bool() {
-							slog.InfoContext(ctx.Context, "OrganizationIDUserIDPage: Delete button clicked: User cancelled", "result", result.Bool())
+					result := app.Window().Call("confirm", "Are you sure you want to remove this user from this group?")
+					slog.InfoContext(ctx.Context, "OrganizationIDUserIDPage: Delete button clicked", "result", result.Bool())
+					if !result.Bool() {
+						slog.InfoContext(ctx.Context, "OrganizationIDUserIDPage: Delete button clicked: User cancelled", "result", result.Bool())
+						return
+					}
+
+					ctx.Async(func() {
+						err := api.Do(ctx, http.MethodDelete, "/api/v1/organization/"+c.organizationID+"/group/"+row.ID+"/user/"+c.userID, nil, nil)
+						if err != nil {
+							slog.ErrorContext(ctx.Context, "Could not remove user from group", "err", err)
 							return
 						}
 
-						ctx.Async(func() {
-							err := api.Do(ctx, http.MethodDelete, "/api/v1/organization/"+c.organizationID+"/group/"+row.ID+"/user/"+c.userID, nil, nil)
-							if err != nil {
-								slog.ErrorContext(ctx.Context, "Could not remove user from group", "err", err)
-								return
-							}
-
-							c.Reload(ctx)
-						})
-					},
-				}),
-		)
+						c.Reload(ctx)
+					})
+				},
+			}),
+	)
 }

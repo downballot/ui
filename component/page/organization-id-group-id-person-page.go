@@ -22,6 +22,7 @@ import (
 
 type OrganizationIDGroupIDPersonPage struct {
 	app.Compo
+	myui.EmbeddedPage
 
 	loaded bool
 
@@ -282,125 +283,126 @@ func (c *OrganizationIDGroupIDPersonPage) Render() app.UI {
 	slices.Sort(allPossibleFilterStrings)
 
 	if !c.loaded {
-		return myui.Page().Body(
+		return c.EmbeddedPage.Wrap(
 			app.Div().Text("Loading..."),
 		)
 	}
 
 	if c.group == nil {
-		return myui.StatusBar().
-			Text("Not found").
-			Bad()
+		return c.EmbeddedPage.Wrap(
+			myui.StatusBar().
+				Text("Not found").
+				Bad(),
+		)
 	}
 
 	slog.InfoContext(context.TODO(), "OrganizationIDGroupIDPersonPage: Render", "PersonsTableVisibleColumns", c.PersonsTableVisibleColumns)
 	slog.InfoContext(context.TODO(), "OrganizationIDGroupIDPersonPage: Render", "BindPersonsTable", c.BindPersonsTable)
 
-	return myui.Page().
-		Body(
-			myui.Collapse().
-				Label("Filter").
-				Bind(&c.FilterOpen).
-				SummaryText(func() string {
-					summary := "Filter: "
-					if c.Filter == "" {
-						summary += "n/a"
-					} else {
-						summary += c.Filter
-					}
+	return c.EmbeddedPage.Wrap(
+		myui.Collapse().
+			Label("Filter").
+			Bind(&c.FilterOpen).
+			SummaryText(func() string {
+				summary := "Filter: "
+				if c.Filter == "" {
+					summary += "n/a"
+				} else {
+					summary += c.Filter
+				}
 
-					summary += " | Limit: "
-					if c.Limit == 0 {
-						summary += "n/a"
-					} else {
-						summary += fmt.Sprintf("%d", c.Limit)
-					}
+				summary += " | Limit: "
+				if c.Limit == 0 {
+					summary += "n/a"
+				} else {
+					summary += fmt.Sprintf("%d", c.Limit)
+				}
 
-					return summary
-				}()).
-				Body(
-					app.Div().
-						Style("display", "flex").
-						Style("flex-direction", "column").
-						Body(
-							myui.Select().
-								Name("saved_filter").
-								Label("Saved Filter").
-								AllowedValue(
-									myui.SelectOption{Label: "Select a filter or create your own", Value: ""},
-								).
-								AllowedValue(func() []myui.SelectOption {
-									var allowedValues []myui.SelectOption
-									for _, filter := range c.Filters {
-										allowedValues = append(allowedValues, myui.SelectOption{Label: filter.Name, Value: filter.Filter})
-									}
-									return allowedValues
-								}()...).
-								Bind(&c.Filter).
-								On("change", func(ctx app.Context, e app.Event) {
-									c.ValueTo(&c.Filter)(ctx, e)
-									ctx.SetState("persist-organization-id-group-id-person-page-filter", c.Filter).Persist()
-								}),
-							myui.Input[string]().
-								Label("Filter").
-								Type("text").
-								Placeholder("key = 'value' or ...").
-								Bind(&c.Filter).
-								On("change", func(ctx app.Context, e app.Event) {
-									ctx.SetState("persist-organization-id-group-id-person-page-filter", c.Filter).Persist()
-								}),
-							myui.Input[uint]().
-								Label("Limit").
-								Type("number").
-								Placeholder("1000").
-								Bind(&c.Limit).
-								On("change", func(ctx app.Context, e app.Event) {
-									ctx.SetState("persist-organization-id-group-id-person-page-limit", c.Limit).Persist()
-								}),
-						),
-				),
-			app.Div().
-				Class("no-print").
-				Body(
-					myui.Button().
-						Label("Search").
-						On("click", c.search),
-					myui.Button().
-						Label("CSV").
-						On("click", c.csv),
-				),
-			app.If(c.Error != "", func() app.UI {
-				return myui.StatusBar().
-					Text(c.Error).
-					Bad()
-			}),
-			myui.Collapse().
-				Label("Map").
-				Bind(&c.MapOpen).
-				Body(
-					app.Div().
-						Class("map-container").
-						Style("width", "100%").
-						Style("height", "600px").
-						Body(
-							googlemap.GoogleMap().
-								APIKey(app.Getenv("GOOGLE_MAPS_API_KEY")).
-								Center(center).
-								Markers(markers),
-						),
-				),
-			myui.Collapse().
-				Label("Results").
-				Bind(&c.ResultsOpen).
-				SummaryText("Results: "+fmt.Sprintf("%d", len(c.Persons))).
-				Body(
-					myui.Table[*downballotapi.Person]().
-						Bind(&c.BindPersonsTable).
-						Columns(c.PersonsTableColumns).
-						BindVisibleColumns(&c.PersonsTableVisibleColumns).
-						Rows(c.Persons),
-				),
-		)
+				return summary
+			}()).
+			Body(
+				app.Div().
+					Style("display", "flex").
+					Style("flex-direction", "column").
+					Body(
+						myui.Select().
+							Name("saved_filter").
+							Label("Saved Filter").
+							AllowedValue(
+								myui.SelectOption{Label: "Select a filter or create your own", Value: ""},
+							).
+							AllowedValue(func() []myui.SelectOption {
+								var allowedValues []myui.SelectOption
+								for _, filter := range c.Filters {
+									allowedValues = append(allowedValues, myui.SelectOption{Label: filter.Name, Value: filter.Filter})
+								}
+								return allowedValues
+							}()...).
+							Bind(&c.Filter).
+							On("change", func(ctx app.Context, e app.Event) {
+								c.ValueTo(&c.Filter)(ctx, e)
+								ctx.SetState("persist-organization-id-group-id-person-page-filter", c.Filter).Persist()
+							}),
+						myui.Input[string]().
+							Label("Filter").
+							Type("text").
+							Placeholder("key = 'value' or ...").
+							Bind(&c.Filter).
+							On("change", func(ctx app.Context, e app.Event) {
+								ctx.SetState("persist-organization-id-group-id-person-page-filter", c.Filter).Persist()
+							}),
+						myui.Input[uint]().
+							Label("Limit").
+							Type("number").
+							Placeholder("1000").
+							Bind(&c.Limit).
+							On("change", func(ctx app.Context, e app.Event) {
+								ctx.SetState("persist-organization-id-group-id-person-page-limit", c.Limit).Persist()
+							}),
+					),
+			),
+		app.Div().
+			Class("no-print").
+			Body(
+				myui.Button().
+					Label("Search").
+					On("click", c.search),
+				myui.Button().
+					Label("CSV").
+					On("click", c.csv),
+			),
+		app.If(c.Error != "", func() app.UI {
+			return myui.StatusBar().
+				Text(c.Error).
+				Bad()
+		}),
+		myui.Collapse().
+			Label("Map").
+			Bind(&c.MapOpen).
+			Body(
+				app.Div().
+					Class("map-container").
+					Style("width", "100%").
+					Style("height", "600px").
+					Body(
+						googlemap.GoogleMap().
+							APIKey(app.Getenv("GOOGLE_MAPS_API_KEY")).
+							Center(center).
+							Markers(markers),
+					),
+			),
+		myui.Collapse().
+			Label("Results").
+			Bind(&c.ResultsOpen).
+			SummaryText("Results: "+fmt.Sprintf("%d", len(c.Persons))).
+			Body(
+				myui.Table[*downballotapi.Person]().
+					Bind(&c.BindPersonsTable).
+					Columns(c.PersonsTableColumns).
+					BindVisibleColumns(&c.PersonsTableVisibleColumns).
+					Rows(c.Persons),
+			),
+	)
 }
 
 func (c *OrganizationIDGroupIDPersonPage) search(ctx app.Context, e app.Event) {

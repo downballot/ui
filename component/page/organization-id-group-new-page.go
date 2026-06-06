@@ -15,6 +15,7 @@ import (
 
 type OrganizationIDGroupNewPage struct {
 	app.Compo
+	myui.EmbeddedPage
 
 	organizationID string
 	groups         []*downballotapi.Group
@@ -66,7 +67,7 @@ func (c *OrganizationIDGroupNewPage) OnNav(ctx app.Context) {
 func (c *OrganizationIDGroupNewPage) Render() app.UI {
 	slog.InfoContext(context.TODO(), "OrganizationIDGroupNewPage: Render")
 
-	return myui.Page().Body(
+	return c.EmbeddedPage.Wrap(
 		app.Div().
 			Style("display", "flex").
 			Style("flex-direction", "column").

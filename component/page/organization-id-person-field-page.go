@@ -15,6 +15,7 @@ import (
 
 type OrganizationIDPersonFieldPage struct {
 	app.Compo
+	myui.EmbeddedPage
 
 	loaded bool
 
@@ -56,12 +57,12 @@ func (c *OrganizationIDPersonFieldPage) Render() app.UI {
 	slog.InfoContext(context.TODO(), "OrganizationIDPersonFieldPage: Render", "OrganizationID", c.organizationID)
 
 	if !c.loaded {
-		return myui.Page().Body(
+		return c.EmbeddedPage.Wrap(
 			app.Div().Text("Loading..."),
 		)
 	}
 
-	return myui.Page().Body(
+	return c.EmbeddedPage.Wrap(
 		myui.Table[*downballotapi.PersonField]().
 			Rows(c.personFields).
 			Columns([]myui.TableColumn[*downballotapi.PersonField]{

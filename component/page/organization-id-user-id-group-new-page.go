@@ -15,6 +15,7 @@ import (
 
 type OrganizationIDUserIDGroupNewPage struct {
 	app.Compo
+	myui.EmbeddedPage
 
 	loaded bool
 
@@ -86,18 +87,18 @@ func (c *OrganizationIDUserIDGroupNewPage) Render() app.UI {
 	slog.InfoContext(context.TODO(), "OrganizationIDUserIDGroupNewPage: Render")
 
 	if !c.loaded {
-		return myui.Page().Body(
+		return c.EmbeddedPage.Wrap(
 			app.Div().Text("Loading..."),
 		)
 	}
 
 	if c.user == nil {
-		return myui.Page().Body(
+		return c.EmbeddedPage.Wrap(
 			app.Div().Text("User not found"),
 		)
 	}
 
-	return myui.Page().Body(
+	return c.EmbeddedPage.Wrap(
 		app.Div().
 			Style("display", "flex").
 			Style("flex-direction", "column").

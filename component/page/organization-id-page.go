@@ -14,6 +14,7 @@ import (
 
 type OrganizationIDPage struct {
 	app.Compo
+	myui.EmbeddedPage
 
 	loaded bool
 
@@ -53,20 +54,21 @@ func (c *OrganizationIDPage) Render() app.UI {
 	slog.InfoContext(context.TODO(), "OrganizationIDPage: Render")
 
 	if !c.loaded {
-		return myui.Page().Body(
+		return c.EmbeddedPage.Wrap(
 			app.Div().Text("Loading..."),
 		)
 	}
 
 	if c.organization == nil {
-		return myui.StatusBar().
-			Text("Not found").
-			Bad()
+		return c.EmbeddedPage.Wrap(
+			myui.StatusBar().
+				Text("Not found").
+				Bad(),
+		)
 	}
 
-	return myui.Page().
-		Body(
-			app.Div().Text("ID: "+c.organization.ID),
-			app.Div().Text("Name: "+c.organization.Name),
-		)
+	return c.EmbeddedPage.Wrap(
+		app.Div().Text("ID: "+c.organization.ID),
+		app.Div().Text("Name: "+c.organization.Name),
+	)
 }
