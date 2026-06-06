@@ -78,6 +78,9 @@ func (c *AddUserToGroupDialog) Render() app.UI {
 						Name("group_id").
 						Label("Group").
 						AllowedValue(
+							myui.SelectOption{Label: "Select a group", Value: "", Disabled: true},
+						).
+						AllowedValue(
 							func() []myui.SelectOption {
 								var allowedValues []myui.SelectOption
 								for _, group := range c.groups {
