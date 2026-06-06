@@ -22,7 +22,6 @@ type OrganizationIDUserIDGroupNewPage struct {
 	userID         string
 
 	user   *downballotapi.User
-	group  *downballotapi.Group
 	groups []*downballotapi.Group
 
 	groupID string
@@ -66,16 +65,6 @@ func (c *OrganizationIDUserIDGroupNewPage) Reload(ctx app.Context) {
 			c.user = output.User
 		})
 		wg.Go(func() {
-			var output downballotapi.GetGroupResponse
-			err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.organizationID+"/group/"+c.groupID, nil, &output)
-			if err != nil {
-				slog.ErrorContext(ctx.Context, "Could not get group", "err", err)
-				return
-			}
-
-			c.group = output.Group
-		})
-		wg.Go(func() {
 			var output downballotapi.ListGroupsResponse
 			err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.organizationID+"/group", nil, &output)
 			if err != nil {
@@ -105,12 +94,6 @@ func (c *OrganizationIDUserIDGroupNewPage) Render() app.UI {
 	if c.user == nil {
 		return myui.Page().Body(
 			app.Div().Text("User not found"),
-		)
-	}
-
-	if c.group == nil {
-		return myui.Page().Body(
-			app.Div().Text("Group not found"),
 		)
 	}
 

@@ -9,10 +9,8 @@ import (
 
 	"github.com/downballot/downballot/downballotapi"
 	"github.com/downballot/ui/api"
-	"github.com/downballot/ui/component"
 	"github.com/downballot/ui/myui"
 	"github.com/go-app-blazar/router"
-	"github.com/google/uuid"
 	"github.com/maxence-charriere/go-app/v11/pkg/app"
 )
 
@@ -28,8 +26,6 @@ type OrganizationIDUserIDPage struct {
 	user           *downballotapi.User
 
 	userGroups []*downballotapi.UserGroup
-
-	addUserToGroupDialog component.AddUserToGroupDialog
 }
 
 var _ app.Navigator = (*OrganizationIDUserIDPage)(nil)
@@ -42,15 +38,6 @@ func (c *OrganizationIDUserIDPage) OnNav(ctx app.Context) {
 
 	slog.InfoContext(ctx.Context, "OrganizationIDUserIDPage: OnNav", "OrganizationID", c.organizationID)
 	slog.InfoContext(ctx.Context, "OrganizationIDUserIDPage: OnNav", "UserID", c.userID)
-
-	c.addUserToGroupDialog = component.AddUserToGroupDialog{
-		OrganizationID: c.organizationID,
-		UserID:         c.userID,
-		DialogID:       "id-" + uuid.New().String(),
-		OnSuccess: func(ctx app.Context) {
-			c.Reload(ctx)
-		},
-	}
 
 	c.Reload(ctx)
 }
@@ -193,6 +180,5 @@ func (c *OrganizationIDUserIDPage) Render() app.UI {
 						})
 					},
 				}),
-			&c.addUserToGroupDialog,
 		)
 }
