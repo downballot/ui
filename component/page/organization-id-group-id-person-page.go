@@ -342,6 +342,7 @@ func (c *OrganizationIDGroupIDPersonPage) Render() app.UI {
 							On("change", func(ctx app.Context, e app.Event) {
 								c.ValueTo(&c.Filter)(ctx, e)
 								ctx.SetState("persist-organization-id-group-id-person-page-filter", c.Filter).Persist()
+								ctx.Update() // Update so that the other input can be updated.
 							}),
 						myui.Input[string]().
 							Label("Filter").
@@ -350,6 +351,7 @@ func (c *OrganizationIDGroupIDPersonPage) Render() app.UI {
 							Bind(&c.Filter).
 							On("change", func(ctx app.Context, e app.Event) {
 								ctx.SetState("persist-organization-id-group-id-person-page-filter", c.Filter).Persist()
+								ctx.Update() // Update so that the other input can be updated.
 							}),
 						myui.Input[uint]().
 							Label("Limit").
