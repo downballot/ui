@@ -18,6 +18,7 @@ import (
 
 type OrganizationIDUserIDPage struct {
 	app.Compo
+	myui.EmbeddedPage
 
 	loaded bool
 
@@ -122,8 +123,8 @@ func (c *OrganizationIDUserIDPage) Render() app.UI {
 			Bad()
 	}
 
-	return myui.Page().
-		Body(
+	return c.EmbeddedPage.
+		Wrap(
 			app.Div().
 				Body(
 					app.Div().Text("Name: "+c.user.Name),
@@ -157,8 +158,15 @@ func (c *OrganizationIDUserIDPage) Render() app.UI {
 				Action(myui.TableAction{
 					Name: "Add to group",
 					Icon: "plus",
-					Function: func(ctx app.Context) {
-						c.addUserToGroupDialog.Open(ctx)
+					To: func() string {
+						return fmt.Sprintf("/organization/%s/user/%s/group/new", c.organizationID, c.userID)
+					},
+				}).
+				RowAction(myui.RowAction[*downballotapi.UserGroup]{
+					Name: "Edit",
+					Icon: "edit",
+					To: func(row *downballotapi.UserGroup) string {
+						return fmt.Sprintf("/organization/%s/user/%s/group/%s/edit", c.organizationID, c.userID, row.ID)
 					},
 				}).
 				RowAction(myui.RowAction[*downballotapi.UserGroup]{

@@ -413,6 +413,45 @@ func main() {
 														"title": ":user_name",
 													},
 												},
+												{
+													Path: "/edit",
+													Component: func() app.Composer {
+														return &page.OrganizationIDUserIDEditPage{}
+													},
+													Meta: map[string]string{
+														"title": "Edit User",
+													},
+												},
+												{
+													Path:      "/group",
+													Component: nil,
+													Children: []router.Route{
+														{
+															Path:      "/:group_id",
+															Component: nil,
+															Children: []router.Route{
+																{
+																	Path: "/edit",
+																	Component: func() app.Composer {
+																		return &page.OrganizationIDUserIDGroupIDEditPage{}
+																	},
+																	Meta: map[string]string{
+																		"title": "Edit User Group",
+																	},
+																},
+															},
+														},
+														{
+															Path: "/new",
+															Component: func() app.Composer {
+																return &page.OrganizationIDUserIDGroupNewPage{}
+															},
+															Meta: map[string]string{
+																"title": "Add User To Group",
+															},
+														},
+													},
+												},
 											},
 										},
 									},

@@ -96,6 +96,13 @@ func (c *OrganizationIDUserPage) Render() app.UI {
 				},
 			}).
 			RowAction(myui.RowAction[*downballotapi.User]{
+				Name: "Edit",
+				Icon: "edit",
+				To: func(row *downballotapi.User) string {
+					return fmt.Sprintf("/organization/%s/user/%s/edit", c.organizationID, row.ID)
+				},
+			}).
+			RowAction(myui.RowAction[*downballotapi.User]{
 				Name: "Remove",
 				Icon: "trash",
 				Function: func(ctx app.Context, row *downballotapi.User) {
