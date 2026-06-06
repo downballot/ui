@@ -134,6 +134,7 @@ func (c *OrganizationIDUserIDGroupIDEditPage) Render() app.UI {
 					Label("Group").
 					Value(c.group.Name),
 				myui.Input[bool]().
+					Name("owner").
 					Label("Owner").
 					Bind(&c.owner),
 				app.Div().Body(

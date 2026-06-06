@@ -125,6 +125,8 @@ func (c *MyUIInput[T]) Render() app.UI {
 				app.Input().
 					Class("myui-input__input").
 					Disabled(c.IDisabled).
+					ReadOnly(c.IDisabled).
+					AutoComplete(false).
 					AutoFocus(c.IAutoFocus).
 					Name(c.IName).
 					Type(inputType).
