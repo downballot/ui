@@ -19,7 +19,7 @@ a.myui-button, a.myui-button:hover, a.myui-button:active, a.myui-button:visited 
 }
 
 .myui-button:hover {
-    filter: brightness(1.2);
+    opacity: 0.7;
 }
 
 .myui-button.flat {
@@ -130,22 +130,27 @@ a.myui-button, a.myui-button:hover, a.myui-button:active, a.myui-button:visited 
 }
 
 .myui-item {
+    display: block;
     padding: 0.5em;
     cursor: pointer;
 }
 
 .myui-item:hover {
-    background-color: white;
-    filter: brightness(0.9);
+    background-color: rgba(0, 0, 0, 0.1);
 }
 
-.myui-item-icon {
+a.myui-item {
+    text-decoration: none;
+    color: inherit;
+}
+
+.myui-item__icon {
     width: 1em;
     height: 1em;
     margin-right: 0.5em;
 }
 
-.myui-item-name {
+.myui-item__name {
 }
 
 .myui-multiselect {
@@ -153,12 +158,6 @@ a.myui-button, a.myui-button:hover, a.myui-button:active, a.myui-button:visited 
     flex-direction: column;
     gap: 0.5em;
 }
-
-.myui-multiselect-label {
-    font-size: 0.8em;
-    font-weight: bold;
-}
-
 
 .myui-page {
     padding: 1em;

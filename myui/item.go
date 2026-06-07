@@ -40,37 +40,20 @@ func (c *MyUIItem) On(event string, function func(ctx app.Context, e app.Event))
 
 func (c *MyUIItem) Render() app.UI {
 	return c.UseEvents.Wrap(
-		app.Div().
+		app.A().
 			Class("myui-item").
+			Href(c.ToValue).
 			Body(
-				app.If(c.ToValue != "", func() app.UI {
-					return app.A().Href(c.ToValue).
-						Body(
-							app.Span().
-								Class("myui-item-icon").
-								Body(
-									app.If(c.IconValue != "", func() app.UI {
-										return Icon().Icon(c.IconValue)
-									}),
-								),
-							app.Span().
-								Class("myui-item-name").
-								Text(c.NameValue),
-						)
-				}).ElseSlice(func() []app.UI {
-					return []app.UI{
-						app.Span().
-							Class("myui-item-icon").
-							Body(
-								app.If(c.IconValue != "", func() app.UI {
-									return Icon().Icon(c.IconValue)
-								}),
-							),
-						app.Span().
-							Class("myui-item-name").
-							Text(c.NameValue),
-					}
-				}),
+				app.Span().
+					Class("myui-item__icon").
+					Body(
+						app.If(c.IconValue != "", func() app.UI {
+							return Icon().Icon(c.IconValue)
+						}),
+					),
+				app.Span().
+					Class("myui-item__name").
+					Text(c.NameValue),
 			),
 	)
 }
