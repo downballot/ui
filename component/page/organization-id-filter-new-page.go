@@ -36,9 +36,7 @@ func (c *OrganizationIDFilterNewPage) Render() app.UI {
 	slog.InfoContext(context.TODO(), "OrganizationIDFilterNewPage: Render")
 
 	return c.EmbeddedPage.Wrap(
-		app.Div().
-			Style("display", "flex").
-			Style("flex-direction", "column").
+		myui.Form().
 			Body(
 				myui.Input[string]().
 					Label("Name").
@@ -52,26 +50,25 @@ func (c *OrganizationIDFilterNewPage) Render() app.UI {
 					Label("Filter").
 					Type("text").
 					Bind(&c.Filter),
-				app.Div().Body(
-					myui.Button().
-						Label("Create").
-						On("click", func(ctx app.Context, e app.Event) {
-							ctx.Async(func() {
-								var input downballotapi.CreateFilterRequest
-								input.Name = c.Name
-								input.Description = c.Description
-								input.Filter = c.Filter
-								var output downballotapi.CreateFilterResponse
-								err := api.Do(ctx, http.MethodPost, "/api/v1/organization/"+c.organizationID+"/filter", input, &output)
-								if err != nil {
-									slog.ErrorContext(ctx.Context, "Could not create filter", "err", err)
-									return
-								}
-								slog.InfoContext(ctx.Context, "OrganizationIDFilterNewPage: Create button clicked: Navigating to filter page", "filter_id", output.ID)
-								ctx.Navigate(fmt.Sprintf("/organization/%s/filter/%s", c.organizationID, output.ID))
-							})
-						}),
-				),
-			),
+			).
+			SubmitLabel("Create").
+			SubmitFunction(func(ctx app.Context) {
+				ctx.PreventUpdate()
+
+				ctx.Async(func() {
+					var input downballotapi.CreateFilterRequest
+					input.Name = c.Name
+					input.Description = c.Description
+					input.Filter = c.Filter
+					var output downballotapi.CreateFilterResponse
+					err := api.Do(ctx, http.MethodPost, "/api/v1/organization/"+c.organizationID+"/filter", input, &output)
+					if err != nil {
+						slog.ErrorContext(ctx.Context, "Could not create filter", "err", err)
+						return
+					}
+					slog.InfoContext(ctx.Context, "OrganizationIDFilterNewPage: Create button clicked: Navigating to filter page", "filter_id", output.ID)
+					ctx.Navigate(fmt.Sprintf("/organization/%s/filter/%s", c.organizationID, output.ID))
+				})
+			}),
 	)
 }
