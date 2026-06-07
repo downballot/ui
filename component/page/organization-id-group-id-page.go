@@ -105,61 +105,65 @@ func (c *OrganizationIDGroupIDPage) Render() app.UI {
 		)
 	}
 
-	return c.EmbeddedPage.Wrap(
-		app.Div().
-			Class("page-actions").
-			Body(
-				myui.Button().
-					Label("Persons").
-					Icon("people-group").
-					To(fmt.Sprintf("/organization/%s/group/%s/person", c.organizationID, c.groupID)),
-				myui.Button().
-					Label("Edit").
-					Icon("edit").
-					To(fmt.Sprintf("/organization/%s/group/%s/edit", c.organizationID, c.groupID)),
-			),
-		myui.Table[*downballotapi.Group]().
-			Title("Sub-groups").
-			Rows(c.children).
-			Columns([]myui.TableColumn[*downballotapi.Group]{
-				{
-					Name: "ID",
-					Value: func(row *downballotapi.Group) any {
-						return row.ID
+	return c.EmbeddedPage.
+		Action(myui.PageAction{
+			Name: "Persons",
+			Icon: "people-group",
+			To: func() string {
+				return fmt.Sprintf("/organization/%s/group/%s/person", c.organizationID, c.groupID)
+			},
+		}).
+		Action(myui.PageAction{
+			Name: "Edit",
+			Icon: "edit",
+			To: func() string {
+				return fmt.Sprintf("/organization/%s/group/%s/edit", c.organizationID, c.groupID)
+			},
+			Disabled: c.group.ParentID == "",
+		}).
+		Wrap(
+			myui.Table[*downballotapi.Group]().
+				Title("Sub-groups").
+				Rows(c.children).
+				Columns([]myui.TableColumn[*downballotapi.Group]{
+					{
+						Name: "ID",
+						Value: func(row *downballotapi.Group) any {
+							return row.ID
+						},
 					},
-				},
-				{
-					Name: "Name",
-					Value: func(row *downballotapi.Group) any {
-						return row.Name
+					{
+						Name: "Name",
+						Value: func(row *downballotapi.Group) any {
+							return row.Name
+						},
+						To: func(row *downballotapi.Group) string {
+							return fmt.Sprintf("/organization/%s/group/%s", c.organizationID, row.ID)
+						},
 					},
+				}).
+				VisibleColumns(c.IChildrenVisibleColumns).
+				BindVisibleColumns(&c.IChildrenVisibleColumns).
+				Action(myui.TableAction{
+					Name: "New group",
+					Icon: "plus",
+					To: func() string {
+						return fmt.Sprintf("/organization/%s/group/new?parent_id=%s", c.organizationID, c.groupID)
+					},
+				}).
+				RowAction(myui.RowAction[*downballotapi.Group]{
+					Name: "Persons",
+					Icon: "people-group",
 					To: func(row *downballotapi.Group) string {
-						return fmt.Sprintf("/organization/%s/group/%s", c.organizationID, row.ID)
+						return fmt.Sprintf("/organization/%s/group/%s/person", c.organizationID, row.ID)
 					},
-				},
-			}).
-			VisibleColumns(c.IChildrenVisibleColumns).
-			BindVisibleColumns(&c.IChildrenVisibleColumns).
-			Action(myui.TableAction{
-				Name: "New group",
-				Icon: "plus",
-				To: func() string {
-					return fmt.Sprintf("/organization/%s/group/new?parent_id=%s", c.organizationID, c.groupID)
-				},
-			}).
-			RowAction(myui.RowAction[*downballotapi.Group]{
-				Name: "Persons",
-				Icon: "people-group",
-				To: func(row *downballotapi.Group) string {
-					return fmt.Sprintf("/organization/%s/group/%s/person", c.organizationID, row.ID)
-				},
-			}).
-			RowAction(myui.RowAction[*downballotapi.Group]{
-				Name: "Edit",
-				Icon: "edit",
-				To: func(row *downballotapi.Group) string {
-					return fmt.Sprintf("/organization/%s/group/%s/edit", c.organizationID, row.ID)
-				},
-			}),
-	)
+				}).
+				RowAction(myui.RowAction[*downballotapi.Group]{
+					Name: "Edit",
+					Icon: "edit",
+					To: func(row *downballotapi.Group) string {
+						return fmt.Sprintf("/organization/%s/group/%s/edit", c.organizationID, row.ID)
+					},
+				}),
+		)
 }
