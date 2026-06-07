@@ -9,7 +9,7 @@ require (
 	github.com/joho/godotenv v1.5.1
 	github.com/lmittmann/tint v1.1.3
 	github.com/mattn/go-isatty v0.0.22
-	github.com/maxence-charriere/go-app/v11 v11.0.3
+	github.com/maxence-charriere/go-app/v11 v11.0.4
 	github.com/tekkamanendless/httperror v1.0.1
 	github.com/tekkamanendless/restapiclient v0.1.1
 )
@@ -26,6 +26,6 @@ require (
 
 replace github.com/downballot/downballot => ../downballot
 
-replace github.com/maxence-charriere/go-app/v11 => github.com/tekkamanendless/fork-of-maxence-charriere-go-app/v11 v11.0.0-20260602191626-433345bdb528
+//replace github.com/maxence-charriere/go-app/v11 => github.com/tekkamanendless/fork-of-maxence-charriere-go-app/v11 v11.0.0-20260602191626-433345bdb528
 
 //replace github.com/maxence-charriere/go-app/v11 => ../../tekkamanendless/fork-of-maxence-charriere-go-app
