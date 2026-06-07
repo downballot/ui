@@ -72,9 +72,7 @@ func (c *OrganizationIDUserIDEditPage) Render() app.UI {
 	}
 
 	return c.EmbeddedPage.Wrap(
-		app.Div().
-			Style("display", "flex").
-			Style("flex-direction", "column").
+		myui.Form().
 			Body(
 				myui.Input[string]().
 					Disabled(true).
@@ -83,25 +81,24 @@ func (c *OrganizationIDUserIDEditPage) Render() app.UI {
 				myui.Input[bool]().
 					Label("Owner").
 					Bind(&c.Owner),
-				app.Div().Body(
-					myui.Button().
-						Label("Save").
-						On("click", func(ctx app.Context, e app.Event) {
-							ctx.Async(func() {
-								input := downballotapi.PatchOrganizationUserRequest{
-									Owner: &c.Owner,
-								}
-								var output downballotapi.PatchOrganizationUserResponse
-								err := api.Do(ctx, http.MethodPatch, "/api/v1/organization/"+c.organizationID+"/user/"+c.userID, input, &output)
-								if err != nil {
-									slog.ErrorContext(ctx.Context, "Could not patch user", "err", err)
-									return
-								}
+			).
+			SubmitLabel("Save").
+			SubmitFunction(func(ctx app.Context) {
+				ctx.PreventUpdate()
 
-								ctx.Navigate(fmt.Sprintf("/organization/%s/user", c.organizationID))
-							})
-						}),
-				),
-			),
+				ctx.Async(func() {
+					input := downballotapi.PatchOrganizationUserRequest{
+						Owner: &c.Owner,
+					}
+					var output downballotapi.PatchOrganizationUserResponse
+					err := api.Do(ctx, http.MethodPatch, "/api/v1/organization/"+c.organizationID+"/user/"+c.userID, input, &output)
+					if err != nil {
+						slog.ErrorContext(ctx.Context, "Could not patch user", "err", err)
+						return
+					}
+
+					ctx.Navigate(fmt.Sprintf("/organization/%s/user", c.organizationID))
+				})
+			}),
 	)
 }
