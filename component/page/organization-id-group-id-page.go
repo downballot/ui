@@ -113,6 +113,10 @@ func (c *OrganizationIDGroupIDPage) Render() app.UI {
 					Label("Persons").
 					Icon("people-group").
 					To(fmt.Sprintf("/organization/%s/group/%s/person", c.organizationID, c.groupID)),
+				myui.Button().
+					Label("Edit").
+					Icon("edit").
+					To(fmt.Sprintf("/organization/%s/group/%s/edit", c.organizationID, c.groupID)),
 			),
 		myui.Table[*downballotapi.Group]().
 			Title("Sub-groups").

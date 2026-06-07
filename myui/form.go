@@ -7,13 +7,19 @@ import (
 )
 
 func Form() *MyUIForm {
-	return &MyUIForm{}
+	return &MyUIForm{
+		ISpacer: true,
+	}
 }
 
 type MyUIForm struct {
 	app.Compo
 	UseEvents
 
+	IClasses []string
+	IStyles  map[string]string
+
+	ISpacer         bool
 	IBody           []app.UI
 	ICancelFunction func(ctx app.Context)
 	ICancelLabel    string
@@ -32,6 +38,24 @@ type FormAction struct {
 }
 
 var _ app.Composer = (*MyUIForm)(nil)
+
+func (c *MyUIForm) Class(class ...string) *MyUIForm {
+	c.IClasses = append(c.IClasses, class...)
+	return c
+}
+
+func (c *MyUIForm) Spacer(spacer bool) *MyUIForm {
+	c.ISpacer = spacer
+	return c
+}
+
+func (c *MyUIForm) Style(name, value string) *MyUIForm {
+	if c.IStyles == nil {
+		c.IStyles = make(map[string]string)
+	}
+	c.IStyles[name] = value
+	return c
+}
 
 func (c *MyUIForm) Action(actions ...FormAction) *MyUIForm {
 	c.IActions = append(c.IActions, actions...)
@@ -79,8 +103,9 @@ func (c *MyUIForm) On(event string, function func(ctx app.Context, e app.Event))
 }
 
 func (c *MyUIForm) Render() app.UI {
-	return app.Div().
+	element := app.Div().
 		Class("myui-form").
+		Class(c.IClasses...).
 		Body(
 			c.UseEvents.Wrap(
 				app.Div().
@@ -116,7 +141,9 @@ func (c *MyUIForm) Render() app.UI {
 								c.ICancelFunction(ctx)
 							})
 					}),
-					app.Span().Style("flex", "1"),
+					app.If(c.ISpacer, func() app.UI {
+						return app.Span().Style("flex", "1")
+					}),
 					app.Range(c.IActions).Slice(func(i int) app.UI {
 						action := c.IActions[i]
 						return Button().
@@ -153,4 +180,8 @@ func (c *MyUIForm) Render() app.UI {
 					}),
 				),
 		)
+	for name, value := range c.IStyles {
+		element = element.Style(name, value)
+	}
+	return element
 }

@@ -182,7 +182,7 @@ func (c *OrganizationIDGroupIDPersonPage) OnNav(ctx app.Context) {
 			c.loaded = true
 
 			slog.InfoContext(ctx.Context, "Dispatch: Loading complete.  Searching for persons.")
-			c.search(ctx, app.Event{})
+			c.search(ctx)
 		})
 	})
 }
@@ -363,16 +363,19 @@ func (c *OrganizationIDGroupIDPersonPage) Render() app.UI {
 							}),
 					),
 			),
-		app.Div().
+		myui.Form().
 			Class("no-print").
-			Body(
-				myui.Button().
-					Label("Search").
-					On("click", c.search),
-				myui.Button().
-					Label("CSV").
-					On("click", c.csv),
-			),
+			Spacer(false).
+			Action(myui.FormAction{
+				Name:     "Search",
+				Icon:     "search",
+				Function: c.search,
+			}).
+			Action(myui.FormAction{
+				Name:     "CSV",
+				Icon:     "download",
+				Function: c.csv,
+			}),
 		app.If(c.Error != "", func() app.UI {
 			return myui.StatusBar().
 				Text(c.Error).
@@ -407,7 +410,7 @@ func (c *OrganizationIDGroupIDPersonPage) Render() app.UI {
 	)
 }
 
-func (c *OrganizationIDGroupIDPersonPage) search(ctx app.Context, e app.Event) {
+func (c *OrganizationIDGroupIDPersonPage) search(ctx app.Context) {
 	queryParameters := url.Values{}
 	queryParameters.Set("filter", c.Filter)
 	queryParameters.Set("limit", fmt.Sprintf("%d", c.Limit))
@@ -433,7 +436,7 @@ func (c *OrganizationIDGroupIDPersonPage) search(ctx app.Context, e app.Event) {
 	ctx.Update()
 }
 
-func (c *OrganizationIDGroupIDPersonPage) csv(ctx app.Context, e app.Event) {
+func (c *OrganizationIDGroupIDPersonPage) csv(ctx app.Context) {
 	queryParameters := url.Values{}
 	queryParameters.Set("filter", c.Filter)
 	queryParameters.Set("limit", fmt.Sprintf("%d", c.Limit))
