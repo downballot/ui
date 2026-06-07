@@ -147,6 +147,20 @@ func (c *MyUIInput[T]) Render() app.UI {
 						}
 					}
 				}),
+				WithOn("keypress", func(ctx app.Context, e app.Event) {
+					ctx.PreventUpdate()
+
+					if e.Get("key").String() == "Enter" {
+						if c.BindValue != nil {
+							if kind == reflect.Bool {
+								boolValue := reflect.ValueOf(e.Get("target").Get("checked").Bool())
+								*c.BindValue = boolValue.Convert(reflect.TypeOf(c.IValue)).Interface().(T)
+							} else {
+								c.ValueTo(c.BindValue)(ctx, e)
+							}
+						}
+					}
+				}),
 			),
 		)
 }

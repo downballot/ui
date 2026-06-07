@@ -86,6 +86,17 @@
     flex-direction: row;
 }
 
+.myui-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+}
+
+.myui-form__actions {
+    display: flex;
+    flex-direction: row;
+}
+
 .myui-icon {
     width: 1em;
     height: 1em;
