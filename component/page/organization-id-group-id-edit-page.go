@@ -104,9 +104,7 @@ func (c *OrganizationIDGroupIDEditPage) Render() app.UI {
 	}
 
 	return c.EmbeddedPage.Wrap(
-		app.Div().
-			Style("display", "flex").
-			Style("flex-direction", "column").
+		myui.Form().
 			Body(
 				myui.Input[string]().
 					Label("Name").
@@ -120,52 +118,53 @@ func (c *OrganizationIDGroupIDEditPage) Render() app.UI {
 					Label("Filter").
 					Type("text").
 					Bind(&c.Filter),
-				app.Div().Body(
-					myui.Button().
-						Label("Delete").
-						Icon("trash").
-						On("click", func(ctx app.Context, e app.Event) {
-							ctx.PreventUpdate()
+			).
+			CancelLabel("Reset").
+			CancelFunction(c.Reload).
+			SubmitLabel("Save").
+			SubmitIcon("save").
+			SubmitFunction(func(ctx app.Context) {
+				ctx.PreventUpdate()
 
-							result := app.Window().Call("confirm", "Are you sure you want to delete this group?")
-							slog.InfoContext(ctx.Context, "OrganizationIDGroupIDEditPage: Delete button clicked", "result", result.Bool())
-							if !result.Bool() {
-								slog.InfoContext(ctx.Context, "OrganizationIDGroupIDEditPage: Delete button clicked: User cancelled", "result", result.Bool())
-								return
-							}
+				ctx.Async(func() {
+					input := downballotapi.PatchGroupRequest{
+						Name:     &c.Name,
+						ParentID: &c.ParentID,
+						Filter:   &c.Filter,
+					}
+					var output downballotapi.PatchGroupResponse
+					err := api.Do(ctx, http.MethodPatch, "/api/v1/organization/"+c.organizationID+"/group/"+c.groupID, input, &output)
+					if err != nil {
+						slog.ErrorContext(ctx.Context, "Could not patch group", "err", err)
+						return
+					}
 
-							ctx.Async(func() {
-								err := api.Do(ctx, http.MethodDelete, "/api/v1/organization/"+c.organizationID+"/group/"+c.groupID, nil, nil)
-								if err != nil {
-									slog.ErrorContext(ctx.Context, "Could not delete group", "err", err)
-									return
-								}
+					c.Reload(ctx)
+				})
+			}).
+			Action(myui.FormAction{
+				Name: "Delete",
+				Icon: "trash",
+				Function: func(ctx app.Context) {
+					ctx.PreventUpdate()
 
-								ctx.Navigate("/organization/" + c.organizationID + "/group")
-							})
-						}),
-					myui.Button().
-						Label("Save").
-						Icon("save").
-						On("click", func(ctx app.Context, e app.Event) {
-							ctx.PreventUpdate()
+					result := app.Window().Call("confirm", "Are you sure you want to delete this group?")
+					slog.InfoContext(ctx.Context, "OrganizationIDGroupIDEditPage: Delete button clicked", "result", result.Bool())
+					if !result.Bool() {
+						slog.InfoContext(ctx.Context, "OrganizationIDGroupIDEditPage: Delete button clicked: User cancelled", "result", result.Bool())
+						return
+					}
 
-							ctx.Async(func() {
-								var input downballotapi.PatchGroupRequest
-								input.Name = &c.Name
-								input.ParentID = &c.ParentID
-								input.Filter = &c.Filter
-								var output downballotapi.PatchGroupResponse
-								err := api.Do(ctx, http.MethodPatch, "/api/v1/organization/"+c.organizationID+"/group/"+c.groupID, input, &output)
-								if err != nil {
-									slog.ErrorContext(ctx.Context, "Could not patch group", "err", err)
-									return
-								}
+					ctx.Async(func() {
+						err := api.Do(ctx, http.MethodDelete, "/api/v1/organization/"+c.organizationID+"/group/"+c.groupID, nil, nil)
+						if err != nil {
+							slog.ErrorContext(ctx.Context, "Could not delete group", "err", err)
+							return
+						}
 
-								c.Reload(ctx)
-							})
-						}),
-				),
-			),
+						ctx.Navigate("/organization/" + c.organizationID + "/group")
+					})
+				},
+			}),
 	)
 }

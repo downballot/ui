@@ -33,6 +33,11 @@ type FormAction struct {
 
 var _ app.Composer = (*MyUIForm)(nil)
 
+func (c *MyUIForm) Action(actions ...FormAction) *MyUIForm {
+	c.IActions = append(c.IActions, actions...)
+	return c
+}
+
 func (c *MyUIForm) CancelFunction(function func(ctx app.Context)) *MyUIForm {
 	c.ICancelFunction = function
 	return c

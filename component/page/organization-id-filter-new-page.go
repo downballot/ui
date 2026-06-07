@@ -56,10 +56,11 @@ func (c *OrganizationIDFilterNewPage) Render() app.UI {
 				ctx.PreventUpdate()
 
 				ctx.Async(func() {
-					var input downballotapi.CreateFilterRequest
-					input.Name = c.Name
-					input.Description = c.Description
-					input.Filter = c.Filter
+					input := downballotapi.CreateFilterRequest{
+						Name:        c.Name,
+						Description: c.Description,
+						Filter:      c.Filter,
+					}
 					var output downballotapi.CreateFilterResponse
 					err := api.Do(ctx, http.MethodPost, "/api/v1/organization/"+c.organizationID+"/filter", input, &output)
 					if err != nil {
