@@ -17,7 +17,7 @@ var _ app.Mounter = (*EmbeddedPage)(nil)
 type PageAction struct {
 	Name     string
 	Icon     string
-	To       func() string
+	To       string
 	Function func(ctx app.Context)
 	Disabled bool
 }

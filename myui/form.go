@@ -33,7 +33,7 @@ type MyUIForm struct {
 type FormAction struct {
 	Name     string
 	Icon     string
-	To       func() string
+	To       string
 	Function func(ctx app.Context)
 }
 
@@ -150,12 +150,7 @@ func (c *MyUIForm) Render() app.UI {
 							Flat(false).
 							Label(action.Name).
 							Icon(action.Icon).
-							To(func() string {
-								if action.To != nil {
-									return action.To()
-								}
-								return ""
-							}()).
+							To(action.To).
 							On("click", func(ctx app.Context, e app.Event) {
 								if action.Function == nil {
 									ctx.PreventUpdate()

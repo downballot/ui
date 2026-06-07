@@ -36,7 +36,7 @@ type TableBinding[T any] struct {
 type TableAction struct {
 	Name     string
 	Icon     string
-	To       func() string
+	To       string
 	Function func(ctx app.Context)
 }
 
@@ -297,9 +297,11 @@ func (t *MyUITable[T]) Render() app.UI {
 					Body(
 						app.Range(t.IActions).Slice(func(i int) app.UI {
 							action := t.IActions[i]
+
 							button := Button().
 								Label(action.Name).
 								Icon(action.Icon).
+								To(action.To).
 								On("click", func(ctx app.Context, e app.Event) {
 									if action.Function == nil {
 										ctx.PreventUpdate()
@@ -307,9 +309,6 @@ func (t *MyUITable[T]) Render() app.UI {
 									}
 									action.Function(ctx)
 								})
-							if action.To != nil {
-								button.To(action.To())
-							}
 							return button
 						}),
 					)

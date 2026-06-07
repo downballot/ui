@@ -146,9 +146,7 @@ func (c *OrganizationIDUserIDPage) Render() app.UI {
 			Action(myui.TableAction{
 				Name: "Add to group",
 				Icon: "plus",
-				To: func() string {
-					return fmt.Sprintf("/organization/%s/user/%s/group/new", c.organizationID, c.userID)
-				},
+				To:   fmt.Sprintf("/organization/%s/user/%s/group/new", c.organizationID, c.userID),
 			}).
 			RowAction(myui.RowAction[*downballotapi.UserGroup]{
 				Name: "Edit",

@@ -91,9 +91,7 @@ func (c *OrganizationIDUserPage) Render() app.UI {
 			Action(myui.TableAction{
 				Name: "Add user",
 				Icon: "plus",
-				To: func() string {
-					return fmt.Sprintf("/organization/%s/user/new", c.organizationID)
-				},
+				To:   fmt.Sprintf("/organization/%s/user/new", c.organizationID),
 			}).
 			RowAction(myui.RowAction[*downballotapi.User]{
 				Name: "Edit",

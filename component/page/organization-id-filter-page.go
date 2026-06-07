@@ -95,9 +95,7 @@ func (c *OrganizationIDFilterPage) Render() app.UI {
 			Action(myui.TableAction{
 				Name: "New filter",
 				Icon: "plus",
-				To: func() string {
-					return fmt.Sprintf("/organization/%s/filter/new", c.organizationID)
-				},
+				To:   fmt.Sprintf("/organization/%s/filter/new", c.organizationID),
 			}).
 			RowAction(myui.RowAction[*downballotapi.Filter]{
 				Name: "Edit",

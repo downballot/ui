@@ -109,16 +109,12 @@ func (c *OrganizationIDGroupIDPage) Render() app.UI {
 		Action(myui.PageAction{
 			Name: "Persons",
 			Icon: "people-group",
-			To: func() string {
-				return fmt.Sprintf("/organization/%s/group/%s/person", c.organizationID, c.groupID)
-			},
+			To:   fmt.Sprintf("/organization/%s/group/%s/person", c.organizationID, c.groupID),
 		}).
 		Action(myui.PageAction{
-			Name: "Edit",
-			Icon: "edit",
-			To: func() string {
-				return fmt.Sprintf("/organization/%s/group/%s/edit", c.organizationID, c.groupID)
-			},
+			Name:     "Edit",
+			Icon:     "edit",
+			To:       fmt.Sprintf("/organization/%s/group/%s/edit", c.organizationID, c.groupID),
 			Disabled: c.group.ParentID == "",
 		}).
 		Wrap(
@@ -147,9 +143,7 @@ func (c *OrganizationIDGroupIDPage) Render() app.UI {
 				Action(myui.TableAction{
 					Name: "New group",
 					Icon: "plus",
-					To: func() string {
-						return fmt.Sprintf("/organization/%s/group/new?parent_id=%s", c.organizationID, c.groupID)
-					},
+					To:   fmt.Sprintf("/organization/%s/group/new?parent_id=%s", c.organizationID, c.groupID),
 				}).
 				RowAction(myui.RowAction[*downballotapi.Group]{
 					Name: "Persons",

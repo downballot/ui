@@ -108,10 +108,7 @@ func (c *OrganizationIDPersonFieldPage) Render() app.UI {
 			}).
 			Action(myui.TableAction{
 				Name: "New Person Field",
-				To: func() string {
-					slog.InfoContext(context.TODO(), "TableAction: New Person Field", "OrganizationID", c.organizationID)
-					return fmt.Sprintf("/organization/%s/person-field/new", c.organizationID)
-				},
+				To:   fmt.Sprintf("/organization/%s/person-field/new", c.organizationID),
 			}),
 	)
 }
