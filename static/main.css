@@ -33,7 +33,7 @@ h1, h2, h3, h4, h5, h6 {
 
 @media print {
     .no-print {
-        display: none;
+        display: none !important;
     }
 }
 
@@ -102,10 +102,10 @@ h1, h2, h3, h4, h5, h6 {
 
 @media print {
     .main-layout-header {
-        display: none;
+        display: none !important;
     }
 
     .main-layout-drawer {
-        display: none;
+        display: none !important;
     }
 }

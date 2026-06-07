@@ -197,19 +197,19 @@ a.myui-button, a.myui-button:hover, a.myui-button:active, a.myui-button:visited 
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.15); /* Adds a modern elevation effect */
 }
 
-.myui-table-header {
+.myui-table__header {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
 }
 
-.myui-table-title {
+.myui-table__title {
     padding: 0.5em;
     font-weight: bold;
     font-size: 1.1em;
 }
 
-.myui-table-actions {
+.myui-table__actions {
     padding: 0.5em;
 }
 
@@ -253,7 +253,7 @@ a.myui-button, a.myui-button:hover, a.myui-button:active, a.myui-button:visited 
     font-style: italic;
 }
 
-.myui-table-pagination {
+.myui-table__pagination {
     padding: 0.5em;
     display: flex;
 }
@@ -272,7 +272,7 @@ a.myui-button, a.myui-button:hover, a.myui-button:active, a.myui-button:visited 
         box-shadow: none;
     }
 
-    .myui-table-pagination {
+    .myui-table__pagination {
         display: none;
     }
 
