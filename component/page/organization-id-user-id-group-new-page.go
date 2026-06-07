@@ -99,9 +99,7 @@ func (c *OrganizationIDUserIDGroupNewPage) Render() app.UI {
 	}
 
 	return c.EmbeddedPage.Wrap(
-		app.Div().
-			Style("display", "flex").
-			Style("flex-direction", "column").
+		myui.Form().
 			Body(
 				myui.Input[string]().
 					Disabled(true).
@@ -125,52 +123,50 @@ func (c *OrganizationIDUserIDGroupNewPage) Render() app.UI {
 				myui.Input[bool]().
 					Label("Owner").
 					Bind(&c.owner),
-				app.Div().Body(
-					myui.Button().
-						Label("Delete").
-						Icon("trash").
-						On("click", func(ctx app.Context, e app.Event) {
-							ctx.PreventUpdate()
+			).
+			SubmitLabel("Add User To Group").
+			SubmitIcon("save").
+			SubmitFunction(func(ctx app.Context) {
+				ctx.PreventUpdate()
 
-							result := app.Window().Call("confirm", "Are you sure you want to remove this user from this group?")
-							slog.InfoContext(ctx.Context, "OrganizationIDUserIDGroupNewPage: Delete button clicked", "result", result.Bool())
-							if !result.Bool() {
-								slog.InfoContext(ctx.Context, "OrganizationIDUserIDGroupNewPage: Delete button clicked: User cancelled", "result", result.Bool())
-								return
-							}
+				ctx.Async(func() {
+					input := downballotapi.AddUserToGroupRequest{
+						GroupID: c.groupID,
+						Owner:   c.owner,
+					}
+					var output downballotapi.PatchGroupUserResponse
+					err := api.Do(ctx, http.MethodPost, "/api/v1/organization/"+c.organizationID+"/user/"+c.userID+"/group", input, &output)
+					if err != nil {
+						slog.ErrorContext(ctx.Context, "Could not add user to group", "err", err)
+						return
+					}
 
-							ctx.Async(func() {
-								err := api.Do(ctx, http.MethodDelete, "/api/v1/organization/"+c.organizationID+"/group/"+c.groupID+"/user/"+c.userID, nil, nil)
-								if err != nil {
-									slog.ErrorContext(ctx.Context, "Could not delete user from group", "err", err)
-									return
-								}
+					ctx.Navigate("/organization/" + c.organizationID + "/user/" + c.userID)
+				})
+			}).
+			Action(myui.FormAction{
+				Name: "Delete",
+				Icon: "trash",
+				Function: func(ctx app.Context) {
+					ctx.PreventUpdate()
 
-								ctx.Navigate("/organization/" + c.organizationID + "/user/" + c.userID)
-							})
-						}),
-					myui.Button().
-						Label("Add User To Group").
-						Icon("save").
-						On("click", func(ctx app.Context, e app.Event) {
-							ctx.PreventUpdate()
+					result := app.Window().Call("confirm", "Are you sure you want to remove this user from this group?")
+					slog.InfoContext(ctx.Context, "OrganizationIDUserIDGroupNewPage: Delete button clicked", "result", result.Bool())
+					if !result.Bool() {
+						slog.InfoContext(ctx.Context, "OrganizationIDUserIDGroupNewPage: Delete button clicked: User cancelled", "result", result.Bool())
+						return
+					}
 
-							ctx.Async(func() {
-								input := downballotapi.AddUserToGroupRequest{
-									GroupID: c.groupID,
-									Owner:   c.owner,
-								}
-								var output downballotapi.PatchGroupUserResponse
-								err := api.Do(ctx, http.MethodPost, "/api/v1/organization/"+c.organizationID+"/user/"+c.userID+"/group", input, &output)
-								if err != nil {
-									slog.ErrorContext(ctx.Context, "Could not add user to group", "err", err)
-									return
-								}
+					ctx.Async(func() {
+						err := api.Do(ctx, http.MethodDelete, "/api/v1/organization/"+c.organizationID+"/group/"+c.groupID+"/user/"+c.userID, nil, nil)
+						if err != nil {
+							slog.ErrorContext(ctx.Context, "Could not delete user from group", "err", err)
+							return
+						}
 
-								ctx.Navigate("/organization/" + c.organizationID + "/user/" + c.userID)
-							})
-						}),
-				),
-			),
+						ctx.Navigate("/organization/" + c.organizationID + "/user/" + c.userID)
+					})
+				},
+			}),
 	)
 }
