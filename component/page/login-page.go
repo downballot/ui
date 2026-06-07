@@ -38,6 +38,10 @@ func (c *LoginPage) Render() app.UI {
 	var submitLabel string
 	var submitIcon string
 
+	var cancelFunction func(ctx app.Context)
+	var cancelLabel string
+	var cancelIcon string
+
 	if !c.readyForPassword {
 		submitLabel = "Next"
 		submitFunction = func(ctx app.Context) {
@@ -117,6 +121,16 @@ func (c *LoginPage) Render() app.UI {
 				ctx.Navigate("/")
 			})
 		}
+
+		cancelFunction = func(ctx app.Context) {
+			c.error = ""
+			c.password = ""
+			c.username = ""
+			c.readyForPassword = false
+			c.message = ""
+
+			ctx.Update()
+		}
 	}
 
 	return myui.Page().Body(
@@ -153,14 +167,9 @@ func (c *LoginPage) Render() app.UI {
 						Bad()
 				}),
 			).
-			CancelFunction(func(ctx app.Context) {
-				c.error = ""
-				c.password = ""
-				c.username = ""
-				c.readyForPassword = false
-				c.message = ""
-				ctx.Update()
-			}).
+			CancelFunction(cancelFunction).
+			CancelLabel(cancelLabel).
+			CancelIcon(cancelIcon).
 			SubmitFunction(submitFunction).
 			SubmitLabel(submitLabel).
 			SubmitIcon(submitIcon),
