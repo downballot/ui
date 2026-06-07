@@ -34,13 +34,13 @@ func (c *LoginPage) OnNav(ctx app.Context) {
 func (c *LoginPage) Render() app.UI {
 	slog.InfoContext(context.TODO(), "LoginPage: Render", "readyForPassword", c.readyForPassword)
 
-	var submitFunction func(ctx app.Context, e app.Event)
+	var submitFunction func(ctx app.Context)
 	var submitLabel string
 	var submitIcon string
 
 	if !c.readyForPassword {
 		submitLabel = "Next"
-		submitFunction = func(ctx app.Context, e app.Event) {
+		submitFunction = func(ctx app.Context) {
 			slog.InfoContext(ctx.Context, "LoginPage: Next button clicked", "username", c.username)
 
 			if c.username == "" {
@@ -91,7 +91,7 @@ func (c *LoginPage) Render() app.UI {
 		}
 	} else {
 		submitLabel = "Log in"
-		submitFunction = func(ctx app.Context, e app.Event) {
+		submitFunction = func(ctx app.Context) {
 			ctx.Async(func() {
 				client := downballotapi.New("/")
 
@@ -153,7 +153,7 @@ func (c *LoginPage) Render() app.UI {
 						Bad()
 				}),
 			).
-			CancelFunction(func(ctx app.Context, e app.Event) {
+			CancelFunction(func(ctx app.Context) {
 				c.error = ""
 				c.password = ""
 				c.username = ""

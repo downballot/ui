@@ -15,10 +15,10 @@ type MyUIForm struct {
 	UseEvents
 
 	IBody           []app.UI
-	ICancelFunction func(ctx app.Context, e app.Event)
+	ICancelFunction func(ctx app.Context)
 	ICancelLabel    string
 	ICancelIcon     string
-	ISubmitFunction func(ctx app.Context, e app.Event)
+	ISubmitFunction func(ctx app.Context)
 	ISubmitLabel    string
 	ISubmitIcon     string
 	IActions        []FormAction
@@ -33,7 +33,7 @@ type FormAction struct {
 
 var _ app.Composer = (*MyUIForm)(nil)
 
-func (c *MyUIForm) CancelFunction(function func(ctx app.Context, e app.Event)) *MyUIForm {
+func (c *MyUIForm) CancelFunction(function func(ctx app.Context)) *MyUIForm {
 	c.ICancelFunction = function
 	return c
 }
@@ -48,7 +48,7 @@ func (c *MyUIForm) CancelIcon(icon string) *MyUIForm {
 	return c
 }
 
-func (c *MyUIForm) SubmitFunction(function func(ctx app.Context, e app.Event)) *MyUIForm {
+func (c *MyUIForm) SubmitFunction(function func(ctx app.Context)) *MyUIForm {
 	c.ISubmitFunction = function
 	return c
 }
@@ -86,7 +86,7 @@ func (c *MyUIForm) Render() app.UI {
 						if e.Get("key").String() == "Enter" {
 							slog.InfoContext(ctx.Context, "MyUIForm: Keypress", "key", e.Get("key").String())
 							if c.ISubmitFunction != nil {
-								c.ISubmitFunction(ctx, e)
+								c.ISubmitFunction(ctx)
 							}
 						}
 					}).
@@ -108,7 +108,7 @@ func (c *MyUIForm) Render() app.UI {
 							}()).
 							Icon(c.ICancelIcon).
 							On("click", func(ctx app.Context, e app.Event) {
-								c.ICancelFunction(ctx, e)
+								c.ICancelFunction(ctx)
 							})
 					}),
 					app.Span().Style("flex", "1"),
@@ -143,7 +143,7 @@ func (c *MyUIForm) Render() app.UI {
 							}()).
 							Icon(c.ISubmitIcon).
 							On("click", func(ctx app.Context, e app.Event) {
-								c.ISubmitFunction(ctx, e)
+								c.ISubmitFunction(ctx)
 							})
 					}),
 				),

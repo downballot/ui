@@ -154,7 +154,7 @@ func (c *AddFieldDialog) Render() app.UI {
 		ID(c.DialogID).
 		Body(
 			app.H2().Text("Add Field"),
-			app.Div().
+			myui.Form().
 				Body(
 					myui.Select().
 						Name("field").
@@ -183,35 +183,23 @@ func (c *AddFieldDialog) Render() app.UI {
 							ctx.Update()
 						}),
 					valueElement,
-				),
+				).
+				CancelFunction(c.Close).
+				SubmitLabel("Save").
+				SubmitFunction(func(ctx app.Context) {
+					err := c.SubmitFunctionValue(ctx)
+					if err != nil {
+						slog.ErrorContext(ctx.Context, "Could not submit", "err", err)
+						c.error = err.Error()
+						return
+					}
+					c.error = ""
+					c.Close(ctx)
+				}),
 			app.If(c.error != "", func() app.UI {
 				return myui.StatusBar().
 					Text(c.error).
 					Bad()
 			}),
-			app.Div().
-				Class("myui-dialog-actions").
-				Body(
-					myui.Button().
-						Label("Cancel").
-						On("click", func(ctx app.Context, event app.Event) {
-							c.Close(ctx)
-						}),
-					app.Span().Style("flex", "1"),
-					app.If(c.SubmitFunctionValue != nil, func() app.UI {
-						return myui.Button().
-							Label("Save").
-							On("click", func(ctx app.Context, event app.Event) {
-								err := c.SubmitFunctionValue(ctx)
-								if err != nil {
-									slog.ErrorContext(ctx.Context, "Could not submit", "err", err)
-									c.error = err.Error()
-									return
-								}
-								c.error = ""
-								c.Close(ctx)
-							})
-					}),
-				),
 		)
 }

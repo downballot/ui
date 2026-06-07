@@ -16,7 +16,6 @@
 
 a.myui-button, a.myui-button:hover, a.myui-button:active, a.myui-button:visited {
     text-decoration: none;
-    color: var(--material-theme-on-primary);
 }
 
 .myui-button:hover {
@@ -79,11 +78,6 @@ a.myui-button, a.myui-button:hover, a.myui-button:active, a.myui-button:visited 
     .myui-collapse.closed {
         display: none;
     }
-}
-
-.myui-dialog-actions {
-    display: flex;
-    flex-direction: row;
 }
 
 .myui-form {

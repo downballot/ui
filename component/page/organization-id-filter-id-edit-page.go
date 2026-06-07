@@ -89,9 +89,7 @@ func (c *OrganizationIDFilterIDEditPage) Render() app.UI {
 	}
 
 	return c.EmbeddedPage.Wrap(
-		app.Div().
-			Style("display", "flex").
-			Style("flex-direction", "column").
+		myui.Form().
 			Body(
 				myui.Input[string]().
 					Label("Name").
@@ -105,26 +103,27 @@ func (c *OrganizationIDFilterIDEditPage) Render() app.UI {
 					Label("Filter").
 					Type("text").
 					Bind(&c.Filter),
-				app.Div().Body(
-					myui.Button().
-						Label("Save").
-						On("click", func(ctx app.Context, e app.Event) {
-							ctx.Async(func() {
-								var input downballotapi.PatchFilterRequest
-								input.Name = &c.Name
-								input.Description = &c.Description
-								input.Filter = &c.Filter
-								var output downballotapi.PatchFilterResponse
-								err := api.Do(ctx, http.MethodPatch, "/api/v1/organization/"+c.organizationID+"/filter/"+c.filterID, input, &output)
-								if err != nil {
-									slog.ErrorContext(ctx.Context, "Could not patch filter", "err", err)
-									return
-								}
+			).
+			CancelLabel("Reset").
+			CancelFunction(c.Reload).
+			SubmitLabel("Save").
+			SubmitFunction(func(ctx app.Context) {
+				ctx.PreventUpdate()
 
-								c.Reload(ctx)
-							})
-						}),
-				),
-			),
+				ctx.Async(func() {
+					var input downballotapi.PatchFilterRequest
+					input.Name = &c.Name
+					input.Description = &c.Description
+					input.Filter = &c.Filter
+					var output downballotapi.PatchFilterResponse
+					err := api.Do(ctx, http.MethodPatch, "/api/v1/organization/"+c.organizationID+"/filter/"+c.filterID, input, &output)
+					if err != nil {
+						slog.ErrorContext(ctx.Context, "Could not patch filter", "err", err)
+						return
+					}
+
+					c.Reload(ctx)
+				})
+			}),
 	)
 }
