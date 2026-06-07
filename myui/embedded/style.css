@@ -14,6 +14,11 @@
     user-select: none;
 }
 
+a.myui-button, a.myui-button:hover, a.myui-button:active, a.myui-button:visited {
+    text-decoration: none;
+    color: var(--material-theme-on-primary);
+}
+
 .myui-button:hover {
     filter: brightness(1.2);
 }
@@ -47,11 +52,6 @@
     flex-direction: row;
     padding: 0.5em 0.5em;
     gap: 0.5em;
-}
-
-.myui-button__content a {
-    text-decoration: none;
-    color: var(--material-theme-on-primary);
 }
 
 .myui-collapse {

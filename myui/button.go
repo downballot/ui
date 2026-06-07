@@ -74,13 +74,14 @@ func (c *MyUIButton) Render() app.UI {
 		roundClass = "round"
 	}
 
-	element = app.Span().
+	element = app.A().
 		Class("myui-button").
 		Class(disabledClass).
 		Class(roundClass).
 		Class(flatClass).
 		TabIndex(0).
 		Role("button").
+		Href(c.ToValue).
 		Body(
 			app.Div().
 				Class("myui-button__content").
@@ -94,17 +95,8 @@ func (c *MyUIButton) Render() app.UI {
 						return app.Div().
 							Class("myui-button__label").
 							Body(
-								app.If(c.ToValue != "", func() app.UI {
-									return app.A().
-										Href(c.ToValue).
-										Body(
-											app.Span().
-												Text(c.LabelValue),
-										)
-								}).Else(func() app.UI {
-									return app.Span().
-										Text(c.LabelValue)
-								}),
+								app.Span().
+									Text(c.LabelValue),
 							)
 					}),
 				),
