@@ -108,6 +108,7 @@ func (c *OrganizationIDPersonFieldPage) Render() app.UI {
 			}).
 			Action(myui.TableAction{
 				Name: "New Person Field",
+				Icon: "plus",
 				To:   fmt.Sprintf("/organization/%s/person-field/new", c.organizationID),
 			}),
 	)
