@@ -42,14 +42,6 @@ func (c *OrganizationIDGroupNewPage) OnNav(ctx app.Context) {
 	slog.InfoContext(ctx.Context, "OrganizationIDGroupNewPage: OnNav", "ParentID", c.parentID)
 
 	ctx.Async(func() {
-		var output downballotapi.GetOrganizationResponse
-		err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.organizationID, nil, &output)
-		if err != nil {
-			slog.ErrorContext(ctx.Context, "Could not get organizations", "err", err)
-			return
-		}
-	})
-	ctx.Async(func() {
 		var output downballotapi.ListGroupsResponse
 		err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.organizationID+"/group", nil, &output)
 		if err != nil {
@@ -68,45 +60,47 @@ func (c *OrganizationIDGroupNewPage) Render() app.UI {
 	slog.InfoContext(context.TODO(), "OrganizationIDGroupNewPage: Render")
 
 	return c.EmbeddedPage.Wrap(
-		app.Div().
-			Style("display", "flex").
-			Style("flex-direction", "column").
+		myui.Form().
 			Body(
 				myui.Input[string]().
 					Label("Name").
 					Type("text").
 					Value(c.Name).
 					On("change", c.ValueTo(&c.Name)),
-				myui.Input[string]().
+				myui.Select().
 					Label("Parent").
-					Type("text").
-					Value(c.parentID).
-					On("change", c.ValueTo(&c.parentID)),
+					AllowedValue(func() []myui.SelectOption {
+						var allowedValues []myui.SelectOption
+						for _, group := range c.groups {
+							allowedValues = append(allowedValues, myui.SelectOption{Label: group.Name, Value: group.ID})
+						}
+						return allowedValues
+					}()...).
+					Bind(&c.parentID),
 				myui.Input[string]().
 					Label("Filter").
 					Type("text").
 					Value(c.Filter).
 					On("change", c.ValueTo(&c.Filter)),
-				app.Div().Body(
-					myui.Button().
-						Label("Create").
-						On("click", func(ctx app.Context, e app.Event) {
-							ctx.Async(func() {
-								var input downballotapi.CreateGroupRequest
-								input.Name = c.Name
-								input.ParentID = c.parentID
-								input.Filter = c.Filter
-								var output downballotapi.CreateGroupResponse
-								err := api.Do(ctx, http.MethodPost, "/api/v1/organization/"+c.organizationID+"/group", input, &output)
-								if err != nil {
-									slog.ErrorContext(ctx.Context, "Could not create group", "err", err)
-									return
-								}
-								slog.InfoContext(ctx.Context, "OrganizationIDGroupNewPage: Create button clicked: Navigating to group page", "group_id", output.ID)
-								ctx.Navigate(fmt.Sprintf("/organization/%s/group/%s", c.organizationID, output.ID))
-							})
-						}),
-				),
-			),
+			).
+			SubmitLabel("Create").
+			SubmitFunction(func(ctx app.Context) {
+				ctx.PreventUpdate()
+
+				ctx.Async(func() {
+					var input downballotapi.CreateGroupRequest
+					input.Name = c.Name
+					input.ParentID = c.parentID
+					input.Filter = c.Filter
+					var output downballotapi.CreateGroupResponse
+					err := api.Do(ctx, http.MethodPost, "/api/v1/organization/"+c.organizationID+"/group", input, &output)
+					if err != nil {
+						slog.ErrorContext(ctx.Context, "Could not create group", "err", err)
+						return
+					}
+					slog.InfoContext(ctx.Context, "OrganizationIDGroupNewPage: Create button clicked: Navigating to group page", "group_id", output.ID)
+					ctx.Navigate(fmt.Sprintf("/organization/%s/group/%s", c.organizationID, output.ID))
+				})
+			}),
 	)
 }
