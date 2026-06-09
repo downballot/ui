@@ -125,6 +125,9 @@ var Routes = []router.Route{
 							{
 								Path:      "/filter",
 								Component: nil,
+								Meta: map[string]string{
+									MetaPermission: string(iam.IAMFilterRead),
+								},
 								Children: []router.Route{
 									{
 										Path: "/",
@@ -183,6 +186,9 @@ var Routes = []router.Route{
 							{
 								Path:      "/group",
 								Component: nil,
+								Meta: map[string]string{
+									MetaPermission: string(iam.IAMGroupRead),
+								},
 								Children: []router.Route{
 									{
 										Path: "/",
@@ -248,28 +254,37 @@ var Routes = []router.Route{
 								},
 							},
 							{
-								Path:      "/person/:voter_id",
+								Path:      "/person",
 								Component: nil,
-								PathVariables: func(ctx app.Context, variables map[string]string) {
-									var output downballotapi.GetPersonResponse
-									err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+variables["organization_id"]+"/person/"+variables["voter_id"], nil, &output)
-									if err != nil {
-										slog.ErrorContext(ctx.Context, "Could not get person", "err", err)
-										return
-									}
-
-									for name, value := range output.Person.Fields {
-										variables["person_field_"+name] = value
-									}
+								Meta: map[string]string{
+									MetaPermission: string(iam.IAMPersonRead),
 								},
 								Children: []router.Route{
 									{
-										Path: "/",
-										Component: func() app.Composer {
-											return &page.OrganizationIDPersonIDPage{}
+										Path:      "/:voter_id",
+										Component: nil,
+										PathVariables: func(ctx app.Context, variables map[string]string) {
+											var output downballotapi.GetPersonResponse
+											err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+variables["organization_id"]+"/person/"+variables["voter_id"], nil, &output)
+											if err != nil {
+												slog.ErrorContext(ctx.Context, "Could not get person", "err", err)
+												return
+											}
+
+											for name, value := range output.Person.Fields {
+												variables["person_field_"+name] = value
+											}
 										},
-										Meta: map[string]string{
-											MetaTitle: ":person_field_name",
+										Children: []router.Route{
+											{
+												Path: "/",
+												Component: func() app.Composer {
+													return &page.OrganizationIDPersonIDPage{}
+												},
+												Meta: map[string]string{
+													MetaTitle: ":person_field_name",
+												},
+											},
 										},
 									},
 								},
