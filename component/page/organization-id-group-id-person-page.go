@@ -364,16 +364,18 @@ func (c *OrganizationIDGroupIDPersonPage) Render() app.UI {
 		myui.Form().
 			Class("no-print").
 			Spacer(false).
-			Action(myui.FormAction{
-				Name:     "Search",
-				Icon:     "search",
-				Function: c.search,
-			}).
-			Action(myui.FormAction{
-				Name:     "CSV",
-				Icon:     "download",
-				Function: c.csv,
-			}),
+			Action(
+				myui.FormAction{
+					Name:     "Search",
+					Icon:     "search",
+					Function: c.search,
+				},
+				myui.FormAction{
+					Name:     "CSV",
+					Icon:     "download",
+					Function: c.csv,
+				},
+			),
 		app.If(c.Error != "", func() app.UI {
 			return myui.StatusBar().
 				Text(c.Error).
