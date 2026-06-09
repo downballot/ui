@@ -148,36 +148,38 @@ func (c *OrganizationIDUserIDPage) Render() app.UI {
 				Icon: "plus",
 				To:   fmt.Sprintf("/organization/%s/user/%s/group/new", c.organizationID, c.userID),
 			}).
-			RowAction(myui.RowAction[*downballotapi.UserGroup]{
-				Name: "Edit",
-				Icon: "edit",
-				To: func(row *downballotapi.UserGroup) string {
-					return fmt.Sprintf("/organization/%s/user/%s/group/%s/edit", c.organizationID, c.userID, row.ID)
+			RowAction(
+				myui.RowAction[*downballotapi.UserGroup]{
+					Name: "Edit",
+					Icon: "edit",
+					To: func(row *downballotapi.UserGroup) string {
+						return fmt.Sprintf("/organization/%s/user/%s/group/%s/edit", c.organizationID, c.userID, row.ID)
+					},
 				},
-			}).
-			RowAction(myui.RowAction[*downballotapi.UserGroup]{
-				Name: "Remove",
-				Icon: "trash",
-				Function: func(ctx app.Context, row *downballotapi.UserGroup) {
-					ctx.PreventUpdate()
+				myui.RowAction[*downballotapi.UserGroup]{
+					Name: "Remove",
+					Icon: "trash",
+					Function: func(ctx app.Context, row *downballotapi.UserGroup) {
+						ctx.PreventUpdate()
 
-					result := app.Window().Call("confirm", "Are you sure you want to remove this user from this group?")
-					slog.InfoContext(ctx.Context, "OrganizationIDUserIDPage: Delete button clicked", "result", result.Bool())
-					if !result.Bool() {
-						slog.InfoContext(ctx.Context, "OrganizationIDUserIDPage: Delete button clicked: User cancelled", "result", result.Bool())
-						return
-					}
-
-					ctx.Async(func() {
-						err := api.Do(ctx, http.MethodDelete, "/api/v1/organization/"+c.organizationID+"/group/"+row.ID+"/user/"+c.userID, nil, nil)
-						if err != nil {
-							slog.ErrorContext(ctx.Context, "Could not remove user from group", "err", err)
+						result := app.Window().Call("confirm", "Are you sure you want to remove this user from this group?")
+						slog.InfoContext(ctx.Context, "OrganizationIDUserIDPage: Delete button clicked", "result", result.Bool())
+						if !result.Bool() {
+							slog.InfoContext(ctx.Context, "OrganizationIDUserIDPage: Delete button clicked: User cancelled", "result", result.Bool())
 							return
 						}
 
-						c.Reload(ctx)
-					})
+						ctx.Async(func() {
+							err := api.Do(ctx, http.MethodDelete, "/api/v1/organization/"+c.organizationID+"/group/"+row.ID+"/user/"+c.userID, nil, nil)
+							if err != nil {
+								slog.ErrorContext(ctx.Context, "Could not remove user from group", "err", err)
+								return
+							}
+
+							c.Reload(ctx)
+						})
+					},
 				},
-			}),
+			),
 	)
 }

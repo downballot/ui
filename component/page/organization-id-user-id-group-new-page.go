@@ -109,11 +109,9 @@ func (c *OrganizationIDUserIDGroupNewPage) Render() app.UI {
 					Name("group_id").
 					Label("Group").
 					AllowedValue(
-						myui.SelectOption{Label: "Select a group", Value: "", Disabled: true},
-					).
-					AllowedValue(
 						func() []myui.SelectOption {
 							var allowedValues []myui.SelectOption
+							allowedValues = append(allowedValues, myui.SelectOption{Label: "Select a group", Value: "", Disabled: true})
 							for _, group := range c.groups {
 								allowedValues = append(allowedValues, myui.SelectOption{Label: group.Name, Value: group.ID})
 							}

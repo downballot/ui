@@ -7,7 +7,7 @@ type Slotted struct {
 }
 
 func (s *Slotted) AddSlotContents(components ...app.UI) *Slotted {
-	s.components = append(s.components, components...)
+	s.components = components
 	return s
 }
 

@@ -110,11 +110,9 @@ func (c *AddFieldDialog) Render() app.UI {
 		case downballotapi.PersonFieldDefinitionTypeEnum:
 			valueElement = myui.Select().
 				AllowedValue(
-					myui.SelectOption{Label: "", Value: "", Disabled: true},
-				).
-				AllowedValue(
 					func() []myui.SelectOption {
 						var allowedValues []myui.SelectOption
+						allowedValues = append(allowedValues, myui.SelectOption{Label: "", Value: "", Disabled: true})
 						for _, allowedValue := range selectedPersonField.AllowedValues {
 							allowedValues = append(allowedValues, myui.SelectOption{Label: allowedValue, Value: allowedValue})
 						}
@@ -160,11 +158,9 @@ func (c *AddFieldDialog) Render() app.UI {
 						Name("field").
 						Label("Field").
 						AllowedValue(
-							myui.SelectOption{Label: "", Value: "", Disabled: true},
-						).
-						AllowedValue(
 							func() []myui.SelectOption {
 								var allowedValues []myui.SelectOption
+								allowedValues = append(allowedValues, myui.SelectOption{Label: "", Value: "", Disabled: true})
 								for _, personField := range c.PersonFields {
 									allowedValues = append(allowedValues, myui.SelectOption{Label: personField.Name, Value: personField.Name})
 								}

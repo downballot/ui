@@ -7,6 +7,8 @@ import (
 	"net/http"
 
 	"github.com/downballot/downballot/downballotapi"
+	"github.com/downballot/downballot/iam"
+	"github.com/downballot/downballot/permissionset"
 	"github.com/downballot/ui/api"
 	"github.com/downballot/ui/myui"
 	"github.com/go-app-blazar/router"
@@ -21,6 +23,7 @@ type OrganizationIDFilterPage struct {
 
 	organizationID string
 	filters        []*downballotapi.Filter
+	permissionSet  permissionset.PermissionSet
 }
 
 func (c *OrganizationIDFilterPage) OnNav(ctx app.Context) {
@@ -33,6 +36,8 @@ func (c *OrganizationIDFilterPage) OnNav(ctx app.Context) {
 	if c.organizationID == "" {
 		return
 	}
+
+	ctx.GetState("organization/"+c.organizationID+"/permission-set", &c.permissionSet)
 
 	ctx.Async(func() {
 		var output downballotapi.ListFiltersResponse
@@ -93,9 +98,10 @@ func (c *OrganizationIDFilterPage) Render() app.UI {
 				},
 			}).
 			Action(myui.TableAction{
-				Name: "New filter",
-				Icon: "plus",
-				To:   fmt.Sprintf("/organization/%s/filter/new", c.organizationID),
+				Name:     "New filter",
+				Icon:     "plus",
+				To:       fmt.Sprintf("/organization/%s/filter/new", c.organizationID),
+				Disabled: !c.permissionSet.Match(iam.IAMFilterCreate),
 			}).
 			RowAction(myui.RowAction[*downballotapi.Filter]{
 				Name: "Edit",
@@ -103,6 +109,7 @@ func (c *OrganizationIDFilterPage) Render() app.UI {
 				To: func(row *downballotapi.Filter) string {
 					return fmt.Sprintf("/organization/%s/filter/%s/edit", c.organizationID, row.ID)
 				},
+				Disabled: !c.permissionSet.Match(iam.IAMFilterUpdate),
 			}),
 	)
 }

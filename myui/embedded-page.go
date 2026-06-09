@@ -30,7 +30,7 @@ func (c *EmbeddedPage) OnMount(ctx app.Context) {
 }
 
 func (c *EmbeddedPage) Action(action ...PageAction) *EmbeddedPage {
-	c.IActions = append(c.IActions, action...)
+	c.IActions = action
 	return c
 }
 
@@ -65,14 +65,16 @@ func (c *EmbeddedPage) Wrap(content ...app.UI) app.UI {
 		}
 		if len(actions) > 0 {
 			form := Form()
+			var formActions []FormAction
 			for _, action := range actions {
-				form.Action(FormAction{
+				formActions = append(formActions, FormAction{
 					Name:     action.Name,
 					Icon:     action.Icon,
 					To:       action.To,
 					Function: action.Function,
 				})
 			}
+			form.Action(formActions...)
 			allElements = append(allElements, form)
 		}
 	}

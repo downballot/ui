@@ -328,11 +328,9 @@ func (c *OrganizationIDGroupIDPersonPage) Render() app.UI {
 						myui.Select().
 							Name("saved_filter").
 							Label("Saved Filter").
-							AllowedValue(
-								myui.SelectOption{Label: "Select a filter or create your own", Value: ""},
-							).
 							AllowedValue(func() []myui.SelectOption {
 								var allowedValues []myui.SelectOption
+								allowedValues = append(allowedValues, myui.SelectOption{Label: "Select a filter or create your own", Value: ""})
 								for _, filter := range c.Filters {
 									allowedValues = append(allowedValues, myui.SelectOption{Label: filter.Name, Value: filter.Filter})
 								}

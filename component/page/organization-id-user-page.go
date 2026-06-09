@@ -93,34 +93,36 @@ func (c *OrganizationIDUserPage) Render() app.UI {
 				Icon: "plus",
 				To:   fmt.Sprintf("/organization/%s/user/new", c.organizationID),
 			}).
-			RowAction(myui.RowAction[*downballotapi.User]{
-				Name: "Edit",
-				Icon: "edit",
-				To: func(row *downballotapi.User) string {
-					return fmt.Sprintf("/organization/%s/user/%s/edit", c.organizationID, row.ID)
+			RowAction(
+				myui.RowAction[*downballotapi.User]{
+					Name: "Edit",
+					Icon: "edit",
+					To: func(row *downballotapi.User) string {
+						return fmt.Sprintf("/organization/%s/user/%s/edit", c.organizationID, row.ID)
+					},
 				},
-			}).
-			RowAction(myui.RowAction[*downballotapi.User]{
-				Name: "Remove",
-				Icon: "trash",
-				Function: func(ctx app.Context, row *downballotapi.User) {
-					ctx.PreventUpdate()
+				myui.RowAction[*downballotapi.User]{
+					Name: "Remove",
+					Icon: "trash",
+					Function: func(ctx app.Context, row *downballotapi.User) {
+						ctx.PreventUpdate()
 
-					result := app.Window().Call("confirm", "Are you sure you want to remove this user from the organization?")
-					slog.InfoContext(ctx.Context, "OrganizationIDUserPage: Delete button clicked", "result", result.Bool())
-					if !result.Bool() {
-						slog.InfoContext(ctx.Context, "OrganizationIDUserPage: Delete button clicked: User cancelled", "result", result.Bool())
-						return
-					}
+						result := app.Window().Call("confirm", "Are you sure you want to remove this user from the organization?")
+						slog.InfoContext(ctx.Context, "OrganizationIDUserPage: Delete button clicked", "result", result.Bool())
+						if !result.Bool() {
+							slog.InfoContext(ctx.Context, "OrganizationIDUserPage: Delete button clicked: User cancelled", "result", result.Bool())
+							return
+						}
 
-					slog.InfoContext(ctx.Context, "OrganizationIDUserPage: Deleting user", "user", row)
-					err := api.Do(ctx, http.MethodDelete, "/api/v1/organization/"+c.organizationID+"/user/"+row.ID, nil, nil)
-					if err != nil {
-						slog.ErrorContext(ctx.Context, "Could not delete user", "err", err)
-						return
-					}
-					c.Reload(ctx)
+						slog.InfoContext(ctx.Context, "OrganizationIDUserPage: Deleting user", "user", row)
+						err := api.Do(ctx, http.MethodDelete, "/api/v1/organization/"+c.organizationID+"/user/"+row.ID, nil, nil)
+						if err != nil {
+							slog.ErrorContext(ctx.Context, "Could not delete user", "err", err)
+							return
+						}
+						c.Reload(ctx)
+					},
 				},
-			}),
+			),
 	)
 }

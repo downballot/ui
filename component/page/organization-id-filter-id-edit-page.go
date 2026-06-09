@@ -111,10 +111,11 @@ func (c *OrganizationIDFilterIDEditPage) Render() app.UI {
 				ctx.PreventUpdate()
 
 				ctx.Async(func() {
-					var input downballotapi.PatchFilterRequest
-					input.Name = &c.Name
-					input.Description = &c.Description
-					input.Filter = &c.Filter
+					input := downballotapi.PatchFilterRequest{
+						Name:        &c.Name,
+						Description: &c.Description,
+						Filter:      &c.Filter,
+					}
 					var output downballotapi.PatchFilterResponse
 					err := api.Do(ctx, http.MethodPatch, "/api/v1/organization/"+c.organizationID+"/filter/"+c.filterID, input, &output)
 					if err != nil {

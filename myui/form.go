@@ -40,7 +40,7 @@ type FormAction struct {
 var _ app.Composer = (*MyUIForm)(nil)
 
 func (c *MyUIForm) Class(class ...string) *MyUIForm {
-	c.IClasses = append(c.IClasses, class...)
+	c.IClasses = class
 	return c
 }
 
@@ -58,7 +58,7 @@ func (c *MyUIForm) Style(name, value string) *MyUIForm {
 }
 
 func (c *MyUIForm) Action(actions ...FormAction) *MyUIForm {
-	c.IActions = append(c.IActions, actions...)
+	c.IActions = actions
 	return c
 }
 
@@ -93,7 +93,7 @@ func (c *MyUIForm) SubmitLabel(label string) *MyUIForm {
 }
 
 func (c *MyUIForm) Body(body ...app.UI) *MyUIForm {
-	c.IBody = append(c.IBody, body...)
+	c.IBody = body
 	return c
 }
 
@@ -104,8 +104,7 @@ func (c *MyUIForm) On(event string, function func(ctx app.Context, e app.Event))
 
 func (c *MyUIForm) Render() app.UI {
 	element := app.Div().
-		Class("myui-form").
-		Class(c.IClasses...).
+		Class(append([]string{"myui-form"}, c.IClasses...)...).
 		Body(
 			c.UseEvents.Wrap(
 				app.Div().

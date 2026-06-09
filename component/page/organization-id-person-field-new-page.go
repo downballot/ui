@@ -64,8 +64,6 @@ func (c *OrganizationIDPersonFieldNewPage) Render() app.UI {
 					Label("Type").
 					AllowedValue(
 						myui.SelectOption{Label: "", Value: "", Disabled: true},
-					).
-					AllowedValue(
 						myui.SelectOption{Label: "Boolean", Value: string(downballotapi.PersonFieldDefinitionTypeBoolean)},
 						myui.SelectOption{Label: "Date", Value: string(downballotapi.PersonFieldDefinitionTypeDate)},
 						myui.SelectOption{Label: "Enum", Value: string(downballotapi.PersonFieldDefinitionTypeEnum)},

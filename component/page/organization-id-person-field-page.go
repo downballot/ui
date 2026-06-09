@@ -7,6 +7,8 @@ import (
 	"net/http"
 
 	"github.com/downballot/downballot/downballotapi"
+	"github.com/downballot/downballot/iam"
+	"github.com/downballot/downballot/permissionset"
 	"github.com/downballot/ui/api"
 	"github.com/downballot/ui/myui"
 	"github.com/go-app-blazar/router"
@@ -21,6 +23,7 @@ type OrganizationIDPersonFieldPage struct {
 
 	organizationID string
 	personFields   []*downballotapi.PersonField
+	permissionSet  permissionset.PermissionSet
 }
 
 func (c *OrganizationIDPersonFieldPage) OnNav(ctx app.Context) {
@@ -33,6 +36,8 @@ func (c *OrganizationIDPersonFieldPage) OnNav(ctx app.Context) {
 	if c.organizationID == "" {
 		return
 	}
+
+	ctx.GetState("organization/"+c.organizationID+"/permission-set", &c.permissionSet)
 
 	ctx.Async(func() {
 		var output downballotapi.ListPersonFieldsResponse
@@ -107,9 +112,10 @@ func (c *OrganizationIDPersonFieldPage) Render() app.UI {
 				},
 			}).
 			Action(myui.TableAction{
-				Name: "New Person Field",
-				Icon: "plus",
-				To:   fmt.Sprintf("/organization/%s/person-field/new", c.organizationID),
+				Name:     "New Person Field",
+				Icon:     "plus",
+				To:       fmt.Sprintf("/organization/%s/person-field/new", c.organizationID),
+				Disabled: !c.permissionSet.Match(iam.IAMPersonFieldDefinitionCreate),
 			}),
 	)
 }

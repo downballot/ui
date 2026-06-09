@@ -8,6 +8,8 @@ import (
 	"sync"
 
 	"github.com/downballot/downballot/downballotapi"
+	"github.com/downballot/downballot/iam"
+	"github.com/downballot/downballot/permissionset"
 	"github.com/downballot/ui/api"
 	"github.com/downballot/ui/myui"
 	"github.com/go-app-blazar/router"
@@ -23,9 +25,10 @@ type OrganizationIDGroupIDPage struct {
 	organizationID string
 	groupID        string
 
-	loaded   bool
-	group    *downballotapi.Group
-	children []*downballotapi.Group
+	loaded        bool
+	group         *downballotapi.Group
+	children      []*downballotapi.Group
+	permissionSet permissionset.PermissionSet
 }
 
 var _ app.Navigator = (*OrganizationIDGroupIDPage)(nil)
@@ -46,6 +49,8 @@ func (c *OrganizationIDGroupIDPage) OnNav(ctx app.Context) {
 	if c.groupID == "" {
 		return
 	}
+
+	ctx.GetState("organization/"+c.organizationID+"/permission-set", &c.permissionSet)
 
 	ctx.Async(func() {
 		slog.InfoContext(ctx.Context, "OrganizationIDGroupIDPage: OnNav: Async: Getting organization and group")
@@ -106,17 +111,20 @@ func (c *OrganizationIDGroupIDPage) Render() app.UI {
 	}
 
 	return c.EmbeddedPage.
-		Action(myui.PageAction{
-			Name: "Persons",
-			Icon: "people-group",
-			To:   fmt.Sprintf("/organization/%s/group/%s/person", c.organizationID, c.groupID),
-		}).
-		Action(myui.PageAction{
-			Name:     "Edit",
-			Icon:     "edit",
-			To:       fmt.Sprintf("/organization/%s/group/%s/edit", c.organizationID, c.groupID),
-			Disabled: c.group.ParentID == "",
-		}).
+		Action(
+			myui.PageAction{
+				Name:     "Persons",
+				Icon:     "people-group",
+				To:       fmt.Sprintf("/organization/%s/group/%s/person", c.organizationID, c.groupID),
+				Disabled: !c.permissionSet.Match(iam.IAMPersonRead),
+			},
+			myui.PageAction{
+				Name:     "Edit",
+				Icon:     "edit",
+				To:       fmt.Sprintf("/organization/%s/group/%s/edit", c.organizationID, c.groupID),
+				Disabled: c.group.ParentID == "" || !c.permissionSet.Match(iam.IAMGroupUpdate),
+			},
+		).
 		Wrap(
 			myui.Table[*downballotapi.Group]().
 				Title("Sub-groups").
@@ -141,23 +149,28 @@ func (c *OrganizationIDGroupIDPage) Render() app.UI {
 				VisibleColumns(c.IChildrenVisibleColumns).
 				BindVisibleColumns(&c.IChildrenVisibleColumns).
 				Action(myui.TableAction{
-					Name: "New group",
-					Icon: "plus",
-					To:   fmt.Sprintf("/organization/%s/group/new?parent_id=%s", c.organizationID, c.groupID),
+					Name:     "New group",
+					Icon:     "plus",
+					To:       fmt.Sprintf("/organization/%s/group/new?parent_id=%s", c.organizationID, c.groupID),
+					Disabled: !c.permissionSet.Match(iam.IAMGroupCreate),
 				}).
-				RowAction(myui.RowAction[*downballotapi.Group]{
-					Name: "Persons",
-					Icon: "people-group",
-					To: func(row *downballotapi.Group) string {
-						return fmt.Sprintf("/organization/%s/group/%s/person", c.organizationID, row.ID)
+				RowAction(
+					myui.RowAction[*downballotapi.Group]{
+						Name: "Persons",
+						Icon: "people-group",
+						To: func(row *downballotapi.Group) string {
+							return fmt.Sprintf("/organization/%s/group/%s/person", c.organizationID, row.ID)
+						},
+						Disabled: !c.permissionSet.Match(iam.IAMPersonRead),
 					},
-				}).
-				RowAction(myui.RowAction[*downballotapi.Group]{
-					Name: "Edit",
-					Icon: "edit",
-					To: func(row *downballotapi.Group) string {
-						return fmt.Sprintf("/organization/%s/group/%s/edit", c.organizationID, row.ID)
+					myui.RowAction[*downballotapi.Group]{
+						Name: "Edit",
+						Icon: "edit",
+						To: func(row *downballotapi.Group) string {
+							return fmt.Sprintf("/organization/%s/group/%s/edit", c.organizationID, row.ID)
+						},
+						Disabled: c.group.ParentID == "" || !c.permissionSet.Match(iam.IAMGroupUpdate),
 					},
-				}),
+				),
 		)
 }

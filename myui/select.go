@@ -39,7 +39,7 @@ func (c *MyUISelect) Label(label string) *MyUISelect {
 }
 
 func (c *MyUISelect) AllowedValue(allowedValue ...SelectOption) *MyUISelect {
-	c.IAllowedValues = append(c.IAllowedValues, allowedValue...)
+	c.IAllowedValues = allowedValue
 	return c
 }
 

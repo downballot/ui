@@ -14,15 +14,15 @@ func InputWrapper() *MyUIInputWrapper {
 type MyUIInputWrapper struct {
 	app.Compo
 	UseEvents
-	IClass []string
-	ILabel string
-	IBody  []app.UI
+	IClasses []string
+	ILabel   string
+	IBody    []app.UI
 }
 
 var _ app.Composer = (*MyUIInputWrapper)(nil)
 
 func (c *MyUIInputWrapper) Class(class ...string) *MyUIInputWrapper {
-	c.IClass = append(c.IClass, class...)
+	c.IClasses = class
 	return c
 }
 
@@ -31,8 +31,8 @@ func (c *MyUIInputWrapper) Label(label string) *MyUIInputWrapper {
 	return c
 }
 
-func (c *MyUIInputWrapper) Body(input ...app.UI) *MyUIInputWrapper {
-	c.IBody = append(c.IBody, input...)
+func (c *MyUIInputWrapper) Body(body ...app.UI) *MyUIInputWrapper {
+	c.IBody = body
 	return c
 }
 
@@ -46,8 +46,7 @@ func (c *MyUIInputWrapper) Render() app.UI {
 	body = append(body, c.IBody...)
 
 	return app.Span().
-		Class("myui-input-wrapper").
-		Class(c.IClass...).
+		Class(append([]string{"myui-input-wrapper"}, c.IClasses...)...).
 		Body(
 			body...,
 		)

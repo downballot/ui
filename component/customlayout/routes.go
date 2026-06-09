@@ -292,6 +292,9 @@ var Routes = []router.Route{
 							{
 								Path:      "/person-field",
 								Component: nil,
+								Meta: map[string]string{
+									MetaPermission: string(iam.IAMPersonFieldDefinitionRead),
+								},
 								Children: []router.Route{
 									{
 										Path: "/",

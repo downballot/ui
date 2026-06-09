@@ -40,14 +40,14 @@ func (c *MyUIMultiselect) Label(label string) *MyUIMultiselect {
 }
 
 func (c *MyUIMultiselect) AllowedValue(allowedValue ...SelectOption) *MyUIMultiselect {
-	c.IAllowedValues = append(c.IAllowedValues, allowedValue...)
+	c.IAllowedValues = allowedValue
 	return c
 }
 
 func (c *MyUIMultiselect) SelectedValue(selectedValue ...string) *MyUIMultiselect {
-	c.ISelectedValues = append(c.ISelectedValues, selectedValue...)
+	c.ISelectedValues = selectedValue
 	if c.BindSelectedValues != nil {
-		*c.BindSelectedValues = append(*c.BindSelectedValues, selectedValue...)
+		*c.BindSelectedValues = selectedValue
 	}
 	return c
 }

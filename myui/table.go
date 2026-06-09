@@ -38,6 +38,7 @@ type TableAction struct {
 	Icon     string
 	To       string
 	Function func(ctx app.Context)
+	Disabled bool
 }
 
 type RowAction[T any] struct {
@@ -45,6 +46,7 @@ type RowAction[T any] struct {
 	Icon     string
 	To       func(row T) string
 	Function func(ctx app.Context, row T)
+	Disabled bool
 }
 
 type TableColumn[T any] struct {
@@ -117,12 +119,12 @@ func (t *MyUITable[T]) PageSize(pageSize uint) *MyUITable[T] {
 }
 
 func (t *MyUITable[T]) Action(actions ...TableAction) *MyUITable[T] {
-	t.IActions = append(t.IActions, actions...)
+	t.IActions = actions
 	return t
 }
 
 func (t *MyUITable[T]) RowAction(rowActions ...RowAction[T]) *MyUITable[T] {
-	t.IRowActions = append(t.IRowActions, rowActions...)
+	t.IRowActions = rowActions
 	return t
 }
 
@@ -205,6 +207,22 @@ func (t *MyUITable[T]) Render() app.UI {
 	emptyMessage := t.IEmptyMessage
 	if emptyMessage == "" {
 		emptyMessage = "No results found"
+	}
+
+	var visibleActions []TableAction
+	for _, action := range t.IActions {
+		if action.Disabled {
+			continue
+		}
+		visibleActions = append(visibleActions, action)
+	}
+
+	var visibleRowActions []RowAction[T]
+	for _, rowAction := range t.IRowActions {
+		if rowAction.Disabled {
+			continue
+		}
+		visibleRowActions = append(visibleRowActions, rowAction)
 	}
 
 	return app.Div().
@@ -293,12 +311,12 @@ func (t *MyUITable[T]) Render() app.UI {
 							),
 					)
 			}),
-			app.If(len(t.IActions) > 0, func() app.UI {
+			app.If(len(visibleActions) > 0, func() app.UI {
 				return app.Div().
 					Class("myui-table__actions").
 					Body(
-						app.Range(t.IActions).Slice(func(i int) app.UI {
-							action := t.IActions[i]
+						app.Range(visibleActions).Slice(func(i int) app.UI {
+							action := visibleActions[i]
 
 							button := Button().
 								Label(action.Name).
@@ -326,7 +344,7 @@ func (t *MyUITable[T]) Render() app.UI {
 										return app.Th().
 											Text(column.Name)
 									}),
-									app.If(len(t.IRowActions) > 0, func() app.UI {
+									app.If(len(visibleRowActions) > 0, func() app.UI {
 										return app.Th().
 											Text("Actions")
 									}),
@@ -363,11 +381,11 @@ func (t *MyUITable[T]) Render() app.UI {
 													}),
 												)
 										}),
-										app.If(len(t.IRowActions) > 0, func() app.UI {
+										app.If(len(visibleRowActions) > 0, func() app.UI {
 											return app.Td().
 												Body(
-													app.Range(t.IRowActions).Slice(func(i int) app.UI {
-														rowAction := t.IRowActions[i]
+													app.Range(visibleRowActions).Slice(func(i int) app.UI {
+														rowAction := visibleRowActions[i]
 														button := Button().
 															Label(rowAction.Name).
 															Icon(rowAction.Icon)

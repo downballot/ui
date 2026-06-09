@@ -35,8 +35,7 @@ func (c *MyUIIcon) On(event string, function func(ctx app.Context, e app.Event))
 func (c *MyUIIcon) Render() app.UI {
 	return c.UseEvents.Wrap(
 		app.Span().
-			Class("myui-icon").
-			Class(c.ClassValue).
+			Class("myui-icon", c.ClassValue).
 			DataSet("icon", c.IconValue).
 			Body(
 				app.I().
