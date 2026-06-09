@@ -11,25 +11,25 @@ func Item() *MyUIItem {
 type MyUIItem struct {
 	app.Compo
 	UseEvents
-	IconValue string
-	NameValue string
-	ToValue   string
+	IIcon string
+	IName string
+	ITo   string
 }
 
 var _ app.Composer = (*MyUIItem)(nil)
 
 func (c *MyUIItem) Icon(icon string) *MyUIItem {
-	c.IconValue = icon
+	c.IIcon = icon
 	return c
 }
 
 func (c *MyUIItem) Name(name string) *MyUIItem {
-	c.NameValue = name
+	c.IName = name
 	return c
 }
 
 func (c *MyUIItem) To(to string) *MyUIItem {
-	c.ToValue = to
+	c.ITo = to
 	return c
 }
 
@@ -42,18 +42,18 @@ func (c *MyUIItem) Render() app.UI {
 	return c.UseEvents.Wrap(
 		app.A().
 			Class("myui-item").
-			Href(c.ToValue).
+			Href(c.ITo).
 			Body(
 				app.Span().
 					Class("myui-item__icon").
 					Body(
-						app.If(c.IconValue != "", func() app.UI {
-							return Icon().Icon(c.IconValue)
+						app.If(c.IIcon != "", func() app.UI {
+							return Icon().Icon(c.IIcon)
 						}),
 					),
 				app.Span().
 					Class("myui-item__name").
-					Text(c.NameValue),
+					Text(c.IName),
 			),
 	)
 }

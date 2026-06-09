@@ -93,6 +93,8 @@ func (c *OrganizationLayout) OnNav(ctx app.Context) {
 
 	c.crumbs = crumbs
 	slog.InfoContext(ctx.Context, "OrganizationLayout: OnNav", "crumbs", c.crumbs)
+
+	ctx.Update()
 }
 
 func (c *OrganizationLayout) Render() app.UI {
@@ -140,30 +142,9 @@ func (c *OrganizationLayout) Render() app.UI {
 			Headline:   c.organizationName,
 			HeadlineUI: headline,
 		},
-		Drawer: app.Div().
-			Class("organizationlayout-menu").
-			Body(
-				myui.Item().
-					Icon("house").
-					Name("Home").
-					To("/organization/"+c.organizationID),
-				myui.Item().
-					Icon("people-group").
-					Name("Groups").
-					To("/organization/"+c.organizationID+"/group"),
-				myui.Item().
-					Icon("filter").
-					Name("Filters").
-					To("/organization/"+c.organizationID+"/filter"),
-				myui.Item().
-					Icon("user-gear").
-					Name("Person Fields").
-					To("/organization/"+c.organizationID+"/person-field"),
-				myui.Item().
-					Icon("user").
-					Name("Users").
-					To("/organization/"+c.organizationID+"/user"),
-			),
+		Drawer: &OrganizationMenu{
+			OrganizationID: c.organizationID,
+		},
 	}
 	mainLayout.SetRouterView(c.RouterView())
 
