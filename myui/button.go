@@ -11,43 +11,43 @@ func Button() *MyUIButton {
 type MyUIButton struct {
 	app.Compo
 	UseEvents
-	FlatValue     bool
-	IconValue     string
-	LabelValue    string
-	ToValue       string
-	RoundValue    bool
-	DisabledValue bool
+	IFlat     bool
+	IIcon     string
+	ILabel    string
+	ITo       string
+	IRound    bool
+	IDisabled bool
 }
 
 var _ app.Composer = (*MyUIButton)(nil)
 
 func (c *MyUIButton) Disabled(disabled bool) *MyUIButton {
-	c.DisabledValue = disabled
+	c.IDisabled = disabled
 	return c
 }
 
 func (c *MyUIButton) Flat(flat bool) *MyUIButton {
-	c.FlatValue = flat
+	c.IFlat = flat
 	return c
 }
 
 func (c *MyUIButton) Icon(icon string) *MyUIButton {
-	c.IconValue = icon
+	c.IIcon = icon
 	return c
 }
 
 func (c *MyUIButton) Label(label string) *MyUIButton {
-	c.LabelValue = label
+	c.ILabel = label
 	return c
 }
 
 func (c *MyUIButton) Round(round bool) *MyUIButton {
-	c.RoundValue = round
+	c.IRound = round
 	return c
 }
 
 func (c *MyUIButton) To(to string) *MyUIButton {
-	c.ToValue = to
+	c.ITo = to
 	return c
 }
 
@@ -57,56 +57,60 @@ func (c *MyUIButton) On(event string, function func(ctx app.Context, e app.Event
 }
 
 func (c *MyUIButton) Render() app.UI {
-	var element app.UI
-
 	disabledClass := ""
-	if c.DisabledValue {
+	if c.IDisabled {
 		disabledClass = "disabled"
 	}
 
 	flatClass := ""
-	if c.FlatValue {
+	if c.IFlat {
 		flatClass = "flat"
 	}
 
 	roundClass := ""
-	if c.RoundValue {
+	if c.IRound {
 		roundClass = "round"
 	}
 
-	element = app.A().
-		Class("myui-button").
-		Class(disabledClass).
-		Class(roundClass).
-		Class(flatClass).
+	body := app.Span().
+		Class("myui-button__content").
+		Body(
+			app.If(c.IIcon != "", func() app.UI {
+				return Icon().
+					Class("myui-button__icon").
+					Icon(c.IIcon)
+			}),
+			app.If(c.ILabel != "", func() app.UI {
+				return app.Span().
+					Class("myui-button__label").
+					Body(
+						app.Span().
+							Text(c.ILabel),
+					)
+			}),
+		)
+
+	var innerElement app.UI
+	if c.ITo == "" {
+		innerElement = body
+	} else {
+		innerElement = app.A().
+			Href(c.ITo).
+			Body(body)
+	}
+
+	var element app.UI
+	element = app.Span().
+		Class("myui-button", disabledClass, roundClass, flatClass).
 		TabIndex(0).
 		Role("button").
-		Href(c.ToValue).
-		Body(
-			app.Div().
-				Class("myui-button__content").
-				Body(
-					app.If(c.IconValue != "", func() app.UI {
-						return Icon().
-							Class("myui-button__icon").
-							Icon(c.IconValue)
-					}),
-					app.If(c.LabelValue != "", func() app.UI {
-						return app.Div().
-							Class("myui-button__label").
-							Body(
-								app.Span().
-									Text(c.LabelValue),
-							)
-					}),
-				),
-		).
+		Body(innerElement).
 		OnKeyPress(func(ctx app.Context, e app.Event) {
 			if e.Get("key").String() == "Enter" || e.Get("key").String() == " " {
 				e.Get("target").Call("click")
 			}
 		})
-	if !c.DisabledValue {
+	if !c.IDisabled {
 		element = c.UseEvents.Wrap(element)
 	}
 	return element

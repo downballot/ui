@@ -14,8 +14,9 @@
     user-select: none;
 }
 
-a.myui-button, a.myui-button:hover, a.myui-button:active, a.myui-button:visited {
-    text-decoration: none;
+.myui-button a, .myui-button a:hover, .myui-button a:active, .myui-button a:visited {
+    text-decoration: none !important;
+    color: inherit !important;
 }
 
 .myui-button:hover {
