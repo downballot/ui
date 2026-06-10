@@ -4,6 +4,7 @@ import (
 	"context"
 	"log/slog"
 	"net/http"
+	"time"
 
 	"github.com/downballot/downballot/downballotapi"
 	"github.com/downballot/ui/api"
@@ -98,88 +99,116 @@ func (c *AddFieldDialog) Render() app.UI {
 		}
 	}
 
-	var valueElement app.UI
+	var valueElements []app.UI
 	if selectedPersonField != nil {
 		switch selectedPersonField.Type {
 		case downballotapi.PersonFieldDefinitionTypeDate:
-			valueElement = myui.Input[string]().
-				Label("Value").
-				Type("date").
-				Placeholder("Value").
-				Bind(&c.ValueValue)
+			valueElements = append(valueElements,
+				myui.Input[string]().
+					Label("Value").
+					Type("date").
+					Placeholder("Value").
+					Bind(&c.ValueValue),
+				myui.Button().
+					Flat(true).
+					Label("Yesterday").
+					On("click", func(ctx app.Context, e app.Event) {
+						c.ValueValue = time.Now().AddDate(0, 0, -1).Format("2006-01-02")
+						ctx.Update()
+					}),
+				myui.Button().
+					Flat(true).
+					Label("Today").
+					On("click", func(ctx app.Context, e app.Event) {
+						c.ValueValue = time.Now().Format("2006-01-02")
+						ctx.Update()
+					}),
+			)
 		case downballotapi.PersonFieldDefinitionTypeEnum:
-			valueElement = myui.Select().
-				AllowedValue(
-					func() []myui.SelectOption {
-						var allowedValues []myui.SelectOption
-						allowedValues = append(allowedValues, myui.SelectOption{Label: "", Value: "", Disabled: true})
-						for _, allowedValue := range selectedPersonField.AllowedValues {
-							allowedValues = append(allowedValues, myui.SelectOption{Label: allowedValue, Value: allowedValue})
-						}
-						return allowedValues
-					}()...).
-				Bind(&c.ValueValue)
+			valueElements = append(valueElements,
+				myui.Select().
+					AllowedValue(
+						func() []myui.SelectOption {
+							var allowedValues []myui.SelectOption
+							allowedValues = append(allowedValues, myui.SelectOption{Label: "", Value: "", Disabled: true})
+							for _, allowedValue := range selectedPersonField.AllowedValues {
+								allowedValues = append(allowedValues, myui.SelectOption{Label: allowedValue, Value: allowedValue})
+							}
+							return allowedValues
+						}()...).
+					Bind(&c.ValueValue),
+			)
 		case downballotapi.PersonFieldDefinitionTypeString:
-			valueElement = myui.Input[string]().
-				Label("Value").
-				Type("text").
-				Placeholder("Value").
-				Bind(&c.ValueValue)
+			valueElements = append(valueElements,
+				myui.Input[string]().
+					Label("Value").
+					Type("text").
+					Placeholder("Value").
+					Bind(&c.ValueValue),
+			)
 		case downballotapi.PersonFieldDefinitionTypeInteger:
-			valueElement = myui.Input[string]().
-				Label("Value").
-				Type("number").
-				Placeholder("Value").
-				Bind(&c.ValueValue)
+			valueElements = append(valueElements,
+				myui.Input[string]().
+					Label("Value").
+					Type("number").
+					Placeholder("Value").
+					Bind(&c.ValueValue),
+			)
 		case downballotapi.PersonFieldDefinitionTypeBoolean:
-			valueElement = myui.Select().
-				AllowedValue(
-					myui.SelectOption{Label: "", Value: "", Disabled: true},
-					myui.SelectOption{Label: "true", Value: "true"},
-					myui.SelectOption{Label: "false", Value: "false"},
-				).
-				Bind(&c.ValueValue)
+			valueElements = append(valueElements,
+				myui.Select().
+					AllowedValue(
+						myui.SelectOption{Label: "", Value: "", Disabled: true},
+						myui.SelectOption{Label: "true", Value: "true"},
+						myui.SelectOption{Label: "false", Value: "false"},
+					).
+					Bind(&c.ValueValue),
+			)
 		default:
-			valueElement = myui.Input[string]().
-				Label("Value").
-				Type("text").
-				Placeholder("Value").
-				Bind(&c.ValueValue)
+			valueElements = append(valueElements,
+				myui.Input[string]().
+					Label("Value").
+					Type("text").
+					Placeholder("Value").
+					Bind(&c.ValueValue),
+			)
 		}
 	}
+
+	formBody := []app.UI{
+		myui.Select().
+			Name("field").
+			Label("Field").
+			AllowedValue(
+				func() []myui.SelectOption {
+					var allowedValues []myui.SelectOption
+					allowedValues = append(allowedValues, myui.SelectOption{Label: "", Value: "", Disabled: true})
+					for _, personField := range c.PersonFields {
+						allowedValues = append(allowedValues, myui.SelectOption{Label: personField.Name, Value: personField.Name})
+					}
+					return allowedValues
+				}()...).
+			Bind(&c.SelectedFieldValue).
+			On("change", func(ctx app.Context, e app.Event) {
+				slog.InfoContext(ctx.Context, "AddFieldDialog: OnChange", "SelectedFieldValue", c.SelectedFieldValue)
+
+				if c.SelectedFieldValue == "" {
+					c.ValueValue = ""
+				} else {
+					c.ValueValue = c.Person.Fields[c.SelectedFieldValue]
+				}
+				slog.InfoContext(ctx.Context, "AddFieldDialog: OnChange", "ValueValue", c.ValueValue)
+				ctx.Update()
+			}),
+	}
+	formBody = append(formBody, valueElements...)
 
 	return app.Dialog().
 		ID(c.DialogID).
 		Body(
 			app.H2().Text("Add Field"),
 			myui.Form().
-				Body(
-					myui.Select().
-						Name("field").
-						Label("Field").
-						AllowedValue(
-							func() []myui.SelectOption {
-								var allowedValues []myui.SelectOption
-								allowedValues = append(allowedValues, myui.SelectOption{Label: "", Value: "", Disabled: true})
-								for _, personField := range c.PersonFields {
-									allowedValues = append(allowedValues, myui.SelectOption{Label: personField.Name, Value: personField.Name})
-								}
-								return allowedValues
-							}()...).
-						Bind(&c.SelectedFieldValue).
-						On("change", func(ctx app.Context, e app.Event) {
-							slog.InfoContext(ctx.Context, "AddFieldDialog: OnChange", "SelectedFieldValue", c.SelectedFieldValue)
-
-							if c.SelectedFieldValue == "" {
-								c.ValueValue = ""
-							} else {
-								c.ValueValue = c.Person.Fields[c.SelectedFieldValue]
-							}
-							slog.InfoContext(ctx.Context, "AddFieldDialog: OnChange", "ValueValue", c.ValueValue)
-							ctx.Update()
-						}),
-					valueElement,
-				).
+				Body(formBody...).
 				CancelFunction(c.Close).
 				SubmitLabel("Save").
 				SubmitFunction(func(ctx app.Context) {
