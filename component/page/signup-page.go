@@ -59,7 +59,6 @@ func (c *SignupPage) Render() app.UI {
 					input := downballotapi.RegisterUserRequest{
 						Name:     c.name,
 						Username: c.username,
-						Password: "BOGUS",
 					}
 					var output downballotapi.RegisterUserResponse
 					err := client.Do(ctx.Context, http.MethodPost, "/api/v1/user", input, &output)
