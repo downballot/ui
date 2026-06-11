@@ -14,7 +14,7 @@ import (
 type HTMLGoogleMap struct {
 	app.Compo
 
-	IDValue string
+	id string
 
 	APIKeyValue  string
 	CenterValue  Coordinate
@@ -23,7 +23,7 @@ type HTMLGoogleMap struct {
 
 func GoogleMap() *HTMLGoogleMap {
 	return &HTMLGoogleMap{
-		IDValue: "id-" + uuid.New().String(),
+		id: "id-" + uuid.New().String(),
 	}
 }
 
@@ -71,7 +71,7 @@ func (c *HTMLGoogleMap) OnUpdate(ctx app.Context) {
 						bounds.Call("extend", app.Window().Get("google").Get("maps").Get("LatLng").New(marker.Latitude, marker.Longitude))
 					}
 
-					mapElement := app.Window().GetElementByID(c.IDValue)
+					mapElement := app.Window().GetElementByID(c.id)
 					if mapElement.Truthy() {
 						if innerMap := mapElement.Get("innerMap"); innerMap.Truthy() {
 							slog.InfoContext(context.TODO(), "GoogleMap: OnUpdate", "innerMap", innerMap)
@@ -115,7 +115,7 @@ func (c *HTMLGoogleMap) Render() app.UI {
 		Body(
 			app.Script().Text(strings.ReplaceAll(rawDynamicImportCode, "YOUR_API_KEY", c.APIKeyValue)),
 			app.Elem("gmp-map").
-				ID(c.IDValue).
+				ID(c.id).
 				Attr("center", center).
 				Attr("zoom", "13").
 				Attr("map-id", "MY_MAP_ID").
@@ -146,12 +146,26 @@ async function init() {
     await google.maps.importLibrary('maps');
 	await google.maps.importLibrary('marker');
 
+	let handle = null;
+	handle = setInterval(() => {
     // Access the map.
-    const mapElement = document.querySelector('#`+c.IDValue+`');
+    const mapElement = document.querySelector('#`+c.id+`');
 	console.log("GoogleMap: mapElement:", mapElement);
+	if (!mapElement) {
+		return
+	}
     // Access the underlying map object.
     const innerMap = mapElement.innerMap;
 	console.log("GoogleMap: innerMap:", innerMap);
+	if (!innerMap) {
+		return
+	}
+	innerMap.setOptions({
+		gestureHandling: 'greedy',
+	});
+	clearInterval(handle);
+	handle = null;
+	},100);
 }
 
 void init();
