@@ -3,7 +3,7 @@ module github.com/downballot/ui
 go 1.26.2
 
 require (
-	github.com/downballot/downballot v0.0.0-00010101000000-000000000000
+	github.com/downballot/downballot v0.1.0
 	github.com/go-app-blazar/router v0.1.0
 	github.com/google/uuid v1.6.0
 	github.com/joho/godotenv v1.5.1
@@ -24,8 +24,6 @@ require (
 	gorm.io/gorm v1.31.1 // indirect
 )
 
-replace github.com/downballot/downballot => ../downballot
+//replace github.com/downballot/downballot => ../downballot
 
 //replace github.com/maxence-charriere/go-app/v11 => github.com/tekkamanendless/fork-of-maxence-charriere-go-app/v11 v11.0.0-20260602191626-433345bdb528
-
-//replace github.com/maxence-charriere/go-app/v11 => ../../tekkamanendless/fork-of-maxence-charriere-go-app
