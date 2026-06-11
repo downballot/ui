@@ -69,7 +69,7 @@ watch-run:
 	done
 
 .PHONY: run-demo
-run: binaries_ui-demo
+run-demo: binaries_ui-demo
 	cd bin && ./ui-demo/app
 
 .PHONY: watch-run-demo
@@ -95,4 +95,9 @@ clean:
 	rm -f bin/ui-demo/app
 	rm -f bin/ui-demo/web/app.wasm
 	rm -rf bin/ui-demo/web
+
+.PHONY: test
+test:
+	go vet ./...
+	go test ./...
 
