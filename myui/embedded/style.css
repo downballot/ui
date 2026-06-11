@@ -1,0 +1,283 @@
+
+.myui-button {
+    display: inline-block;
+    border-radius: 0.5em;
+    background-color: var(--material-theme-primary);
+    color: var(--material-theme-on-primary);
+    cursor: pointer;
+
+    margin-top: 0.2em;
+    margin-bottom: 0.2em;
+    margin-left: 0.2em;
+    margin-right: 0.2em;
+
+    user-select: none;
+}
+
+.myui-button a, .myui-button a:hover, .myui-button a:active, .myui-button a:visited {
+    text-decoration: none !important;
+    color: inherit !important;
+}
+
+.myui-button:hover {
+    opacity: 0.7;
+}
+
+.myui-button.flat {
+    background-color: transparent;
+    color: var(--material-theme-primary);
+}
+
+.myui-button.round {
+    border-radius: 50%;
+}
+
+.myui-button.disabled {
+    filter: brightness(0.5);
+    cursor: not-allowed;
+    user-select: none;
+}
+
+.myui-button__icon {
+    margin-left: auto;
+    margin-right: auto;
+    width: 1em;
+    height: 1em;
+}
+
+.myui-button__content {
+    margin-top: auto;
+    margin-bottom: auto;
+    display: flex;
+    flex-direction: row;
+    padding: 0.5em 0.5em;
+    gap: 0.5em;
+}
+
+.myui-collapse {
+}
+
+.myui-collapse__top {
+    display: flex;
+    flex-direction: row;
+}
+
+.myui-collapse__summary-text {
+    max-width: 40em;
+    overflow-x: hidden;
+    display: inline-block;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.myui-collapse__label {
+    font-weight: bold;
+    margin-right: 1em;
+}
+
+@media print {
+    .myui-collapse.closed {
+        display: none;
+    }
+}
+
+.myui-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+}
+
+.myui-form__actions {
+    display: flex;
+    flex-direction: row;
+}
+
+.myui-icon {
+    width: 1em;
+    height: 1em;
+}
+
+.myui-input-wrapper {
+    margin-top: 0.25em;
+    margin-bottom: 0.25em;
+    
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
+}
+
+.myui-input-wrapper__label {
+    font-size: 0.8em;
+    font-weight: bold;
+}
+
+.myui-input__input {
+    padding: 0.5em;
+    border-radius: 0.25em;
+    border: 1px solid #dddddd;
+}
+
+.myui-input__input:focus {
+    outline: none;
+    border-color: var(--material-theme-primary);
+}
+
+.myui-input__input:hover {
+    border-color: var(--material-theme-primary);
+}
+
+.myui-input__input:active {
+    border-color: var(--material-theme-primary);
+}
+
+.myui-item {
+    display: block;
+    padding: 0.5em;
+    cursor: pointer;
+}
+
+.myui-item:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+a.myui-item {
+    text-decoration: none;
+    color: inherit;
+}
+
+.myui-item__icon {
+    width: 1em;
+    height: 1em;
+    margin-right: 0.5em;
+}
+
+.myui-item__name {
+}
+
+.myui-multiselect {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
+}
+
+.myui-page {
+    padding: 1em;
+    background-color: var(--material-theme-background);
+    color: var(--material-theme-on-background);
+
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+}
+
+.myui-statusbar {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+
+    padding: 0.6em;
+    border-radius: 0.5em;
+
+    background-color: var(--material-theme-info);
+    color: var(--material-theme-on-info);
+}
+
+.myui-statusbar.good {
+    background-color: var(--material-theme-success);
+    color: var(--material-theme-on-success);
+}
+
+.myui-statusbar.bad {
+    background-color: var(--material-theme-error);
+    color: var(--material-theme-on-error);
+}
+
+.myui-table {
+    font-family: sans-serif;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.15); /* Adds a modern elevation effect */
+}
+
+.myui-table__header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.myui-table__title {
+    padding: 0.5em;
+    font-weight: bold;
+    font-size: 1.1em;
+}
+
+.myui-table__actions {
+    padding: 0.5em;
+}
+
+.myui-table table {
+    border-collapse: collapse; /* Removes space between cell borders */
+    font-size: 0.9em;
+    width: 100%;
+}
+
+.myui-table table thead tr {
+    background-color: var(--material-theme-secondary);
+    color: var(--material-theme-on-secondary); 
+    text-align: left;
+}
+
+.myui-table table th,
+.myui-table table td {
+    padding-top: 0.5em;
+    padding-bottom: 0.5em;
+    padding-left: 1em;
+    padding-right: 1em;
+}
+
+.myui-table table tbody tr {
+    border-bottom: 1px solid #dddddd;
+}
+
+.myui-table table tbody tr:nth-of-type(even) {
+    background-color: #f7f7f7; /* Zebra-striping for easier scanning */
+}
+
+.myui-table table tbody tr:last-of-type {
+}
+
+.myui-table table tbody tr:hover {
+    background-color: #f1f1f1; /* Visual cue when interacting with rows */
+}
+
+.myui-table__empty-message {
+    text-align: center;
+    font-style: italic;
+}
+
+.myui-table__pagination {
+    padding: 0.5em;
+    display: flex;
+}
+
+.myui-table [popover] {
+    margin: unset;
+    position-area: block-end span-inline-end;
+    position-try-fallbacks: flip-inline;
+    margin: initial;
+    box-shadow: 0px 0px 20px 12px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    border: 0;
+}
+
+@media print {
+    .myui-table {
+        box-shadow: none;
+    }
+
+    .myui-table__pagination {
+        display: none;
+    }
+
+    .myui-table table tbody td {
+        padding-top: 2em;
+        padding-bottom: 2em;
+    }
+}

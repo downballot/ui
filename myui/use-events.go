@@ -1,0 +1,134 @@
+package myui
+
+import (
+	"log/slog"
+	"reflect"
+
+	"github.com/maxence-charriere/go-app/v11/pkg/app"
+)
+
+type HasEvents[T any] interface {
+	On(name string, eventHandler app.EventHandler, options ...app.EventOption) T
+}
+
+type UseEvents struct {
+	events []eventHandlerEvent
+}
+
+type eventHandlerEvent struct {
+	name         string
+	eventHandler app.EventHandler
+	options      []app.EventOption
+}
+
+func (c *UseEvents) On(name string, eventHandler app.EventHandler, options ...app.EventOption) *UseEvents {
+	c.events = append(c.events, eventHandlerEvent{
+		name:         name,
+		eventHandler: eventHandler,
+		options:      options,
+	})
+	return c
+}
+
+func WithOn(name string, eventHandler app.EventHandler) eventHandlerEvent {
+	return eventHandlerEvent{
+		name:         name,
+		eventHandler: eventHandler,
+		options:      []app.EventOption{}, // Options are not allowed for our internal events.
+	}
+}
+
+func (c *UseEvents) Wrap(element app.UI, firstEvents ...eventHandlerEvent) app.UI {
+	firstEventsByName := map[string]eventHandlerEvent{}
+	for _, event := range firstEvents {
+		if _, exists := firstEventsByName[event.name]; exists {
+			slog.Warn("WithOn: Event already registered", "name", event.name)
+		}
+		firstEventsByName[event.name] = event
+	}
+
+	func() {
+		//slog.Debug("Wrap", "element", element)
+
+		elementValue := reflect.ValueOf(element)
+		//slog.Debug("Wrap", "elementValue", elementValue)
+
+		// TODO: Can we remove this block?
+		/*for elementValue.Kind() == reflect.Pointer {
+			elementValue = elementValue.Elem()
+		}
+		slog.Info("Wrap", "elementValue", elementValue)
+		if elementValue.Kind() != reflect.Struct {
+			return
+		}
+		*/
+
+		methodValue := elementValue.MethodByName("On")
+		if methodValue.IsZero() {
+			return
+		}
+		//slog.Debug("Wrap", "methodValue", methodValue)
+		methodType := methodValue.Type()
+		if methodType.NumIn() != 3 {
+			return
+		}
+		in1 := methodType.In(0)
+		if in1.Kind() != reflect.String {
+			return
+		}
+		in2 := methodType.In(1)
+		var eventHandler app.EventHandler
+		if in2 != reflect.TypeOf(eventHandler) {
+			return
+		}
+		in3 := methodType.In(2)
+		var options []app.EventOption
+		if in3 != reflect.TypeOf(options) {
+			return
+		}
+
+		eventHandledMap := map[string]bool{}
+		for _, event := range c.events {
+			//slog.Debug("REGISTERING EVENT", "name", event.name)
+
+			actualEventHandler := event.eventHandler
+			if firstEvent, exists := firstEventsByName[event.name]; exists {
+				actualEventHandler = func(ctx app.Context, e app.Event) {
+					firstEvent.eventHandler(ctx, e)
+					event.eventHandler(ctx, e)
+				}
+			}
+
+			reflectOptions := []reflect.Value{
+				reflect.ValueOf(event.name),
+				reflect.ValueOf(actualEventHandler), // Use our custom one.
+			}
+			for _, option := range event.options {
+				reflectOptions = append(reflectOptions, reflect.ValueOf(option))
+			}
+			methodValue.Call(reflectOptions)
+
+			eventHandledMap[event.name] = true
+		}
+
+		for _, event := range firstEvents {
+			if eventHandledMap[event.name] {
+				continue
+			}
+
+			actualEventHandler := event.eventHandler
+
+			reflectOptions := []reflect.Value{
+				reflect.ValueOf(event.name),
+				reflect.ValueOf(actualEventHandler), // Use our custom one.
+			}
+			for _, option := range event.options {
+				reflectOptions = append(reflectOptions, reflect.ValueOf(option))
+			}
+			methodValue.Call(reflectOptions)
+
+			eventHandledMap[event.name] = true
+		}
+	}()
+	return element
+}
