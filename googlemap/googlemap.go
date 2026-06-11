@@ -146,8 +146,6 @@ async function init() {
     await google.maps.importLibrary('maps');
 	await google.maps.importLibrary('marker');
 
-	let handle = null;
-	handle = setInterval(() => {
     // Access the map.
     const mapElement = document.querySelector('#`+c.id+`');
 	console.log("GoogleMap: mapElement:", mapElement);
@@ -163,9 +161,6 @@ async function init() {
 	innerMap.setOptions({
 		gestureHandling: 'greedy',
 	});
-	clearInterval(handle);
-	handle = null;
-	},100);
 }
 
 void init();
