@@ -90,6 +90,18 @@ func main() {
 			Component: nil,
 			Children: []router.Route{
 				{
+					Path: "/",
+					Component: func() app.Composer {
+						return &demo.IndexPage{}
+					},
+				},
+				{
+					Path: "/collapse",
+					Component: func() app.Composer {
+						return &demo.CollapsePage{}
+					},
+				},
+				{
 					Path: "/input",
 					Component: func() app.Composer {
 						return &demo.InputPage{}
