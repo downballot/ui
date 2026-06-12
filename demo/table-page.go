@@ -140,6 +140,7 @@ func (c *TablePage) Render() app.UI {
 				Body(
 					app.Legend().Text("Simple"),
 					myui.Table[characterRow]().
+						Interactive(false).
 						Rows(c.rows).
 						Columns(c.columns),
 				),
@@ -148,6 +149,7 @@ func (c *TablePage) Render() app.UI {
 					app.Legend().Text("Actions"),
 					app.Div().Body(
 						myui.Table[characterRow]().
+							Title("One Piece Characters").
 							Rows(c.rows).
 							Columns(c.columns).
 							Action(myui.TableAction{
@@ -164,6 +166,7 @@ func (c *TablePage) Render() app.UI {
 				Body(
 					app.Legend().Text("Paginated"),
 					myui.Table[characterRow]().
+						Title("One Piece Characters").
 						PageSize(10).
 						Rows(c.rows).
 						Columns(c.columns),
@@ -172,6 +175,7 @@ func (c *TablePage) Render() app.UI {
 				Body(
 					app.Legend().Text("Column Visibility"),
 					myui.Table[characterRow]().
+						Title("One Piece Characters").
 						PageSize(10).
 						VisibleColumns([]string{"Name"}).
 						Rows(c.rows).

@@ -19,6 +19,7 @@ type MyUITable[T any] struct {
 	IActions      []TableAction
 	IRowActions   []RowAction[T]
 	IEmptyMessage string
+	IInteractive  bool
 
 	visibleColumnNames         []string // This is the list of columns that are currently visible in the table.
 	popoverSelectedColumnNames []string // This is the list of columns that are currently selected in the popover.
@@ -49,12 +50,19 @@ type TableColumn[T any] struct {
 }
 
 func Table[T any]() *MyUITable[T] {
-	table := MyUITable[T]{}
+	table := MyUITable[T]{
+		IInteractive: true,
+	}
 	return &table
 }
 
 func (t *MyUITable[T]) Title(title string) *MyUITable[T] {
 	t.ITitle = title
+	return t
+}
+
+func (t *MyUITable[T]) Interactive(interactive bool) *MyUITable[T] {
+	t.IInteractive = interactive
 	return t
 }
 
@@ -214,7 +222,7 @@ func (t *MyUITable[T]) Render() app.UI {
 	pageSizes := []uint{1, 10, 50, 100, 500, 10000, 100000, 1000000}
 
 	tableMenuItems := []app.UI{}
-	{
+	if t.IInteractive {
 		tableMenuItems = append(tableMenuItems,
 			Item().
 				Icon("list").
