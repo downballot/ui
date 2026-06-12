@@ -96,6 +96,12 @@ func main() {
 					},
 				},
 				{
+					Path: "/button",
+					Component: func() app.Composer {
+						return &demo.ButtonPage{}
+					},
+				},
+				{
 					Path: "/collapse",
 					Component: func() app.Composer {
 						return &demo.CollapsePage{}
@@ -111,6 +117,12 @@ func main() {
 					Path: "/select",
 					Component: func() app.Composer {
 						return &demo.SelectPage{}
+					},
+				},
+				{
+					Path: "/table",
+					Component: func() app.Composer {
+						return &demo.TablePage{}
 					},
 				},
 			},

@@ -92,7 +92,7 @@ func (c *OrganizationMenu) Render() app.UI {
 
 				return myui.Item().
 					Icon(item.Icon).
-					Name(item.Name).
+					Label(item.Name).
 					To(item.To)
 			}),
 		)

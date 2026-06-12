@@ -217,7 +217,7 @@ func (t *MyUITable[T]) Render() app.UI {
 	if t.IBindVisibleColumnNames != nil {
 		tableMenuItems = append(tableMenuItems, Item().
 			Icon("list").
-			Name("Select columns...").
+			Label("Select columns...").
 			On("click", func(ctx app.Context, e app.Event) {
 				slog.InfoContext(ctx.Context, "MyUITable: Render: item clicked")
 
@@ -409,12 +409,14 @@ func (t *MyUITable[T]) Render() app.UI {
 											column := visibleColumns[i]
 											return app.Td().
 												Body(
-													app.If(column.To != nil, func() app.UI {
-														return app.A().
-															Href(column.To(row)).
-															Text(column.Value(row))
-													}).Else(func() app.UI {
-														return app.Span().Text(column.Value(row))
+													app.If(column.Value != nil, func() app.UI {
+														return app.If(column.To != nil, func() app.UI {
+															return app.A().
+																Href(column.To(row)).
+																Text(column.Value(row))
+														}).Else(func() app.UI {
+															return app.Span().Text(column.Value(row))
+														})
 													}),
 												)
 										}),

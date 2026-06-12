@@ -72,31 +72,33 @@ func (c *MyUIButton) Render() app.UI {
 		roundClass = "round"
 	}
 
-	body := app.Span().
-		Class("myui-button__content").
-		Body(
-			app.If(c.IIcon != "", func() app.UI {
-				return Icon().
-					Class("myui-button__icon").
-					Icon(c.IIcon)
-			}),
-			app.If(c.ILabel != "", func() app.UI {
-				return app.Span().
-					Class("myui-button__label").
-					Body(
-						app.Span().
-							Text(c.ILabel),
-					)
-			}),
+	var body []app.UI
+	if c.IIcon != "" {
+		body = append(body, Icon().
+			Class("myui-button__icon").
+			Icon(c.IIcon),
 		)
+	}
+	if c.ILabel != "" {
+		body = append(body, app.Span().
+			Class("myui-button__label").
+			Body(
+				app.Span().
+					Text(c.ILabel),
+			),
+		)
+	}
 
 	var innerElement app.UI
-	if c.ITo == "" {
-		innerElement = body
+	if c.ITo == "" || c.IDisabled {
+		innerElement = app.Span().
+			Class("myui-button__content").
+			Body(body...)
 	} else {
 		innerElement = app.A().
+			Class("myui-button__content").
 			Href(c.ITo).
-			Body(body)
+			Body(body...)
 	}
 
 	var element app.UI

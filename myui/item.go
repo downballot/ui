@@ -11,9 +11,9 @@ func Item() *MyUIItem {
 type MyUIItem struct {
 	app.Compo
 	UseEvents
-	IIcon string
-	IName string
-	ITo   string
+	IIcon  string
+	ILabel string
+	ITo    string
 }
 
 var _ app.Composer = (*MyUIItem)(nil)
@@ -23,8 +23,8 @@ func (c *MyUIItem) Icon(icon string) *MyUIItem {
 	return c
 }
 
-func (c *MyUIItem) Name(name string) *MyUIItem {
-	c.IName = name
+func (c *MyUIItem) Label(name string) *MyUIItem {
+	c.ILabel = name
 	return c
 }
 
@@ -53,7 +53,7 @@ func (c *MyUIItem) Render() app.UI {
 					),
 				app.Span().
 					Class("myui-item__name").
-					Text(c.IName),
+					Text(c.ILabel),
 			),
 	)
 }

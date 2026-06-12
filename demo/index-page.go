@@ -23,13 +23,19 @@ func (c *IndexPage) Render() app.UI {
 		Style("padding", "1em").
 		Body(
 			myui.Item().
-				Name("Collapse").
+				Label("Button").
+				To("/button"),
+			myui.Item().
+				Label("Collapse").
 				To("/collapse"),
 			myui.Item().
-				Name("Input").
+				Label("Input").
 				To("/input"),
 			myui.Item().
-				Name("Select").
+				Label("Select").
 				To("/select"),
+			myui.Item().
+				Label("Table").
+				To("/table"),
 		)
 }
