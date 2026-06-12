@@ -13,16 +13,17 @@ import (
 type MyUITable[T any] struct {
 	app.Compo
 
-	ITitle                     string
-	IColumns                   []TableColumn[T]
-	popoverSelectedColumnNames []string
-	visibleColumnNames         []string
-	IRows                      []T
-	pageSize                   uint
-	pageIndex                  uint
-	IActions                   []TableAction
-	IRowActions                []RowAction[T]
-	IEmptyMessage              string
+	ITitle        string
+	IColumns      []TableColumn[T]
+	IRows         []T
+	IActions      []TableAction
+	IRowActions   []RowAction[T]
+	IEmptyMessage string
+
+	visibleColumnNames         []string // This is the list of columns that are currently visible in the table.
+	popoverSelectedColumnNames []string // This is the list of columns that are currently selected in the popover.
+	pageSize                   uint     // This is the number of rows to display per page.
+	pageIndex                  uint     // This is the index of the current page.
 }
 
 type TableAction struct {
@@ -214,29 +215,33 @@ func (t *MyUITable[T]) Render() app.UI {
 
 	tableMenuItems := []app.UI{}
 	{
-		tableMenuItems = append(tableMenuItems, Item().
-			Icon("list").
-			Label("Select columns...").
-			On("click", func(ctx app.Context, e app.Event) {
-				slog.InfoContext(ctx.Context, "MyUITable: Render: item clicked")
+		tableMenuItems = append(tableMenuItems,
+			Item().
+				Icon("list").
+				Label("Select columns...").
+				On("click", func(ctx app.Context, e app.Event) {
+					slog.InfoContext(ctx.Context, "MyUITable: Render: item clicked")
 
-				thisElement := ctx.JSSrc()
-				slog.InfoContext(ctx.Context, "MyUITable: Render", "thisElement", thisElement.Get("className").String())
-				parentElement := ctx.JSSrc().Call("closest", ".myui-table__header")
-				slog.InfoContext(ctx.Context, "MyUITable: Render", "parentElement", parentElement.Get("className").String())
-				if parentElement.IsNull() {
-					return
-				}
-				popoverElement := parentElement.Call("querySelector", "[popover][data-popover-name='table-columns-menu']")
-				if popoverElement.IsNull() {
-					return
-				}
-				slog.InfoContext(ctx.Context, "MyUITable: Render", "popoverElement", popoverElement)
-				options := app.ValueOf(map[string]any{})
-				options.Set("source", thisElement)
+					ctx.PreventUpdate()
 
-				popoverElement.Call("togglePopover", options)
-			}),
+					thisElement := ctx.JSSrc()
+					slog.InfoContext(ctx.Context, "MyUITable: Render", "thisElement", thisElement.Get("className").String())
+					parentElement := ctx.JSSrc().Call("closest", ".myui-table__header")
+					slog.InfoContext(ctx.Context, "MyUITable: Render", "parentElement", parentElement.Get("className").String())
+					if parentElement.IsNull() {
+						return
+					}
+
+					popoverElement := parentElement.Call("querySelector", "[popover][data-popover-name='table-columns-menu']")
+					if popoverElement.IsNull() {
+						return
+					}
+					slog.InfoContext(ctx.Context, "MyUITable: Render", "popoverElement", popoverElement)
+					options := app.ValueOf(map[string]any{})
+					options.Set("source", thisElement)
+
+					popoverElement.Call("togglePopover", options)
+				}),
 		)
 	}
 
@@ -324,11 +329,10 @@ func (t *MyUITable[T]) Render() app.UI {
 								Button().
 									Label("Apply").
 									On("click", func(ctx app.Context, e app.Event) {
-										slog.InfoContext(ctx.Context, "MyUITable: Render: item clicked")
-										slog.InfoContext(ctx.Context, "MyUITable: Render: Apply", "popoverSelectedColumnNames", t.popoverSelectedColumnNames)
+										slog.InfoContext(ctx.Context, "MyUITable: table-columns-menu: Apply", "popoverSelectedColumnNames", t.popoverSelectedColumnNames)
 
 										popoverElement := ctx.JSSrc().Call("closest", "[popover]")
-										slog.InfoContext(ctx.Context, "MyUITable: Render", "popoverElement", popoverElement.Get("className").String())
+										slog.InfoContext(ctx.Context, "MyUITable: table-columns-menu", "popoverElement", popoverElement.Get("className").String())
 										if popoverElement.IsNull() {
 											return
 										}
@@ -337,10 +341,30 @@ func (t *MyUITable[T]) Render() app.UI {
 										t.visibleColumnNames = make([]string, len(t.popoverSelectedColumnNames))
 										copy(t.visibleColumnNames, t.popoverSelectedColumnNames)
 
-										slog.InfoContext(ctx.Context, "MyUITable: Render: Apply", "visibleColumnNames", t.visibleColumnNames)
+										slog.InfoContext(ctx.Context, "MyUITable: table-columns-menu: Apply", "visibleColumnNames", t.visibleColumnNames)
 										ctx.Update()
 									}),
-							),
+							).
+							On("toggle", func(ctx app.Context, e app.Event) {
+								newState := e.Get("newState").String()
+								slog.InfoContext(ctx.Context, "MyUITable: table-columns-menu: on toggle", "newState", newState)
+								if newState != "closed" {
+									return
+								}
+
+								parentElement := ctx.JSSrc().Call("closest", ".myui-table__header")
+								slog.InfoContext(ctx.Context, "MyUITable: Render", "parentElement", parentElement.Get("className").String())
+								if parentElement.IsNull() {
+									return
+								}
+
+								popoverElement := parentElement.Call("querySelector", "[popover][data-popover-name='table-menu']")
+								if popoverElement.IsNull() {
+									return
+								}
+
+								popoverElement.Call("hidePopover")
+							}),
 					)
 			}),
 			app.If(len(visibleActions) > 0, func() app.UI {
