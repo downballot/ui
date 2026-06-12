@@ -405,7 +405,7 @@ func (c *OrganizationIDGroupIDPersonPage) Render() app.UI {
 				myui.Table[*downballotapi.Person]().
 					PageSize(10).
 					Columns(c.PersonsTableColumns).
-					BindVisibleColumns(&c.PersonsTableVisibleColumns).
+					VisibleColumns(c.PersonsTableVisibleColumns).
 					Rows(c.Persons),
 			),
 	)

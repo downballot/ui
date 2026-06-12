@@ -23,6 +23,8 @@ type characterRow struct {
 }
 
 func (c *TablePage) OnMount(ctx app.Context) {
+	slog.InfoContext(ctx.Context, "TablePage: OnMount")
+
 	c.columns = []myui.TableColumn[characterRow]{
 		{
 			Name: "Name",
@@ -159,6 +161,15 @@ func (c *TablePage) Render() app.UI {
 					app.Legend().Text("Paginated"),
 					myui.Table[characterRow]().
 						PageSize(10).
+						Rows(c.rows).
+						Columns(c.columns),
+				),
+			app.FieldSet().
+				Body(
+					app.Legend().Text("Column Visibility"),
+					myui.Table[characterRow]().
+						PageSize(10).
+						VisibleColumns([]string{"Name"}).
 						Rows(c.rows).
 						Columns(c.columns),
 				),

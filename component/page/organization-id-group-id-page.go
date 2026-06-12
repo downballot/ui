@@ -147,7 +147,6 @@ func (c *OrganizationIDGroupIDPage) Render() app.UI {
 					},
 				}).
 				VisibleColumns(c.IChildrenVisibleColumns).
-				BindVisibleColumns(&c.IChildrenVisibleColumns).
 				Action(myui.TableAction{
 					Name:     "New group",
 					Icon:     "plus",

@@ -13,16 +13,16 @@ import (
 type MyUITable[T any] struct {
 	app.Compo
 
-	ITitle                  string
-	IColumns                []TableColumn[T]
-	IVisibleColumnNames     []string
-	IBindVisibleColumnNames *[]string
-	IRows                   []T
-	pageSize                uint
-	pageIndex               uint
-	IActions                []TableAction
-	IRowActions             []RowAction[T]
-	IEmptyMessage           string
+	ITitle                     string
+	IColumns                   []TableColumn[T]
+	popoverSelectedColumnNames []string
+	visibleColumnNames         []string
+	IRows                      []T
+	pageSize                   uint
+	pageIndex                  uint
+	IActions                   []TableAction
+	IRowActions                []RowAction[T]
+	IEmptyMessage              string
 }
 
 type TableAction struct {
@@ -64,17 +64,25 @@ func (t *MyUITable[T]) Rows(rows []T) *MyUITable[T] {
 
 func (t *MyUITable[T]) Columns(columns []TableColumn[T]) *MyUITable[T] {
 	t.IColumns = columns
+
+	if len(t.popoverSelectedColumnNames) == 0 {
+		t.popoverSelectedColumnNames = make([]string, 0, len(t.IColumns))
+		for _, column := range t.IColumns {
+			t.popoverSelectedColumnNames = append(t.popoverSelectedColumnNames, column.Name)
+		}
+	}
+	slog.InfoContext(context.TODO(), "MyUITable: Columns", "self", fmt.Sprintf("%p", t), "popoverSelectedColumnNames", t.popoverSelectedColumnNames)
 	return t
 }
 
 func (t *MyUITable[T]) VisibleColumns(visibleColumnNames []string) *MyUITable[T] {
-	t.IVisibleColumnNames = visibleColumnNames
-	return t
-}
+	t.visibleColumnNames = visibleColumnNames
 
-func (t *MyUITable[T]) BindVisibleColumns(visibleColumnNames *[]string) *MyUITable[T] {
-	t.IBindVisibleColumnNames = visibleColumnNames
-	t.IVisibleColumnNames = *visibleColumnNames
+	if len(t.visibleColumnNames) > 0 {
+		t.popoverSelectedColumnNames = make([]string, len(t.visibleColumnNames))
+		copy(t.popoverSelectedColumnNames, t.visibleColumnNames)
+	}
+	slog.InfoContext(context.TODO(), "MyUITable: VisibleColumns", "self", fmt.Sprintf("%p", t), "popoverSelectedColumnNames", t.popoverSelectedColumnNames)
 	return t
 }
 
@@ -84,12 +92,12 @@ func (t *MyUITable[T]) EmptyMessage(emptyMessage string) *MyUITable[T] {
 }
 
 func (t *MyUITable[T]) PageIndex(pageIndex uint) *MyUITable[T] {
-	t.pageIndex = pageIndex
+	t.setPageIndex(pageIndex)
 	return t
 }
 
 func (t *MyUITable[T]) PageSize(pageSize uint) *MyUITable[T] {
-	t.pageSize = pageSize
+	t.setPageSize(pageSize)
 	return t
 }
 
@@ -118,37 +126,31 @@ func (t *MyUITable[T]) totalPages() uint {
 	return totalPages
 }
 
-func (t *MyUITable[T]) previousPage(ctx app.Context) {
+func (t *MyUITable[T]) previousPage() {
 	if t.pageIndex > 0 {
 		t.pageIndex--
 	}
-
-	ctx.Update()
 }
 
-func (t *MyUITable[T]) nextPage(ctx app.Context) {
+func (t *MyUITable[T]) nextPage() {
 	t.pageIndex++
 
 	totalPages := t.totalPages()
 	if t.pageIndex >= totalPages {
 		t.pageIndex = totalPages - 1
 	}
-
-	ctx.Update()
 }
 
-func (t *MyUITable[T]) setPageIndex(ctx app.Context, pageIndex uint) {
+func (t *MyUITable[T]) setPageIndex(pageIndex uint) {
 	t.pageIndex = pageIndex
 
 	totalPages := t.totalPages()
 	if t.pageIndex >= totalPages {
 		t.pageIndex = totalPages - 1
 	}
-
-	ctx.Update()
 }
 
-func (t *MyUITable[T]) setPageSize(ctx app.Context, pageSize uint) {
+func (t *MyUITable[T]) setPageSize(pageSize uint) {
 	if pageSize > 0 {
 		t.pageSize = pageSize
 
@@ -157,28 +159,40 @@ func (t *MyUITable[T]) setPageSize(ctx app.Context, pageSize uint) {
 			t.pageIndex = totalPages - 1
 		}
 	}
-
-	ctx.Update()
 }
 
 func (t *MyUITable[T]) OnUpdate(ctx app.Context) {
-	slog.InfoContext(ctx.Context, "MyUITable: OnUpdate", "pageIndex", t.pageIndex, "pageSize", t.pageSize, "rows", len(t.IRows))
+	slog.InfoContext(ctx.Context, "MyUITable: OnUpdate", "self", fmt.Sprintf("%p", t), "pageIndex", t.pageIndex, "pageSize", t.pageSize, "rows", len(t.IRows))
+	slog.InfoContext(ctx.Context, "MyUITable: OnUpdate", "self", fmt.Sprintf("%p", t), "visibleColumnNames", len(t.visibleColumnNames), "popoverSelectedColumnNames", len(t.popoverSelectedColumnNames))
+
+	if len(t.popoverSelectedColumnNames) == 0 {
+		if len(t.visibleColumnNames) == 0 {
+			t.popoverSelectedColumnNames = make([]string, 0, len(t.IColumns))
+			for _, column := range t.IColumns {
+				t.popoverSelectedColumnNames = append(t.popoverSelectedColumnNames, column.Name)
+			}
+		} else {
+			t.popoverSelectedColumnNames = make([]string, len(t.visibleColumnNames))
+			copy(t.popoverSelectedColumnNames, t.visibleColumnNames)
+		}
+	}
+	slog.InfoContext(ctx.Context, "MyUITable: OnUpdate", "self", fmt.Sprintf("%p", t), "popoverSelectedColumnNames", t.popoverSelectedColumnNames)
 }
 
 func (t *MyUITable[T]) Render() app.UI {
-	slog.InfoContext(context.TODO(), "MyUITable: Render", "pageIndex", t.pageIndex, "pageSize", t.pageSize, "rows", len(t.IRows))
-	slog.InfoContext(context.TODO(), "MyUITable: Render", "IVisibleColumnNames", t.IVisibleColumnNames)
-	slog.InfoContext(context.TODO(), "MyUITable: Render", "IBindVisibleColumnNames", t.IBindVisibleColumnNames)
+	slog.InfoContext(context.TODO(), "MyUITable: Render", "self", fmt.Sprintf("%p", t), "pageIndex", t.pageIndex, "pageSize", t.pageSize, "rows", len(t.IRows))
+	slog.InfoContext(context.TODO(), "MyUITable: Render", "self", fmt.Sprintf("%p", t), "visibleColumnNames", t.visibleColumnNames)
+	slog.InfoContext(context.TODO(), "MyUITable: Render", "self", fmt.Sprintf("%p", t), "popoverSelectedColumnNames", t.popoverSelectedColumnNames)
 
 	visibleColumns := []TableColumn[T]{}
 	for _, column := range t.IColumns {
-		if len(t.IVisibleColumnNames) == 0 || slices.Contains(t.IVisibleColumnNames, column.Name) {
+		if len(t.visibleColumnNames) == 0 || slices.Contains(t.visibleColumnNames, column.Name) {
 			visibleColumns = append(visibleColumns, column)
 		}
 	}
-	slog.InfoContext(context.TODO(), "MyUITable: Render", "visibleColumns", visibleColumns)
+	slog.InfoContext(context.TODO(), "MyUITable: Render", "self", fmt.Sprintf("%p", t), "visibleColumns", visibleColumns)
 
-	rows := t.IRows
+	rowsToRender := t.IRows
 	paginated := t.pageSize > 0
 	totalPages := t.totalPages()
 	if t.pageSize > 0 && uint(len(t.IRows)) > t.pageSize {
@@ -186,22 +200,20 @@ func (t *MyUITable[T]) Render() app.UI {
 		if t.pageIndex >= uint(len(pages)) {
 			t.pageIndex = uint(len(pages)) - 1
 		}
-		rows = pages[t.pageIndex]
+		rowsToRender = pages[t.pageIndex]
 	}
+
+	// Build the list of page indexes (so we can render a dropdown).
 	pageIndexes := []uint{}
 	for i := uint(0); i < totalPages; i++ {
 		pageIndexes = append(pageIndexes, i)
 	}
 
+	// This is a static list of page sizes that we will render in a dropdown.
 	pageSizes := []uint{1, 10, 50, 100, 500, 10000, 100000, 1000000}
 
-	popoverSelectedColumns := []string{}
-	for _, column := range visibleColumns {
-		popoverSelectedColumns = append(popoverSelectedColumns, column.Name)
-	}
-
 	tableMenuItems := []app.UI{}
-	if t.IBindVisibleColumnNames != nil {
+	{
 		tableMenuItems = append(tableMenuItems, Item().
 			Icon("list").
 			Label("Select columns...").
@@ -308,12 +320,12 @@ func (t *MyUITable[T]) Render() app.UI {
 										}
 										return columns
 									}()...).
-									Bind(&popoverSelectedColumns),
+									Bind(&t.popoverSelectedColumnNames),
 								Button().
 									Label("Apply").
 									On("click", func(ctx app.Context, e app.Event) {
 										slog.InfoContext(ctx.Context, "MyUITable: Render: item clicked")
-										slog.InfoContext(ctx.Context, "MyUITable: Render: Apply", "popoverSelectedColumns", popoverSelectedColumns)
+										slog.InfoContext(ctx.Context, "MyUITable: Render: Apply", "popoverSelectedColumnNames", t.popoverSelectedColumnNames)
 
 										popoverElement := ctx.JSSrc().Call("closest", "[popover]")
 										slog.InfoContext(ctx.Context, "MyUITable: Render", "popoverElement", popoverElement.Get("className").String())
@@ -322,11 +334,10 @@ func (t *MyUITable[T]) Render() app.UI {
 										}
 										popoverElement.Call("hidePopover")
 
-										t.IVisibleColumnNames = popoverSelectedColumns
-										if t.IBindVisibleColumnNames != nil {
-											*t.IBindVisibleColumnNames = t.IVisibleColumnNames
-										}
-										slog.InfoContext(ctx.Context, "MyUITable: Render: Apply", "visibleColumnNames", t.IVisibleColumnNames)
+										t.visibleColumnNames = make([]string, len(t.popoverSelectedColumnNames))
+										copy(t.visibleColumnNames, t.popoverSelectedColumnNames)
+
+										slog.InfoContext(ctx.Context, "MyUITable: Render: Apply", "visibleColumnNames", t.visibleColumnNames)
 										ctx.Update()
 									}),
 							),
@@ -373,7 +384,7 @@ func (t *MyUITable[T]) Render() app.UI {
 						),
 					app.TBody().
 						Body(
-							app.If(len(rows) == 0, func() app.UI {
+							app.If(len(rowsToRender) == 0, func() app.UI {
 								return app.Tr().
 									Body(
 										app.Td().
@@ -385,8 +396,8 @@ func (t *MyUITable[T]) Render() app.UI {
 											),
 									)
 							}),
-							app.Range(rows).Slice(func(i int) app.UI {
-								row := rows[i]
+							app.Range(rowsToRender).Slice(func(i int) app.UI {
+								row := rowsToRender[i]
 								return app.Tr().
 									Body(
 										app.Range(visibleColumns).Slice(func(i int) app.UI {
@@ -450,7 +461,8 @@ func (t *MyUITable[T]) Render() app.UI {
 							Label("Previous").
 							Disabled(t.pageIndex < 1).
 							On("click", func(ctx app.Context, e app.Event) {
-								t.previousPage(ctx)
+								t.previousPage()
+								ctx.Update()
 							}),
 						app.Span().
 							Style("display", "flex").
@@ -474,7 +486,8 @@ func (t *MyUITable[T]) Render() app.UI {
 									return
 								}
 
-								t.setPageIndex(ctx, uint(index))
+								t.setPageIndex(uint(index))
+								ctx.Update()
 							}),
 						app.Span().
 							Style("display", "flex").
@@ -484,7 +497,8 @@ func (t *MyUITable[T]) Render() app.UI {
 							Label("Next").
 							Disabled(t.pageIndex >= totalPages-1).
 							On("click", func(ctx app.Context, e app.Event) {
-								t.nextPage(ctx)
+								t.nextPage()
+								ctx.Update()
 							}),
 						app.Span().
 							Style("flex-grow", "1"),
@@ -510,7 +524,8 @@ func (t *MyUITable[T]) Render() app.UI {
 								}
 
 								slog.InfoContext(ctx.Context, "MyUITable: Setting pageSize via select.", "pageSize", pageSize)
-								t.setPageSize(ctx, uint(pageSize))
+								t.setPageSize(uint(pageSize))
+								ctx.Update()
 							}),
 					)
 			}),
