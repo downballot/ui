@@ -62,8 +62,8 @@ func (c *htmlMailingLabels) Render() app.UI {
 		pageHeight = "11in"
 		pagePaddingTop = "0.5in"
 		pagePaddingBottom = "0.5in"
-		pagePaddingLeft = "0.5in"
-		pagePaddingRight = "0.5in"
+		pagePaddingLeft = "0.15in"
+		pagePaddingRight = "0.15in"
 		pageGridTemplateColumns = "4in 4in"
 		pageGridColumnGap = "0.2in"
 
@@ -128,6 +128,7 @@ func (c *htmlMailingLabels) Render() app.UI {
 								Style("display", "flex").
 								Style("flex-direction", "column").
 								Style("justify-content", "center").
+								Style("outline", "1px dashed #ccc").
 								Body(
 									app.Div().
 										Class("mailing-labels__return-address").

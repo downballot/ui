@@ -175,98 +175,102 @@ func (c *OrganizationIDGroupIDPersonMailingLabelsPage) Render() app.UI {
 
 	return app.Div().
 		Body(
-			myui.Collapse().
-				Label("Filter").
-				Bind(&c.FilterOpen).
-				SummaryText(func() string {
-					summary := "Filter: "
-					if c.Filter == "" {
-						summary += "n/a"
-					} else {
-						summary += c.Filter
-					}
-
-					summary += " | Limit: "
-					if c.Limit == 0 {
-						summary += "n/a"
-					} else {
-						summary += fmt.Sprintf("%d", c.Limit)
-					}
-
-					return summary
-				}()).
+			myui.Page().
+				Class("no-print").
 				Body(
-					app.Div().
-						Style("display", "flex").
-						Style("flex-direction", "column").
+					myui.Collapse().
+						Label("Filter").
+						Bind(&c.FilterOpen).
+						SummaryText(func() string {
+							summary := "Filter: "
+							if c.Filter == "" {
+								summary += "n/a"
+							} else {
+								summary += c.Filter
+							}
+
+							summary += " | Limit: "
+							if c.Limit == 0 {
+								summary += "n/a"
+							} else {
+								summary += fmt.Sprintf("%d", c.Limit)
+							}
+
+							return summary
+						}()).
+						Body(
+							app.Div().
+								Style("display", "flex").
+								Style("flex-direction", "column").
+								Body(
+									myui.Select().
+										Name("saved_filter").
+										Label("Saved Filter").
+										AllowedValue(func() []myui.SelectOption {
+											var allowedValues []myui.SelectOption
+											allowedValues = append(allowedValues, myui.SelectOption{Label: "Select a filter or create your own", Value: ""})
+											for _, filter := range c.Filters {
+												allowedValues = append(allowedValues, myui.SelectOption{Label: filter.Name, Value: filter.Filter})
+											}
+											return allowedValues
+										}()...).
+										Bind(&c.Filter).
+										On("change", func(ctx app.Context, e app.Event) {
+											c.ValueTo(&c.Filter)(ctx, e)
+											ctx.SetState("persist-organization-id-group-id-person-page-filter", c.Filter).Persist()
+											ctx.Update() // Update so that the other input can be updated.
+										}),
+									myui.Input[string]().
+										Label("Filter").
+										Type("text").
+										Placeholder("key = 'value' or ...").
+										Bind(&c.Filter).
+										On("change", func(ctx app.Context, e app.Event) {
+											ctx.SetState("persist-organization-id-group-id-person-page-filter", c.Filter).Persist()
+											ctx.Update() // Update so that the other input can be updated.
+										}),
+									myui.Input[uint]().
+										Label("Limit").
+										Type("number").
+										Placeholder("1000").
+										Bind(&c.Limit).
+										On("change", func(ctx app.Context, e app.Event) {
+											ctx.SetState("persist-organization-id-group-id-person-page-limit", c.Limit).Persist()
+										}),
+								),
+						),
+					myui.Collapse().
+						Label("Format").
+						Bind(&c.FormatOpen).
+						SummaryText(c.Format).
 						Body(
 							myui.Select().
-								Name("saved_filter").
-								Label("Saved Filter").
-								AllowedValue(func() []myui.SelectOption {
-									var allowedValues []myui.SelectOption
-									allowedValues = append(allowedValues, myui.SelectOption{Label: "Select a filter or create your own", Value: ""})
-									for _, filter := range c.Filters {
-										allowedValues = append(allowedValues, myui.SelectOption{Label: filter.Name, Value: filter.Filter})
-									}
-									return allowedValues
-								}()...).
-								Bind(&c.Filter).
-								On("change", func(ctx app.Context, e app.Event) {
-									c.ValueTo(&c.Filter)(ctx, e)
-									ctx.SetState("persist-organization-id-group-id-person-page-filter", c.Filter).Persist()
-									ctx.Update() // Update so that the other input can be updated.
-								}),
-							myui.Input[string]().
-								Label("Filter").
-								Type("text").
-								Placeholder("key = 'value' or ...").
-								Bind(&c.Filter).
-								On("change", func(ctx app.Context, e app.Event) {
-									ctx.SetState("persist-organization-id-group-id-person-page-filter", c.Filter).Persist()
-									ctx.Update() // Update so that the other input can be updated.
-								}),
-							myui.Input[uint]().
-								Label("Limit").
-								Type("number").
-								Placeholder("1000").
-								Bind(&c.Limit).
-								On("change", func(ctx app.Context, e app.Event) {
-									ctx.SetState("persist-organization-id-group-id-person-page-limit", c.Limit).Persist()
-								}),
+								Label("Format").
+								AllowedValue(
+									myui.SelectOption{Label: "Select a format", Value: "", Disabled: true},
+									myui.SelectOption{Label: "5164", Value: "5164"},
+								).
+								Bind(&c.Format),
 						),
+					myui.Form().
+						Class("no-print").
+						Spacer(false).
+						Action(
+							myui.FormAction{
+								Name:     "Search",
+								Icon:     "search",
+								Function: c.search,
+							},
+						),
+					app.If(c.Error != "", func() app.UI {
+						return myui.StatusBar().
+							Text(c.Error).
+							Bad()
+					}),
 				),
-			myui.Collapse().
-				Label("Format").
-				Bind(&c.FormatOpen).
-				SummaryText(c.Format).
-				Body(
-					myui.Select().
-						Label("Format").
-						AllowedValue(
-							myui.SelectOption{Label: "Select a format", Value: "", Disabled: true},
-							myui.SelectOption{Label: "5164", Value: "5164"},
-						).
-						Bind(&c.Format),
-				),
-			myui.Form().
-				Class("no-print").
-				Spacer(false).
-				Action(
-					myui.FormAction{
-						Name:     "Search",
-						Icon:     "search",
-						Function: c.search,
-					},
-				),
-			app.If(c.Error != "", func() app.UI {
-				return myui.StatusBar().
-					Text(c.Error).
-					Bad()
-			}),
 			component.MailingLabels().
 				Format(c.Format).
-				ReturnAddress("Downballot IO\nEaton Place\nNewark, DE 19711").
+				ReturnAddress("Downballot IO\nCanvass Shipping").
 				Addresses(c.Addresses),
 		)
 }
