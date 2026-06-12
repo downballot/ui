@@ -29,6 +29,10 @@ func (c *TablePage) OnMount(ctx app.Context) {
 		{
 			Name: "Name",
 			Value: func(row characterRow) any {
+				if row.Role == "Captain" {
+					return app.B().
+						Text(row.Name)
+				}
 				return row.Name
 			},
 		},
