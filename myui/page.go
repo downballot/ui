@@ -12,13 +12,20 @@ func Page() *MyUIPage {
 type MyUIPage struct {
 	app.Compo
 	slot.Slotted
+
+	IClasses []string
 }
 
 var _ app.Composer = (*MyUIPage)(nil)
 
+func (c *MyUIPage) Class(class ...string) *MyUIPage {
+	c.IClasses = class
+	return c
+}
+
 func (c *MyUIPage) Render() app.UI {
 	return app.Div().
-		Class("myui-page").
+		Class(append([]string{"myui-page"}, c.IClasses...)...).
 		Body(app.FilterUIElems(c.SlotContents()...)...)
 }
 
