@@ -375,6 +375,11 @@ func (c *OrganizationIDGroupIDPersonPage) Render() app.UI {
 					Icon:     "download",
 					Function: c.csv,
 				},
+				myui.FormAction{
+					Name:     "Mailing Labels",
+					Icon:     "envelopes-bulk",
+					Function: c.mailingLabels,
+				},
 			),
 		app.If(c.Error != "", func() app.UI {
 			return myui.StatusBar().
@@ -434,6 +439,16 @@ func (c *OrganizationIDGroupIDPersonPage) search(ctx app.Context) {
 	})
 
 	ctx.Update()
+}
+
+func (c *OrganizationIDGroupIDPersonPage) mailingLabels(ctx app.Context) {
+	ctx.PreventUpdate()
+
+	queryParameters := url.Values{}
+	queryParameters.Set("filter", c.Filter)
+	queryParameters.Set("limit", fmt.Sprintf("%d", c.Limit))
+
+	ctx.Navigate("/organization/" + c.organizationID + "/group/" + c.groupID + "/person-mailing-labels?" + queryParameters.Encode())
 }
 
 func (c *OrganizationIDGroupIDPersonPage) csv(ctx app.Context) {

@@ -249,6 +249,15 @@ var Routes = []router.Route{
 													MetaTitle: "Persons",
 												},
 											},
+											{
+												Path: "/person-mailing-labels",
+												Component: func() app.Composer {
+													return &page.OrganizationIDGroupIDPersonMailingLabelsPage{}
+												},
+												Meta: map[string]string{
+													MetaTitle: "Mailing Labels",
+												},
+											},
 										},
 									},
 								},
