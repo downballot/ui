@@ -33,9 +33,14 @@
 }
 
 .myui-button.disabled {
-    filter: brightness(0.5);
-    cursor: not-allowed;
-    user-select: none;
+    filter: opacity(0.3);
+    cursor: not-allowed !important;
+    user-select: none !important;
+}
+
+.myui-button.disabled a {
+    cursor: not-allowed !important;
+    user-select: none !important;
 }
 
 .myui-button__icon {
@@ -93,6 +98,9 @@
 }
 
 .myui-icon {
+}
+
+.myui-icon i {
     width: 1em;
     height: 1em;
 }

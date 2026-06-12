@@ -90,6 +90,24 @@ func main() {
 			Component: nil,
 			Children: []router.Route{
 				{
+					Path: "/",
+					Component: func() app.Composer {
+						return &demo.IndexPage{}
+					},
+				},
+				{
+					Path: "/button",
+					Component: func() app.Composer {
+						return &demo.ButtonPage{}
+					},
+				},
+				{
+					Path: "/collapse",
+					Component: func() app.Composer {
+						return &demo.CollapsePage{}
+					},
+				},
+				{
 					Path: "/input",
 					Component: func() app.Composer {
 						return &demo.InputPage{}
@@ -99,6 +117,12 @@ func main() {
 					Path: "/select",
 					Component: func() app.Composer {
 						return &demo.SelectPage{}
+					},
+				},
+				{
+					Path: "/table",
+					Component: func() app.Composer {
+						return &demo.TablePage{}
 					},
 				},
 			},

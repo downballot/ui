@@ -55,12 +55,12 @@ func (c *DownballotLayout) Render() app.UI {
 				Body(
 					myui.Item().
 						Icon("building").
-						Name("Organizations").
+						Label("Organizations").
 						To("/organization"),
 					app.Span().Style("flex", "1"),
 					myui.Item().
 						Icon("user").
-						Name("Profile").
+						Label("Profile").
 						To("/profile"),
 				),
 		},
