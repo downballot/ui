@@ -40,7 +40,6 @@ type OrganizationIDGroupIDPersonPage struct {
 
 	PersonsTableColumns        []myui.TableColumn[*downballotapi.Person]
 	PersonsTableVisibleColumns []string
-	BindPersonsTable           myui.TableBinding[*downballotapi.Person]
 
 	FilterOpen  bool
 	MapOpen     bool
@@ -94,8 +93,6 @@ func (c *OrganizationIDGroupIDPersonPage) OnNav(ctx app.Context) {
 	c.FilterOpen = false
 	c.MapOpen = true
 	c.ResultsOpen = true
-	c.BindPersonsTable.PageIndex = 0
-	c.BindPersonsTable.PageSize = 10
 
 	ctx.Async(func() {
 		var wg sync.WaitGroup
@@ -297,7 +294,6 @@ func (c *OrganizationIDGroupIDPersonPage) Render() app.UI {
 	}
 
 	slog.InfoContext(context.TODO(), "OrganizationIDGroupIDPersonPage: Render", "PersonsTableVisibleColumns", c.PersonsTableVisibleColumns)
-	slog.InfoContext(context.TODO(), "OrganizationIDGroupIDPersonPage: Render", "BindPersonsTable", c.BindPersonsTable)
 
 	return c.EmbeddedPage.Wrap(
 		myui.Collapse().
@@ -407,7 +403,7 @@ func (c *OrganizationIDGroupIDPersonPage) Render() app.UI {
 			SummaryText("Results: "+fmt.Sprintf("%d", len(c.Persons))).
 			Body(
 				myui.Table[*downballotapi.Person]().
-					Bind(&c.BindPersonsTable).
+					PageSize(10).
 					Columns(c.PersonsTableColumns).
 					BindVisibleColumns(&c.PersonsTableVisibleColumns).
 					Rows(c.Persons),
