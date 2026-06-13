@@ -109,13 +109,32 @@ func (c *MyUIForm) Render() app.UI {
 			c.UseEvents.Wrap(
 				app.Div().
 					Class("myui-form__form").
-					On("keypress", func(ctx app.Context, e app.Event) {
+					On("keyup", func(ctx app.Context, e app.Event) {
 						ctx.PreventUpdate()
 
-						if e.Get("key").String() == "Enter" {
-							slog.InfoContext(ctx.Context, "MyUIForm: Keypress", "key", e.Get("key").String())
+						slog.InfoContext(ctx.Context, "MyUIForm: Keypress", "key", e.Get("key").String())
+
+						// If the user pressed "Enter", then perform the default action.
+						//
+						// If set, the default action is the submit function.
+						// Otherwise, the default action is the *last* custom action.
+						switch e.Get("key").String() {
+						case "Enter":
 							if c.ISubmitFunction != nil {
 								c.ISubmitFunction(ctx)
+							} else {
+								if len(c.IActions) > 0 {
+									lastAction := c.IActions[len(c.IActions)-1]
+									if lastAction.Function != nil {
+										lastAction.Function(ctx)
+									} else if lastAction.To != "" {
+										ctx.Navigate(lastAction.To)
+									}
+								}
+							}
+						case "Escape":
+							if c.ICancelFunction != nil {
+								c.ICancelFunction(ctx)
 							}
 						}
 					}).

@@ -29,6 +29,9 @@ func (c *IndexPage) Render() app.UI {
 				Label("Collapse").
 				To("/collapse"),
 			myui.Item().
+				Label("Form").
+				To("/form"),
+			myui.Item().
 				Label("Input").
 				To("/input"),
 			myui.Item().
