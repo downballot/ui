@@ -1,8 +1,9 @@
-package myui
+package component
 
 import (
 	"log/slog"
 
+	"github.com/downballot/ui/myui"
 	"github.com/maxence-charriere/go-app/v11/pkg/app"
 )
 
@@ -51,7 +52,7 @@ func (c *EmbeddedPage) Setup(ctx app.Context) {
 func (c *EmbeddedPage) Wrap(content ...app.UI) app.UI {
 	var allElements []app.UI
 	if c.IError != "" {
-		allElements = append(allElements, StatusBar().
+		allElements = append(allElements, myui.StatusBar().
 			Text(c.IError).
 			Bad(),
 		)
@@ -64,10 +65,10 @@ func (c *EmbeddedPage) Wrap(content ...app.UI) app.UI {
 			}
 		}
 		if len(actions) > 0 {
-			form := Form()
-			var formActions []FormAction
+			form := myui.Form()
+			var formActions []myui.FormAction
 			for _, action := range actions {
-				formActions = append(formActions, FormAction{
+				formActions = append(formActions, myui.FormAction{
 					Name:     action.Name,
 					Icon:     action.Icon,
 					To:       action.To,
@@ -82,7 +83,7 @@ func (c *EmbeddedPage) Wrap(content ...app.UI) app.UI {
 		allElements = append(allElements, element)
 	}
 
-	return Page().
+	return myui.Page().
 		Body(
 			allElements...,
 		)

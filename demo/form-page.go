@@ -36,8 +36,7 @@ func (c *FormPage) Render() app.UI {
 		app.Window().Call("alert", "Action 2 called")
 	}
 
-	return app.Div().
-		Style("padding", "1em").
+	return myui.Page().
 		Body(
 			app.FieldSet().
 				Body(

@@ -11,6 +11,7 @@ import (
 	"github.com/downballot/downballot/iam"
 	"github.com/downballot/downballot/permissionset"
 	"github.com/downballot/ui/api"
+	"github.com/downballot/ui/component"
 	"github.com/downballot/ui/myui"
 	"github.com/go-app-blazar/router"
 	"github.com/maxence-charriere/go-app/v11/pkg/app"
@@ -18,7 +19,7 @@ import (
 
 type OrganizationIDGroupIDPage struct {
 	app.Compo
-	myui.EmbeddedPage
+	component.EmbeddedPage
 
 	IChildrenVisibleColumns []string
 
@@ -112,13 +113,13 @@ func (c *OrganizationIDGroupIDPage) Render() app.UI {
 
 	return c.EmbeddedPage.
 		Action(
-			myui.PageAction{
+			component.PageAction{
 				Name:     "Persons",
 				Icon:     "people-group",
 				To:       fmt.Sprintf("/organization/%s/group/%s/person", c.organizationID, c.groupID),
 				Disabled: !c.permissionSet.Match(iam.IAMPersonRead),
 			},
-			myui.PageAction{
+			component.PageAction{
 				Name:     "Edit",
 				Icon:     "edit",
 				To:       fmt.Sprintf("/organization/%s/group/%s/edit", c.organizationID, c.groupID),

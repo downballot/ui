@@ -6,7 +6,9 @@ import (
 )
 
 func Page() *MyUIPage {
-	return &MyUIPage{}
+	return &MyUIPage{
+		IStyles: map[string]string{},
+	}
 }
 
 type MyUIPage struct {
@@ -14,6 +16,7 @@ type MyUIPage struct {
 	slot.Slotted
 
 	IClasses []string
+	IStyles  map[string]string
 }
 
 var _ app.Composer = (*MyUIPage)(nil)
@@ -23,10 +26,19 @@ func (c *MyUIPage) Class(class ...string) *MyUIPage {
 	return c
 }
 
+func (c *MyUIPage) Style(name, value string) *MyUIPage {
+	c.IStyles[name] = value
+	return c
+}
+
 func (c *MyUIPage) Render() app.UI {
-	return app.Div().
-		Class(append([]string{"myui-page"}, c.IClasses...)...).
-		Body(app.FilterUIElems(c.SlotContents()...)...)
+	element := app.Div().
+		Class(append([]string{"myui-page"}, c.IClasses...)...)
+	for name, value := range c.IStyles {
+		element.Style(name, value)
+	}
+	return element.
+		Body(c.SlotContents()...)
 }
 
 func (c *MyUIPage) Body(components ...app.UI) *MyUIPage {

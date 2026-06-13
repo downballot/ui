@@ -20,7 +20,7 @@ import (
 
 type OrganizationIDPersonIDPage struct {
 	app.Compo
-	myui.EmbeddedPage
+	component.EmbeddedPage
 
 	loaded bool
 

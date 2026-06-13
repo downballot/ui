@@ -31,8 +31,7 @@ func (c *InputPage) OnNav(ctx app.Context) {
 }
 
 func (c *InputPage) Render() app.UI {
-	return app.Div().
-		Style("padding", "1em").
+	return myui.Page().
 		Body(
 			app.FieldSet().
 				Body(

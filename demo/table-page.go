@@ -133,8 +133,7 @@ func (c *TablePage) Render() app.UI {
 		ctx.Update()
 	}
 
-	return app.Div().
-		Style("padding", "1em").
+	return myui.Page().
 		Body(
 			app.FieldSet().
 				Body(
