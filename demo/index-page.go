@@ -19,8 +19,7 @@ func (c *IndexPage) OnNav(ctx app.Context) {
 }
 
 func (c *IndexPage) Render() app.UI {
-	return app.Div().
-		Style("padding", "1em").
+	return myui.Page().
 		Body(
 			myui.Item().
 				Label("Button").
@@ -28,6 +27,9 @@ func (c *IndexPage) Render() app.UI {
 			myui.Item().
 				Label("Collapse").
 				To("/collapse"),
+			myui.Item().
+				Label("Form").
+				To("/form"),
 			myui.Item().
 				Label("Input").
 				To("/input"),

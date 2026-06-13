@@ -25,8 +25,7 @@ func (c *CollapsePage) OnNav(ctx app.Context) {
 }
 
 func (c *CollapsePage) Render() app.UI {
-	return app.Div().
-		Style("padding", "1em").
+	return myui.Page().
 		Body(
 			myui.Collapse().
 				Bind(&c.defaultOpen).

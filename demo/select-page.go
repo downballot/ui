@@ -32,8 +32,7 @@ func (c *SelectPage) OnNav(ctx app.Context) {
 
 func (c *SelectPage) Render() app.UI {
 	slog.InfoContext(context.TODO(), "SelectPage: Render", "multiple", c.multiple)
-	return app.Div().
-		Style("padding", "1em").
+	return myui.Page().
 		Body(
 			app.FieldSet().
 				Body(

@@ -8,6 +8,7 @@ import (
 
 	"github.com/downballot/downballot/downballotapi"
 	"github.com/downballot/ui/api"
+	"github.com/downballot/ui/component"
 	"github.com/downballot/ui/myui"
 	"github.com/go-app-blazar/router"
 	"github.com/maxence-charriere/go-app/v11/pkg/app"
@@ -15,7 +16,7 @@ import (
 
 type OrganizationIDFilterNewPage struct {
 	app.Compo
-	myui.EmbeddedPage
+	component.EmbeddedPage
 
 	organizationID string
 

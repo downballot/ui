@@ -10,6 +10,7 @@ import (
 	"github.com/downballot/downballot/iam"
 	"github.com/downballot/downballot/permissionset"
 	"github.com/downballot/ui/api"
+	"github.com/downballot/ui/component"
 	"github.com/downballot/ui/myui"
 	"github.com/go-app-blazar/router"
 	"github.com/maxence-charriere/go-app/v11/pkg/app"
@@ -17,7 +18,7 @@ import (
 
 type OrganizationIDFilterPage struct {
 	app.Compo
-	myui.EmbeddedPage
+	component.EmbeddedPage
 
 	loaded bool
 

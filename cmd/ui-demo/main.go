@@ -108,6 +108,12 @@ func main() {
 					},
 				},
 				{
+					Path: "/form",
+					Component: func() app.Composer {
+						return &demo.FormPage{}
+					},
+				},
+				{
 					Path: "/input",
 					Component: func() app.Composer {
 						return &demo.InputPage{}

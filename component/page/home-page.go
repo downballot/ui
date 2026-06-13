@@ -3,13 +3,13 @@ package page
 import (
 	"log/slog"
 
-	"github.com/downballot/ui/myui"
+	"github.com/downballot/ui/component"
 	"github.com/maxence-charriere/go-app/v11/pkg/app"
 )
 
 type HomePage struct {
 	app.Compo
-	myui.EmbeddedPage
+	component.EmbeddedPage
 }
 
 func (c *HomePage) OnNav(ctx app.Context) {

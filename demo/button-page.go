@@ -24,8 +24,7 @@ func (c *ButtonPage) Render() app.UI {
 		app.Window().Call("alert", "Button clicked")
 	}
 
-	return app.Div().
-		Style("padding", "1em").
+	return myui.Page().
 		Body(
 			app.FieldSet().
 				Body(
