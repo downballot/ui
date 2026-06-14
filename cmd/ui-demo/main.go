@@ -9,7 +9,9 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/downballot/ui/blazarapp"
 	"github.com/downballot/ui/demo"
+	"github.com/downballot/ui/fontawesome"
 	"github.com/downballot/ui/material"
 	"github.com/downballot/ui/myui"
 	"github.com/go-app-blazar/router"
@@ -148,15 +150,7 @@ func main() {
 	// instructions.
 	app.RunWhenOnBrowser()
 
-	mux := http.NewServeMux()
-
-	// Finally, launching the server that serves the app is done by using the Go
-	// standard HTTP package.
-	//
-	// The Handler is an HTTP handler that serves the client and all its
-	// required resources to make it work into a web browser. Here it is
-	// configured to handle requests with a path that starts with "/".
-	mux.Handle("/", &app.Handler{
+	blazarApp := blazarapp.NewApp(blazarapp.Config{
 		Name:        "UI Demo",
 		Description: "UI Demo",
 		Title:       "UI Demo",
@@ -165,21 +159,18 @@ func main() {
 			"/web/material.css",
 			"/web/myui.css",
 		},
-		RawHeaders: []string{
-			`<script src="https://kit.fontawesome.com/a71e001119.js" crossorigin="anonymous"></script>`,
-		},
-		Env: map[string]string{},
 	})
-	mux.Handle("/web/material.css", material.CSS())
-	mux.Handle("/web/myui.css", myui.CSS())
+	blazarApp.AddPlugin(fontawesome.NewPlugin(fontawesome.Config{
+		Location: "/web/fontawesome/",
+		Minify:   false,
+	}))
+
+	blazarApp.Handle("/web/material.css", material.CSS())
+	blazarApp.Handle("/web/myui.css", myui.CSS())
 
 	slog.InfoContext(ctx, "Disable service worker?", "disableServiceWorker", disableServiceWorker)
 	if disableServiceWorker {
-		// Disable the service worker by replacing it with an empty one.
-		mux.HandleFunc("/app-worker.js", func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("Content-Type", "application/javascript")
-			w.Write([]byte(""))
-		})
+		blazarApp.DisableServiceWorker()
 	}
 
 	wrapper := http.NewServeMux()
@@ -189,7 +180,7 @@ func main() {
 			writer: w,
 		}
 		wrappedResponseWriter.Info.StatusCode = http.StatusOK
-		mux.ServeHTTP(wrappedResponseWriter, r)
+		blazarApp.ServeHTTP(wrappedResponseWriter, r)
 		slog.InfoContext(r.Context(), "[out] Request", "method", r.Method, "url", r.URL.String(), "code", wrappedResponseWriter.Info.StatusCode)
 	})
 
