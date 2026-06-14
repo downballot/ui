@@ -40,9 +40,19 @@ func (p *plugin) Register(handler *app.Handler, mux *http.ServeMux) {
 func (p *plugin) cssFilenames(prefix string) []string {
 	var cssFiles []string
 	if p.config.Minify {
-		cssFiles = append(cssFiles, "css/all.min.css")
+		cssFiles = append(cssFiles,
+			"css/fontawesome.min.css",
+			"css/brands.min.css",
+			"css/regular.min.css",
+			"css/solid.min.css",
+		)
 	} else {
-		cssFiles = append(cssFiles, "css/all.css")
+		cssFiles = append(cssFiles,
+			"css/fontawesome.css",
+			"css/brands.css",
+			"css/regular.css",
+			"css/solid.css",
+		)
 	}
 	slices.Sort(cssFiles)
 	for i, filename := range cssFiles {
