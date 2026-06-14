@@ -82,6 +82,9 @@ func (c *htmlMailingLabels) Render() app.UI {
 		Body(
 			app.Range(pages).Slice(func(i int) app.UI {
 				page := pages[i]
+				for len(page) < itemsPerPage {
+					page = append(page, "")
+				}
 
 				return app.Div().
 					Class("mailing-labels__page").
@@ -115,10 +118,7 @@ func (c *htmlMailingLabels) Render() app.UI {
 								return addressBody
 							}
 
-							deliveryAddressBody := createAddressBody(address)
-							returnAddressBody := createAddressBody(c.IReturnAddress)
-
-							return app.Div().
+							element := app.Div().
 								Class("mailing-labels__label").
 								Style("width", labelWidth).
 								Style("height", labelHeight).
@@ -127,9 +127,14 @@ func (c *htmlMailingLabels) Render() app.UI {
 								Style("overflow", "hidden").
 								Style("display", "flex").
 								Style("flex-direction", "column").
-								Style("justify-content", "center").
-								Style("outline", "1px dashed #ccc").
-								Body(
+								Style("justify-content", "center")
+								//Style("outline", "1px dashed #ccc")
+
+							if address != "" {
+								deliveryAddressBody := createAddressBody(address)
+								returnAddressBody := createAddressBody(c.IReturnAddress)
+
+								element = element.Body(
 									app.Div().
 										Class("mailing-labels__return-address").
 										Style("font-size", "9pt").
@@ -144,6 +149,8 @@ func (c *htmlMailingLabels) Render() app.UI {
 										Style("padding-left", "0.4in").
 										Body(deliveryAddressBody...),
 								)
+							}
+							return element
 						}),
 					)
 			}),
