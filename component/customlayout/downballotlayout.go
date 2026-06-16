@@ -5,7 +5,6 @@ import (
 	"log/slog"
 
 	"github.com/downballot/ui/component/layout"
-	"github.com/downballot/ui/material"
 	"github.com/go-app-blazar/blazar/blazar"
 	"github.com/go-app-blazar/router"
 	"github.com/maxence-charriere/go-app/v11/pkg/app"
@@ -48,9 +47,9 @@ func (c *DownballotLayout) Render() app.UI {
 	slog.InfoContext(context.TODO(), "DownballotLayout: Render")
 
 	mainLayout := &layout.MainLayout{
-		Header: &material.AppBar{
-			Headline: "Downballot",
-			SubtitleUI: app.Div().
+		Header: blazar.AppBar().
+			HeadlineText("Downballot").
+			Subtitle(app.Div().
 				Class("downballotlayout-menu").
 				Body(
 					blazar.Item().
@@ -63,7 +62,7 @@ func (c *DownballotLayout) Render() app.UI {
 						Label("Profile").
 						To("/profile"),
 				),
-		},
+			),
 	}
 	mainLayout.SetRouterView(c.RouterView())
 

@@ -12,7 +12,6 @@ import (
 	"strings"
 
 	"github.com/downballot/ui/component/customlayout"
-	"github.com/downballot/ui/material"
 	"github.com/go-app-blazar/blazar/blazar"
 	"github.com/go-app-blazar/blazar/blazarapp"
 	"github.com/go-app-blazar/blazar/fontawesome"
@@ -111,7 +110,6 @@ func main() {
 		Title:       "Downballot",
 		Styles: []string{
 			"/web/main.css",
-			"/web/material.css",
 		},
 		Env: map[string]string{
 			"GOOGLE_MAPS_API_KEY": os.Getenv("GOOGLE_MAPS_API_KEY"),
@@ -124,8 +122,6 @@ func main() {
 	blazarApp.AddPlugin(blazar.NewPlugin(blazar.Config{
 		Location: "/web/blazar/",
 	}))
-
-	blazarApp.Handle("/web/material.css", material.CSS())
 
 	slog.InfoContext(ctx, "Disable service worker?", "disableServiceWorker", disableServiceWorker)
 	if disableServiceWorker {
