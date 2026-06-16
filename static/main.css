@@ -5,20 +5,20 @@ html {
 
     font-family: sans-serif;
 
-    --material-theme-primary: #20a4f3;
-    --material-theme-secondary: #2ec4b6;
-    --material-theme-background: #ffffff;
-    --material-theme-on-primary: #ffffff;
-    --material-theme-on-secondary: #000000;
-    --material-theme-on-background: #000000;
-    --material-theme-success: #4caf50;
-    --material-theme-warning: #ff9800;
-    --material-theme-info: #2196f3;
-    --material-theme-error: #f44336;
-    --material-theme-on-success: #ffffff;
-    --material-theme-on-warning: #ffffff;
-    --material-theme-on-info: #ffffff;
-    --material-theme-on-error: #ffffff;
+    --blazar-theme-primary: #20a4f3;
+    --blazar-theme-secondary: #2ec4b6;
+    --blazar-theme-background: #ffffff;
+    --blazar-theme-on-primary: #ffffff;
+    --blazar-theme-on-secondary: #000000;
+    --blazar-theme-on-background: #000000;
+    --blazar-theme-success: #4caf50;
+    --blazar-theme-warning: #ff9800;
+    --blazar-theme-info: #2196f3;
+    --blazar-theme-error: #f44336;
+    --blazar-theme-on-success: #ffffff;
+    --blazar-theme-on-warning: #ffffff;
+    --blazar-theme-on-info: #ffffff;
+    --blazar-theme-on-error: #ffffff;
 }
 
 body {
@@ -61,11 +61,11 @@ h1, h2, h3, h4, h5, h6 {
     display: block;
 }
 
-.main-layout-drawer.visible {
-    display: block;
+.main-layout-drawer.hidden {
+    display: none;
 }
 
-.main-layout-header .material-app-bar-leading {
+.main-layout-header .blazar-app-bar-leading {
     display: none;
 }
 
@@ -74,7 +74,7 @@ h1, h2, h3, h4, h5, h6 {
         display: block;
     }
 
-    .main-layout-header .material-app-bar-leading {
+    .main-layout-header .blazar-app-bar-leading {
         display: block;
     }
 
