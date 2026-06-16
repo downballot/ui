@@ -50,9 +50,9 @@ watch-run:
 		kill $$PID; \
 	done
 
-.PHONY: run-demo
-run-demo: binaries_ui-demo
-	cd bin && ./ui-demo/app
+.PHONY: clean
+clean:
+	rm -rf bin
 
 .PHONY: test
 test:
