@@ -61,11 +61,11 @@ h1, h2, h3, h4, h5, h6 {
     display: block;
 }
 
-.main-layout-drawer.hidden {
-    display: none;
+.main-layout-drawer.visible {
+    display: block;
 }
 
-.main-layout-header .blazar-app-bar-leading {
+.main-layout-header .blazar-app-bar__icon {
     display: none;
 }
 
@@ -74,7 +74,7 @@ h1, h2, h3, h4, h5, h6 {
         display: block;
     }
 
-    .main-layout-header .blazar-app-bar-leading {
+    .main-layout-header .blazar-app-bar__icon {
         display: block;
     }
 
