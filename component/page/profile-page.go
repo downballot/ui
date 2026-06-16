@@ -7,7 +7,7 @@ import (
 	"github.com/downballot/downballot/downballotapi"
 	"github.com/downballot/ui/api"
 	"github.com/downballot/ui/component"
-	"github.com/downballot/ui/myui"
+	"github.com/go-app-blazar/blazar/blazar"
 	"github.com/maxence-charriere/go-app/v11/pkg/app"
 )
 
@@ -45,7 +45,7 @@ func (c *ProfilePage) Render() app.UI {
 
 	if c.AuthenticatedUser == nil {
 		return c.EmbeddedPage.Wrap(
-			myui.StatusBar().
+			blazar.StatusBar().
 				Text("Not logged in.").
 				Bad(),
 		)
@@ -60,9 +60,9 @@ func (c *ProfilePage) Render() app.UI {
 			app.Span().Text("Name: "),
 			app.Span().Text(c.AuthenticatedUser.Name),
 		),
-		myui.Form().
+		blazar.Form().
 			Spacer(false).
-			Action(myui.FormAction{
+			Action(blazar.FormAction{
 				Name: "Log out",
 				Function: func(ctx app.Context) {
 					ctx.DelState("api-token")

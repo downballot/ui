@@ -12,7 +12,7 @@ import (
 	"github.com/downballot/downballot/permissionset"
 	"github.com/downballot/ui/api"
 	"github.com/downballot/ui/component"
-	"github.com/downballot/ui/myui"
+	"github.com/go-app-blazar/blazar/blazar"
 	"github.com/go-app-blazar/router"
 	"github.com/maxence-charriere/go-app/v11/pkg/app"
 )
@@ -105,7 +105,7 @@ func (c *OrganizationIDGroupIDPage) Render() app.UI {
 
 	if c.group == nil {
 		return c.EmbeddedPage.Wrap(
-			myui.StatusBar().
+			blazar.StatusBar().
 				Text("Not found").
 				Bad(),
 		)
@@ -127,10 +127,10 @@ func (c *OrganizationIDGroupIDPage) Render() app.UI {
 			},
 		).
 		Wrap(
-			myui.Table[*downballotapi.Group]().
+			blazar.Table[*downballotapi.Group]().
 				Title("Sub-groups").
 				Rows(c.children).
-				Columns([]myui.TableColumn[*downballotapi.Group]{
+				Columns([]blazar.TableColumn[*downballotapi.Group]{
 					{
 						Name: "ID",
 						Value: func(row *downballotapi.Group) any {
@@ -148,14 +148,14 @@ func (c *OrganizationIDGroupIDPage) Render() app.UI {
 					},
 				}).
 				VisibleColumns(c.IChildrenVisibleColumns).
-				Action(myui.TableAction{
+				Action(blazar.TableAction{
 					Name:     "New group",
 					Icon:     "plus",
 					To:       fmt.Sprintf("/organization/%s/group/new?parent_id=%s", c.organizationID, c.groupID),
 					Disabled: !c.permissionSet.Match(iam.IAMGroupCreate),
 				}).
 				RowAction(
-					myui.RowAction[*downballotapi.Group]{
+					blazar.RowAction[*downballotapi.Group]{
 						Name: "Persons",
 						Icon: "people-group",
 						To: func(row *downballotapi.Group) string {
@@ -163,7 +163,7 @@ func (c *OrganizationIDGroupIDPage) Render() app.UI {
 						},
 						Disabled: !c.permissionSet.Match(iam.IAMPersonRead),
 					},
-					myui.RowAction[*downballotapi.Group]{
+					blazar.RowAction[*downballotapi.Group]{
 						Name: "Edit",
 						Icon: "edit",
 						To: func(row *downballotapi.Group) string {

@@ -9,7 +9,7 @@ import (
 	"github.com/downballot/downballot/downballotapi"
 	"github.com/downballot/ui/api"
 	"github.com/downballot/ui/component"
-	"github.com/downballot/ui/myui"
+	"github.com/go-app-blazar/blazar/blazar"
 	"github.com/go-app-blazar/router"
 	"github.com/maxence-charriere/go-app/v11/pkg/app"
 )
@@ -100,26 +100,26 @@ func (c *OrganizationIDUserIDGroupNewPage) Render() app.UI {
 	}
 
 	return c.EmbeddedPage.Wrap(
-		myui.Form().
+		blazar.Form().
 			Body(
-				myui.Input[string]().
+				blazar.Input[string]().
 					Disabled(true).
 					Label("E-mail Address").
 					Value(c.user.Username),
-				myui.Select().
+				blazar.Select().
 					Name("group_id").
 					Label("Group").
 					AllowedValue(
-						func() []myui.SelectOption {
-							var allowedValues []myui.SelectOption
-							allowedValues = append(allowedValues, myui.SelectOption{Label: "Select a group", Value: "", Disabled: true})
+						func() []blazar.SelectOption {
+							var allowedValues []blazar.SelectOption
+							allowedValues = append(allowedValues, blazar.SelectOption{Label: "Select a group", Value: "", Disabled: true})
 							for _, group := range c.groups {
-								allowedValues = append(allowedValues, myui.SelectOption{Label: group.Name, Value: group.ID})
+								allowedValues = append(allowedValues, blazar.SelectOption{Label: group.Name, Value: group.ID})
 							}
 							return allowedValues
 						}()...).
 					Bind(&c.groupID),
-				myui.Input[bool]().
+				blazar.Input[bool]().
 					Label("Owner").
 					Bind(&c.owner),
 			).
@@ -143,7 +143,7 @@ func (c *OrganizationIDUserIDGroupNewPage) Render() app.UI {
 					ctx.Navigate("/organization/" + c.organizationID + "/user/" + c.userID)
 				})
 			}).
-			Action(myui.FormAction{
+			Action(blazar.FormAction{
 				Name: "Delete",
 				Icon: "trash",
 				Function: func(ctx app.Context) {

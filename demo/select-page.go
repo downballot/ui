@@ -5,7 +5,7 @@ import (
 	"log/slog"
 	"strings"
 
-	"github.com/downballot/ui/myui"
+	"github.com/go-app-blazar/blazar/blazar"
 	"github.com/maxence-charriere/go-app/v11/pkg/app"
 )
 
@@ -32,27 +32,27 @@ func (c *SelectPage) OnNav(ctx app.Context) {
 
 func (c *SelectPage) Render() app.UI {
 	slog.InfoContext(context.TODO(), "SelectPage: Render", "multiple", c.multiple)
-	return myui.Page().
+	return blazar.Page().
 		Body(
 			app.FieldSet().
 				Body(
 					app.Legend().Text("Input"),
-					myui.Select().
+					blazar.Select().
 						Label("Select").
 						AllowedValue(
-							myui.SelectOption{Label: "Option 1", Value: "option1"},
-							myui.SelectOption{Label: "Option 2", Value: "option2"},
-							myui.SelectOption{Label: "Option 3", Value: "option3"},
-							myui.SelectOption{Label: "Option 4", Value: "option4", Disabled: true},
+							blazar.SelectOption{Label: "Option 1", Value: "option1"},
+							blazar.SelectOption{Label: "Option 2", Value: "option2"},
+							blazar.SelectOption{Label: "Option 3", Value: "option3"},
+							blazar.SelectOption{Label: "Option 4", Value: "option4", Disabled: true},
 						).
 						Bind(&c.single),
-					myui.Multiselect().
+					blazar.Multiselect().
 						Label("Multiselect").
 						AllowedValue(
-							myui.SelectOption{Label: "Option 1", Value: "option1"},
-							myui.SelectOption{Label: "Option 2", Value: "option2"},
-							myui.SelectOption{Label: "Option 3", Value: "option3"},
-							myui.SelectOption{Label: "Option 4", Value: "option4", Disabled: true},
+							blazar.SelectOption{Label: "Option 1", Value: "option1"},
+							blazar.SelectOption{Label: "Option 2", Value: "option2"},
+							blazar.SelectOption{Label: "Option 3", Value: "option3"},
+							blazar.SelectOption{Label: "Option 4", Value: "option4", Disabled: true},
 						).
 						Bind(&c.multiple),
 				),

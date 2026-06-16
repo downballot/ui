@@ -9,7 +9,7 @@ import (
 	"github.com/downballot/downballot/downballotapi"
 	"github.com/downballot/ui/api"
 	"github.com/downballot/ui/component"
-	"github.com/downballot/ui/myui"
+	"github.com/go-app-blazar/blazar/blazar"
 	"github.com/go-app-blazar/router"
 	"github.com/maxence-charriere/go-app/v11/pkg/app"
 )
@@ -61,24 +61,24 @@ func (c *OrganizationIDGroupNewPage) Render() app.UI {
 	slog.InfoContext(context.TODO(), "OrganizationIDGroupNewPage: Render")
 
 	return c.EmbeddedPage.Wrap(
-		myui.Form().
+		blazar.Form().
 			Body(
-				myui.Input[string]().
+				blazar.Input[string]().
 					Label("Name").
 					Type("text").
 					Value(c.Name).
 					On("change", c.ValueTo(&c.Name)),
-				myui.Select().
+				blazar.Select().
 					Label("Parent").
-					AllowedValue(func() []myui.SelectOption {
-						var allowedValues []myui.SelectOption
+					AllowedValue(func() []blazar.SelectOption {
+						var allowedValues []blazar.SelectOption
 						for _, group := range c.groups {
-							allowedValues = append(allowedValues, myui.SelectOption{Label: group.Name, Value: group.ID})
+							allowedValues = append(allowedValues, blazar.SelectOption{Label: group.Name, Value: group.ID})
 						}
 						return allowedValues
 					}()...).
 					Bind(&c.parentID),
-				myui.Input[string]().
+				blazar.Input[string]().
 					Label("Filter").
 					Type("text").
 					Value(c.Filter).

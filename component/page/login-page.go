@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/downballot/downballot/downballotapi"
-	"github.com/downballot/ui/myui"
+	"github.com/go-app-blazar/blazar/blazar"
 	"github.com/maxence-charriere/go-app/v11/pkg/app"
 )
 
@@ -133,14 +133,14 @@ func (c *LoginPage) Render() app.UI {
 		}
 	}
 
-	return myui.Page().Body(
+	return blazar.Page().Body(
 		app.Div().
 			Body(
 				app.H2().Text("Downballot Login"),
 			),
-		myui.Form().
+		blazar.Form().
 			Body(
-				myui.Input[string]().
+				blazar.Input[string]().
 					Label("E-mail address").
 					Name("email").
 					Type("text").
@@ -149,12 +149,12 @@ func (c *LoginPage) Render() app.UI {
 					Bind(&c.username),
 				app.If(c.readyForPassword, func() app.UI {
 					return app.If(c.message != "", func() app.UI {
-						return myui.StatusBar().
+						return blazar.StatusBar().
 							Text(c.message)
 					})
 				}),
 				app.If(c.readyForPassword, func() app.UI {
-					return myui.Input[string]().
+					return blazar.Input[string]().
 						Label("Password").
 						Name("password").
 						Type("password").
@@ -162,7 +162,7 @@ func (c *LoginPage) Render() app.UI {
 						Bind(&c.password)
 				}),
 				app.If(c.error != "", func() app.UI {
-					return myui.StatusBar().
+					return blazar.StatusBar().
 						Text(c.error).
 						Bad()
 				}),

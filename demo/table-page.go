@@ -4,14 +4,14 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/downballot/ui/myui"
+	"github.com/go-app-blazar/blazar/blazar"
 	"github.com/maxence-charriere/go-app/v11/pkg/app"
 )
 
 type TablePage struct {
 	app.Compo
 
-	columns       []myui.TableColumn[characterRow]
+	columns       []blazar.TableColumn[characterRow]
 	rows          []characterRow
 	newCharacters uint
 }
@@ -25,7 +25,7 @@ type characterRow struct {
 func (c *TablePage) OnMount(ctx app.Context) {
 	slog.InfoContext(ctx.Context, "TablePage: OnMount")
 
-	c.columns = []myui.TableColumn[characterRow]{
+	c.columns = []blazar.TableColumn[characterRow]{
 		{
 			Name: "Name",
 			Value: func(row characterRow) any {
@@ -133,12 +133,12 @@ func (c *TablePage) Render() app.UI {
 		ctx.Update()
 	}
 
-	return myui.Page().
+	return blazar.Page().
 		Body(
 			app.FieldSet().
 				Body(
 					app.Legend().Text("Simple"),
-					myui.Table[characterRow]().
+					blazar.Table[characterRow]().
 						Interactive(false).
 						Rows(c.rows).
 						Columns(c.columns),
@@ -147,15 +147,15 @@ func (c *TablePage) Render() app.UI {
 				Body(
 					app.Legend().Text("Actions"),
 					app.Div().Body(
-						myui.Table[characterRow]().
+						blazar.Table[characterRow]().
 							Title("One Piece Characters").
 							Rows(c.rows).
 							Columns(c.columns).
-							Action(myui.TableAction{
+							Action(blazar.TableAction{
 								Name:     "Add character",
 								Function: addCharacterFunction,
 							}).
-							RowAction(myui.RowAction[characterRow]{
+							RowAction(blazar.RowAction[characterRow]{
 								Name:     "Click",
 								Function: clickFunction,
 							}),
@@ -164,7 +164,7 @@ func (c *TablePage) Render() app.UI {
 			app.FieldSet().
 				Body(
 					app.Legend().Text("Paginated"),
-					myui.Table[characterRow]().
+					blazar.Table[characterRow]().
 						Title("One Piece Characters").
 						PageSize(10).
 						Rows(c.rows).
@@ -173,7 +173,7 @@ func (c *TablePage) Render() app.UI {
 			app.FieldSet().
 				Body(
 					app.Legend().Text("Column Visibility"),
-					myui.Table[characterRow]().
+					blazar.Table[characterRow]().
 						Title("One Piece Characters").
 						PageSize(10).
 						VisibleColumns([]string{"Name"}).

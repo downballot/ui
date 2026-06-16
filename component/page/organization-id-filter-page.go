@@ -11,7 +11,7 @@ import (
 	"github.com/downballot/downballot/permissionset"
 	"github.com/downballot/ui/api"
 	"github.com/downballot/ui/component"
-	"github.com/downballot/ui/myui"
+	"github.com/go-app-blazar/blazar/blazar"
 	"github.com/go-app-blazar/router"
 	"github.com/maxence-charriere/go-app/v11/pkg/app"
 )
@@ -67,9 +67,9 @@ func (c *OrganizationIDFilterPage) Render() app.UI {
 	}
 
 	return c.EmbeddedPage.Wrap(
-		myui.Table[*downballotapi.Filter]().
+		blazar.Table[*downballotapi.Filter]().
 			Rows(c.filters).
-			Columns([]myui.TableColumn[*downballotapi.Filter]{
+			Columns([]blazar.TableColumn[*downballotapi.Filter]{
 				{
 					Name: "ID",
 					Value: func(row *downballotapi.Filter) any {
@@ -98,13 +98,13 @@ func (c *OrganizationIDFilterPage) Render() app.UI {
 					},
 				},
 			}).
-			Action(myui.TableAction{
+			Action(blazar.TableAction{
 				Name:     "New filter",
 				Icon:     "plus",
 				To:       fmt.Sprintf("/organization/%s/filter/new", c.organizationID),
 				Disabled: !c.permissionSet.Match(iam.IAMFilterCreate),
 			}).
-			RowAction(myui.RowAction[*downballotapi.Filter]{
+			RowAction(blazar.RowAction[*downballotapi.Filter]{
 				Name: "Edit",
 				Icon: "edit",
 				To: func(row *downballotapi.Filter) string {

@@ -8,7 +8,7 @@ import (
 	"github.com/downballot/downballot/downballotapi"
 	"github.com/downballot/ui/api"
 	"github.com/downballot/ui/component"
-	"github.com/downballot/ui/myui"
+	"github.com/go-app-blazar/blazar/blazar"
 	"github.com/maxence-charriere/go-app/v11/pkg/app"
 )
 
@@ -48,9 +48,9 @@ func (c *OrganizationPage) Render() app.UI {
 		app.Div().Text(
 			"These are the organizations that you are a part of.",
 		),
-		myui.Table[*downballotapi.Organization]().
+		blazar.Table[*downballotapi.Organization]().
 			Rows(c.organizations).
-			Columns([]myui.TableColumn[*downballotapi.Organization]{
+			Columns([]blazar.TableColumn[*downballotapi.Organization]{
 				{
 					Name: "ID",
 					Value: func(row *downballotapi.Organization) any {

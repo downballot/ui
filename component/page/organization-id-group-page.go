@@ -9,7 +9,7 @@ import (
 	"github.com/downballot/downballot/downballotapi"
 	"github.com/downballot/ui/api"
 	"github.com/downballot/ui/component"
-	"github.com/downballot/ui/myui"
+	"github.com/go-app-blazar/blazar/blazar"
 	"github.com/go-app-blazar/router"
 	"github.com/maxence-charriere/go-app/v11/pkg/app"
 )
@@ -62,9 +62,9 @@ func (c *OrganizationIDGroupPage) Render() app.UI {
 	}
 
 	return c.EmbeddedPage.Wrap(
-		myui.Table[*downballotapi.Group]().
+		blazar.Table[*downballotapi.Group]().
 			Rows(c.groups).
-			Columns([]myui.TableColumn[*downballotapi.Group]{
+			Columns([]blazar.TableColumn[*downballotapi.Group]{
 				{
 					Name: "ID",
 					Value: func(row *downballotapi.Group) any {

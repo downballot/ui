@@ -8,7 +8,7 @@ import (
 	"github.com/downballot/downballot/downballotapi"
 	"github.com/downballot/ui/api"
 	"github.com/downballot/ui/component"
-	"github.com/downballot/ui/myui"
+	"github.com/go-app-blazar/blazar/blazar"
 	"github.com/go-app-blazar/router"
 	"github.com/maxence-charriere/go-app/v11/pkg/app"
 )
@@ -62,7 +62,7 @@ func (c *OrganizationIDPage) Render() app.UI {
 
 	if c.organization == nil {
 		return c.EmbeddedPage.Wrap(
-			myui.StatusBar().
+			blazar.StatusBar().
 				Text("Not found").
 				Bad(),
 		)

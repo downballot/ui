@@ -3,7 +3,7 @@ package component
 import (
 	"log/slog"
 
-	"github.com/downballot/ui/myui"
+	"github.com/go-app-blazar/blazar/blazar"
 	"github.com/maxence-charriere/go-app/v11/pkg/app"
 )
 
@@ -52,7 +52,7 @@ func (c *EmbeddedPage) Setup(ctx app.Context) {
 func (c *EmbeddedPage) Wrap(content ...app.UI) app.UI {
 	var allElements []app.UI
 	if c.IError != "" {
-		allElements = append(allElements, myui.StatusBar().
+		allElements = append(allElements, blazar.StatusBar().
 			Text(c.IError).
 			Bad(),
 		)
@@ -65,10 +65,10 @@ func (c *EmbeddedPage) Wrap(content ...app.UI) app.UI {
 			}
 		}
 		if len(actions) > 0 {
-			form := myui.Form()
-			var formActions []myui.FormAction
+			form := blazar.Form()
+			var formActions []blazar.FormAction
 			for _, action := range actions {
-				formActions = append(formActions, myui.FormAction{
+				formActions = append(formActions, blazar.FormAction{
 					Name:     action.Name,
 					Icon:     action.Icon,
 					To:       action.To,
@@ -83,7 +83,7 @@ func (c *EmbeddedPage) Wrap(content ...app.UI) app.UI {
 		allElements = append(allElements, element)
 	}
 
-	return myui.Page().
+	return blazar.Page().
 		Body(
 			allElements...,
 		)

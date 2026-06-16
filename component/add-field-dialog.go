@@ -8,7 +8,7 @@ import (
 
 	"github.com/downballot/downballot/downballotapi"
 	"github.com/downballot/ui/api"
-	"github.com/downballot/ui/myui"
+	"github.com/go-app-blazar/blazar/blazar"
 	"github.com/maxence-charriere/go-app/v11/pkg/app"
 )
 
@@ -104,19 +104,19 @@ func (c *AddFieldDialog) Render() app.UI {
 		switch selectedPersonField.Type {
 		case downballotapi.PersonFieldDefinitionTypeDate:
 			valueElements = append(valueElements,
-				myui.Input[string]().
+				blazar.Input[string]().
 					Label("Value").
 					Type("date").
 					Placeholder("Value").
 					Bind(&c.ValueValue),
-				myui.Button().
+				blazar.Button().
 					Flat(true).
 					Label("Yesterday").
 					On("click", func(ctx app.Context, e app.Event) {
 						c.ValueValue = time.Now().AddDate(0, 0, -1).Format("2006-01-02")
 						ctx.Update()
 					}),
-				myui.Button().
+				blazar.Button().
 					Flat(true).
 					Label("Today").
 					On("click", func(ctx app.Context, e app.Event) {
@@ -126,13 +126,13 @@ func (c *AddFieldDialog) Render() app.UI {
 			)
 		case downballotapi.PersonFieldDefinitionTypeEnum:
 			valueElements = append(valueElements,
-				myui.Select().
+				blazar.Select().
 					AllowedValue(
-						func() []myui.SelectOption {
-							var allowedValues []myui.SelectOption
-							allowedValues = append(allowedValues, myui.SelectOption{Label: "", Value: "", Disabled: true})
+						func() []blazar.SelectOption {
+							var allowedValues []blazar.SelectOption
+							allowedValues = append(allowedValues, blazar.SelectOption{Label: "", Value: "", Disabled: true})
 							for _, allowedValue := range selectedPersonField.AllowedValues {
-								allowedValues = append(allowedValues, myui.SelectOption{Label: allowedValue, Value: allowedValue})
+								allowedValues = append(allowedValues, blazar.SelectOption{Label: allowedValue, Value: allowedValue})
 							}
 							return allowedValues
 						}()...).
@@ -140,7 +140,7 @@ func (c *AddFieldDialog) Render() app.UI {
 			)
 		case downballotapi.PersonFieldDefinitionTypeString:
 			valueElements = append(valueElements,
-				myui.Input[string]().
+				blazar.Input[string]().
 					Label("Value").
 					Type("text").
 					Placeholder("Value").
@@ -148,7 +148,7 @@ func (c *AddFieldDialog) Render() app.UI {
 			)
 		case downballotapi.PersonFieldDefinitionTypeInteger:
 			valueElements = append(valueElements,
-				myui.Input[string]().
+				blazar.Input[string]().
 					Label("Value").
 					Type("number").
 					Placeholder("Value").
@@ -156,17 +156,17 @@ func (c *AddFieldDialog) Render() app.UI {
 			)
 		case downballotapi.PersonFieldDefinitionTypeBoolean:
 			valueElements = append(valueElements,
-				myui.Select().
+				blazar.Select().
 					AllowedValue(
-						myui.SelectOption{Label: "", Value: "", Disabled: true},
-						myui.SelectOption{Label: "true", Value: "true"},
-						myui.SelectOption{Label: "false", Value: "false"},
+						blazar.SelectOption{Label: "", Value: "", Disabled: true},
+						blazar.SelectOption{Label: "true", Value: "true"},
+						blazar.SelectOption{Label: "false", Value: "false"},
 					).
 					Bind(&c.ValueValue),
 			)
 		default:
 			valueElements = append(valueElements,
-				myui.Input[string]().
+				blazar.Input[string]().
 					Label("Value").
 					Type("text").
 					Placeholder("Value").
@@ -176,15 +176,15 @@ func (c *AddFieldDialog) Render() app.UI {
 	}
 
 	formBody := []app.UI{
-		myui.Select().
+		blazar.Select().
 			Name("field").
 			Label("Field").
 			AllowedValue(
-				func() []myui.SelectOption {
-					var allowedValues []myui.SelectOption
-					allowedValues = append(allowedValues, myui.SelectOption{Label: "", Value: "", Disabled: true})
+				func() []blazar.SelectOption {
+					var allowedValues []blazar.SelectOption
+					allowedValues = append(allowedValues, blazar.SelectOption{Label: "", Value: "", Disabled: true})
 					for _, personField := range c.PersonFields {
-						allowedValues = append(allowedValues, myui.SelectOption{Label: personField.Name, Value: personField.Name})
+						allowedValues = append(allowedValues, blazar.SelectOption{Label: personField.Name, Value: personField.Name})
 					}
 					return allowedValues
 				}()...).
@@ -207,7 +207,7 @@ func (c *AddFieldDialog) Render() app.UI {
 		ID(c.DialogID).
 		Body(
 			app.H2().Text("Add Field"),
-			myui.Form().
+			blazar.Form().
 				Body(formBody...).
 				CancelFunction(c.Close).
 				SubmitLabel("Save").
@@ -222,7 +222,7 @@ func (c *AddFieldDialog) Render() app.UI {
 					c.Close(ctx)
 				}),
 			app.If(c.error != "", func() app.UI {
-				return myui.StatusBar().
+				return blazar.StatusBar().
 					Text(c.error).
 					Bad()
 			}),

@@ -3,7 +3,7 @@ package demo
 import (
 	"log/slog"
 
-	"github.com/downballot/ui/myui"
+	"github.com/go-app-blazar/blazar/blazar"
 	"github.com/maxence-charriere/go-app/v11/pkg/app"
 )
 
@@ -19,24 +19,24 @@ func (c *IndexPage) OnNav(ctx app.Context) {
 }
 
 func (c *IndexPage) Render() app.UI {
-	return myui.Page().
+	return blazar.Page().
 		Body(
-			myui.Item().
+			blazar.Item().
 				Label("Button").
 				To("/button"),
-			myui.Item().
+			blazar.Item().
 				Label("Collapse").
 				To("/collapse"),
-			myui.Item().
+			blazar.Item().
 				Label("Form").
 				To("/form"),
-			myui.Item().
+			blazar.Item().
 				Label("Input").
 				To("/input"),
-			myui.Item().
+			blazar.Item().
 				Label("Select").
 				To("/select"),
-			myui.Item().
+			blazar.Item().
 				Label("Table").
 				To("/table"),
 		)

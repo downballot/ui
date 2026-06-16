@@ -10,7 +10,7 @@ import (
 	"github.com/downballot/downballot/downballotapi"
 	"github.com/downballot/ui/api"
 	"github.com/downballot/ui/component"
-	"github.com/downballot/ui/myui"
+	"github.com/go-app-blazar/blazar/blazar"
 	"github.com/go-app-blazar/router"
 	"github.com/maxence-charriere/go-app/v11/pkg/app"
 )
@@ -107,7 +107,7 @@ func (c *OrganizationIDUserIDPage) Render() app.UI {
 
 	if c.user == nil {
 		return c.EmbeddedPage.Wrap(
-			myui.StatusBar().
+			blazar.StatusBar().
 				Text("Not found").
 				Bad(),
 		)
@@ -119,9 +119,9 @@ func (c *OrganizationIDUserIDPage) Render() app.UI {
 				app.Div().Text("Name: "+c.user.Name),
 				app.Div().Text("E-mail address: "+c.user.Username),
 			),
-		myui.Table[*downballotapi.UserGroup]().
+		blazar.Table[*downballotapi.UserGroup]().
 			Rows(c.userGroups).
-			Columns([]myui.TableColumn[*downballotapi.UserGroup]{
+			Columns([]blazar.TableColumn[*downballotapi.UserGroup]{
 				{
 					Name: "ID",
 					Value: func(row *downballotapi.UserGroup) any {
@@ -144,20 +144,20 @@ func (c *OrganizationIDUserIDPage) Render() app.UI {
 					},
 				},
 			}).
-			Action(myui.TableAction{
+			Action(blazar.TableAction{
 				Name: "Add to group",
 				Icon: "plus",
 				To:   fmt.Sprintf("/organization/%s/user/%s/group/new", c.organizationID, c.userID),
 			}).
 			RowAction(
-				myui.RowAction[*downballotapi.UserGroup]{
+				blazar.RowAction[*downballotapi.UserGroup]{
 					Name: "Edit",
 					Icon: "edit",
 					To: func(row *downballotapi.UserGroup) string {
 						return fmt.Sprintf("/organization/%s/user/%s/group/%s/edit", c.organizationID, c.userID, row.ID)
 					},
 				},
-				myui.RowAction[*downballotapi.UserGroup]{
+				blazar.RowAction[*downballotapi.UserGroup]{
 					Name: "Remove",
 					Icon: "trash",
 					Function: func(ctx app.Context, row *downballotapi.UserGroup) {

@@ -9,7 +9,7 @@ import (
 	"github.com/downballot/downballot/downballotapi"
 	"github.com/downballot/ui/api"
 	"github.com/downballot/ui/component"
-	"github.com/downballot/ui/myui"
+	"github.com/go-app-blazar/blazar/blazar"
 	"github.com/go-app-blazar/router"
 	"github.com/maxence-charriere/go-app/v11/pkg/app"
 )
@@ -90,17 +90,17 @@ func (c *OrganizationIDFilterIDEditPage) Render() app.UI {
 	}
 
 	return c.EmbeddedPage.Wrap(
-		myui.Form().
+		blazar.Form().
 			Body(
-				myui.Input[string]().
+				blazar.Input[string]().
 					Label("Name").
 					Type("text").
 					Bind(&c.Name),
-				myui.Input[string]().
+				blazar.Input[string]().
 					Label("Description").
 					Type("text").
 					Bind(&c.Description),
-				myui.Input[string]().
+				blazar.Input[string]().
 					Label("Filter").
 					Type("text").
 					Bind(&c.Filter),

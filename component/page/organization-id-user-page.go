@@ -9,7 +9,7 @@ import (
 	"github.com/downballot/downballot/downballotapi"
 	"github.com/downballot/ui/api"
 	"github.com/downballot/ui/component"
-	"github.com/downballot/ui/myui"
+	"github.com/go-app-blazar/blazar/blazar"
 	"github.com/go-app-blazar/router"
 	"github.com/maxence-charriere/go-app/v11/pkg/app"
 )
@@ -64,9 +64,9 @@ func (c *OrganizationIDUserPage) Render() app.UI {
 	}
 
 	return c.EmbeddedPage.Wrap(
-		myui.Table[*downballotapi.User]().
+		blazar.Table[*downballotapi.User]().
 			Rows(c.users).
-			Columns([]myui.TableColumn[*downballotapi.User]{
+			Columns([]blazar.TableColumn[*downballotapi.User]{
 				{
 					Name: "ID",
 					Value: func(row *downballotapi.User) any {
@@ -89,20 +89,20 @@ func (c *OrganizationIDUserPage) Render() app.UI {
 					},
 				},
 			}).
-			Action(myui.TableAction{
+			Action(blazar.TableAction{
 				Name: "Add user",
 				Icon: "plus",
 				To:   fmt.Sprintf("/organization/%s/user/new", c.organizationID),
 			}).
 			RowAction(
-				myui.RowAction[*downballotapi.User]{
+				blazar.RowAction[*downballotapi.User]{
 					Name: "Edit",
 					Icon: "edit",
 					To: func(row *downballotapi.User) string {
 						return fmt.Sprintf("/organization/%s/user/%s/edit", c.organizationID, row.ID)
 					},
 				},
-				myui.RowAction[*downballotapi.User]{
+				blazar.RowAction[*downballotapi.User]{
 					Name: "Remove",
 					Icon: "trash",
 					Function: func(ctx app.Context, row *downballotapi.User) {

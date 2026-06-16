@@ -15,7 +15,7 @@ import (
 	"github.com/downballot/ui/api"
 	"github.com/downballot/ui/component"
 	"github.com/downballot/ui/googlemap"
-	"github.com/downballot/ui/myui"
+	"github.com/go-app-blazar/blazar/blazar"
 	"github.com/go-app-blazar/router"
 	"github.com/maxence-charriere/go-app/v11/pkg/app"
 	"github.com/tekkamanendless/restapiclient"
@@ -39,7 +39,7 @@ type OrganizationIDGroupIDPersonPage struct {
 	Persons        []*downballotapi.Person
 	Filters        []*downballotapi.Filter
 
-	PersonsTableColumns        []myui.TableColumn[*downballotapi.Person]
+	PersonsTableColumns        []blazar.TableColumn[*downballotapi.Person]
 	PersonsTableVisibleColumns []string
 
 	FilterOpen  bool
@@ -137,7 +137,7 @@ func (c *OrganizationIDGroupIDPersonPage) OnNav(ctx app.Context) {
 			}
 			slices.Sort(possibleFields)
 
-			c.PersonsTableColumns = []myui.TableColumn[*downballotapi.Person]{
+			c.PersonsTableColumns = []blazar.TableColumn[*downballotapi.Person]{
 				{
 					Name: "Voter ID",
 					Value: func(row *downballotapi.Person) any {
@@ -150,7 +150,7 @@ func (c *OrganizationIDGroupIDPersonPage) OnNav(ctx app.Context) {
 			}
 
 			for _, name := range possibleFields {
-				c.PersonsTableColumns = append(c.PersonsTableColumns, myui.TableColumn[*downballotapi.Person]{
+				c.PersonsTableColumns = append(c.PersonsTableColumns, blazar.TableColumn[*downballotapi.Person]{
 					Name: name,
 					Value: func(row *downballotapi.Person) any {
 						return row.Fields[name]
@@ -288,7 +288,7 @@ func (c *OrganizationIDGroupIDPersonPage) Render() app.UI {
 
 	if c.group == nil {
 		return c.EmbeddedPage.Wrap(
-			myui.StatusBar().
+			blazar.StatusBar().
 				Text("Not found").
 				Bad(),
 		)
@@ -297,7 +297,7 @@ func (c *OrganizationIDGroupIDPersonPage) Render() app.UI {
 	slog.InfoContext(context.TODO(), "OrganizationIDGroupIDPersonPage: Render", "PersonsTableVisibleColumns", c.PersonsTableVisibleColumns)
 
 	return c.EmbeddedPage.Wrap(
-		myui.Collapse().
+		blazar.Collapse().
 			Label("Filter").
 			Bind(&c.FilterOpen).
 			SummaryText(func() string {
@@ -322,14 +322,14 @@ func (c *OrganizationIDGroupIDPersonPage) Render() app.UI {
 					Style("display", "flex").
 					Style("flex-direction", "column").
 					Body(
-						myui.Select().
+						blazar.Select().
 							Name("saved_filter").
 							Label("Saved Filter").
-							AllowedValue(func() []myui.SelectOption {
-								var allowedValues []myui.SelectOption
-								allowedValues = append(allowedValues, myui.SelectOption{Label: "Select a filter or create your own", Value: ""})
+							AllowedValue(func() []blazar.SelectOption {
+								var allowedValues []blazar.SelectOption
+								allowedValues = append(allowedValues, blazar.SelectOption{Label: "Select a filter or create your own", Value: ""})
 								for _, filter := range c.Filters {
-									allowedValues = append(allowedValues, myui.SelectOption{Label: filter.Name, Value: filter.Filter})
+									allowedValues = append(allowedValues, blazar.SelectOption{Label: filter.Name, Value: filter.Filter})
 								}
 								return allowedValues
 							}()...).
@@ -339,7 +339,7 @@ func (c *OrganizationIDGroupIDPersonPage) Render() app.UI {
 								ctx.SetState("persist-organization-id-group-id-person-page-filter", c.Filter).Persist()
 								ctx.Update() // Update so that the other input can be updated.
 							}),
-						myui.Input[string]().
+						blazar.Input[string]().
 							Label("Filter").
 							Type("text").
 							Placeholder("key = 'value' or ...").
@@ -348,7 +348,7 @@ func (c *OrganizationIDGroupIDPersonPage) Render() app.UI {
 								ctx.SetState("persist-organization-id-group-id-person-page-filter", c.Filter).Persist()
 								ctx.Update() // Update so that the other input can be updated.
 							}),
-						myui.Input[uint]().
+						blazar.Input[uint]().
 							Label("Limit").
 							Type("number").
 							Placeholder("1000").
@@ -358,32 +358,32 @@ func (c *OrganizationIDGroupIDPersonPage) Render() app.UI {
 							}),
 					),
 			),
-		myui.Form().
+		blazar.Form().
 			Class("no-print").
 			Spacer(false).
 			Action(
-				myui.FormAction{
+				blazar.FormAction{
 					Name:     "Search",
 					Icon:     "search",
 					Function: c.search,
 				},
-				myui.FormAction{
+				blazar.FormAction{
 					Name:     "CSV",
 					Icon:     "download",
 					Function: c.csv,
 				},
-				myui.FormAction{
+				blazar.FormAction{
 					Name:     "Mailing Labels",
 					Icon:     "envelopes-bulk",
 					Function: c.mailingLabels,
 				},
 			),
 		app.If(c.Error != "", func() app.UI {
-			return myui.StatusBar().
+			return blazar.StatusBar().
 				Text(c.Error).
 				Bad()
 		}),
-		myui.Collapse().
+		blazar.Collapse().
 			Label("Map").
 			Bind(&c.MapOpen).
 			Body(
@@ -398,12 +398,12 @@ func (c *OrganizationIDGroupIDPersonPage) Render() app.UI {
 							Markers(markers),
 					),
 			),
-		myui.Collapse().
+		blazar.Collapse().
 			Label("Results").
 			Bind(&c.ResultsOpen).
 			SummaryText("Results: "+fmt.Sprintf("%d", len(c.Persons))).
 			Body(
-				myui.Table[*downballotapi.Person]().
+				blazar.Table[*downballotapi.Person]().
 					PageSize(10).
 					Columns(c.PersonsTableColumns).
 					VisibleColumns(c.PersonsTableVisibleColumns).

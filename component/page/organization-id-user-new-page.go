@@ -9,7 +9,7 @@ import (
 	"github.com/downballot/downballot/downballotapi"
 	"github.com/downballot/ui/api"
 	"github.com/downballot/ui/component"
-	"github.com/downballot/ui/myui"
+	"github.com/go-app-blazar/blazar/blazar"
 	"github.com/go-app-blazar/router"
 	"github.com/maxence-charriere/go-app/v11/pkg/app"
 )
@@ -40,12 +40,12 @@ func (c *OrganizationIDUserNewPage) Render() app.UI {
 	slog.InfoContext(context.TODO(), "OrganizationIDUserNewPage: Render")
 
 	return c.EmbeddedPage.Wrap(
-		myui.Form().
+		blazar.Form().
 			Body(
-				myui.Input[string]().
+				blazar.Input[string]().
 					Label("E-mail Address").
 					Bind(&c.EmailAddress),
-				myui.Input[bool]().
+				blazar.Input[bool]().
 					Label("Owner").
 					Bind(&c.Owner),
 			).
