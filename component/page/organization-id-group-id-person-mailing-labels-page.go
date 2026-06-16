@@ -14,7 +14,7 @@ import (
 	"github.com/downballot/downballot/downballotapi"
 	"github.com/downballot/ui/api"
 	"github.com/downballot/ui/component"
-	"github.com/downballot/ui/myui"
+	"github.com/go-app-blazar/blazar/blazar"
 	"github.com/go-app-blazar/router"
 	"github.com/maxence-charriere/go-app/v11/pkg/app"
 )
@@ -160,14 +160,14 @@ func (c *OrganizationIDGroupIDPersonMailingLabelsPage) Render() app.UI {
 	slices.Sort(allPossibleFilterStrings)
 
 	if !c.loaded {
-		return myui.Page().Body(
+		return blazar.Page().Body(
 			app.Div().Text("Loading..."),
 		)
 	}
 
 	if c.group == nil {
-		return myui.Page().Body(
-			myui.StatusBar().
+		return blazar.Page().Body(
+			blazar.StatusBar().
 				Text("Not found").
 				Bad(),
 		)
@@ -175,10 +175,10 @@ func (c *OrganizationIDGroupIDPersonMailingLabelsPage) Render() app.UI {
 
 	return app.Div().
 		Body(
-			myui.Page().
+			blazar.Page().
 				Class("no-print").
 				Body(
-					myui.Collapse().
+					blazar.Collapse().
 						Label("Filter").
 						Bind(&c.FilterOpen).
 						SummaryText(func() string {
@@ -203,14 +203,14 @@ func (c *OrganizationIDGroupIDPersonMailingLabelsPage) Render() app.UI {
 								Style("display", "flex").
 								Style("flex-direction", "column").
 								Body(
-									myui.Select().
+									blazar.Select().
 										Name("saved_filter").
 										Label("Saved Filter").
-										AllowedValue(func() []myui.SelectOption {
-											var allowedValues []myui.SelectOption
-											allowedValues = append(allowedValues, myui.SelectOption{Label: "Select a filter or create your own", Value: ""})
+										AllowedValue(func() []blazar.SelectOption {
+											var allowedValues []blazar.SelectOption
+											allowedValues = append(allowedValues, blazar.SelectOption{Label: "Select a filter or create your own", Value: ""})
 											for _, filter := range c.Filters {
-												allowedValues = append(allowedValues, myui.SelectOption{Label: filter.Name, Value: filter.Filter})
+												allowedValues = append(allowedValues, blazar.SelectOption{Label: filter.Name, Value: filter.Filter})
 											}
 											return allowedValues
 										}()...).
@@ -220,7 +220,7 @@ func (c *OrganizationIDGroupIDPersonMailingLabelsPage) Render() app.UI {
 											ctx.SetState("persist-organization-id-group-id-person-page-filter", c.Filter).Persist()
 											ctx.Update() // Update so that the other input can be updated.
 										}),
-									myui.Input[string]().
+									blazar.Input[string]().
 										Label("Filter").
 										Type("text").
 										Placeholder("key = 'value' or ...").
@@ -229,7 +229,7 @@ func (c *OrganizationIDGroupIDPersonMailingLabelsPage) Render() app.UI {
 											ctx.SetState("persist-organization-id-group-id-person-page-filter", c.Filter).Persist()
 											ctx.Update() // Update so that the other input can be updated.
 										}),
-									myui.Input[uint]().
+									blazar.Input[uint]().
 										Label("Limit").
 										Type("number").
 										Placeholder("1000").
@@ -239,31 +239,31 @@ func (c *OrganizationIDGroupIDPersonMailingLabelsPage) Render() app.UI {
 										}),
 								),
 						),
-					myui.Collapse().
+					blazar.Collapse().
 						Label("Format").
 						Bind(&c.FormatOpen).
 						SummaryText(c.Format).
 						Body(
-							myui.Select().
+							blazar.Select().
 								Label("Format").
 								AllowedValue(
-									myui.SelectOption{Label: "Select a format", Value: "", Disabled: true},
-									myui.SelectOption{Label: "5164", Value: "5164"},
+									blazar.SelectOption{Label: "Select a format", Value: "", Disabled: true},
+									blazar.SelectOption{Label: "5164", Value: "5164"},
 								).
 								Bind(&c.Format),
 						),
-					myui.Form().
+					blazar.Form().
 						Class("no-print").
 						Spacer(false).
 						Action(
-							myui.FormAction{
+							blazar.FormAction{
 								Name:     "Search",
 								Icon:     "search",
 								Function: c.search,
 							},
 						),
 					app.If(c.Error != "", func() app.UI {
-						return myui.StatusBar().
+						return blazar.StatusBar().
 							Text(c.Error).
 							Bad()
 					}),

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/downballot/ui/myui"
+	"github.com/go-app-blazar/blazar/blazar"
 	"github.com/maxence-charriere/go-app/v11/pkg/app"
 )
 
@@ -31,24 +31,24 @@ func (c *InputPage) OnNav(ctx app.Context) {
 }
 
 func (c *InputPage) Render() app.UI {
-	return myui.Page().
+	return blazar.Page().
 		Body(
 			app.FieldSet().
 				Body(
 					app.Legend().Text("Input"),
-					myui.Input[string]().
+					blazar.Input[string]().
 						Label("string").
 						Bind(&c.stringValue),
-					myui.Input[int]().
+					blazar.Input[int]().
 						Label("int").
 						Bind(&c.intValue),
-					myui.Input[float64]().
+					blazar.Input[float64]().
 						Label("float").
 						Bind(&c.floatValue),
-					myui.Input[uint]().
+					blazar.Input[uint]().
 						Label("uint").
 						Bind(&c.uintValue),
-					myui.Input[bool]().
+					blazar.Input[bool]().
 						Label("bool").
 						Bind(&c.boolValue),
 				),

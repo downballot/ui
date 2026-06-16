@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/downballot/ui/myui"
+	"github.com/go-app-blazar/blazar/blazar"
 	"github.com/maxence-charriere/go-app/v11/pkg/app"
 )
 
@@ -25,16 +25,16 @@ func (c *CollapsePage) OnNav(ctx app.Context) {
 }
 
 func (c *CollapsePage) Render() app.UI {
-	return myui.Page().
+	return blazar.Page().
 		Body(
-			myui.Collapse().
+			blazar.Collapse().
 				Bind(&c.defaultOpen).
 				Label("Default Open").
 				SummaryText("Current state: "+fmt.Sprintf("%t", c.defaultOpen)).
 				Body(
 					app.Div().Text("This is the body of the collapse."),
 				),
-			myui.Collapse().
+			blazar.Collapse().
 				Bind(&c.defaultClosed).
 				Label("Default Closed").
 				SummaryText("Current state: "+fmt.Sprintf("%t", c.defaultClosed)).

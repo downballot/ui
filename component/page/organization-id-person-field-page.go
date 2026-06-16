@@ -11,7 +11,7 @@ import (
 	"github.com/downballot/downballot/permissionset"
 	"github.com/downballot/ui/api"
 	"github.com/downballot/ui/component"
-	"github.com/downballot/ui/myui"
+	"github.com/go-app-blazar/blazar/blazar"
 	"github.com/go-app-blazar/router"
 	"github.com/maxence-charriere/go-app/v11/pkg/app"
 )
@@ -69,9 +69,9 @@ func (c *OrganizationIDPersonFieldPage) Render() app.UI {
 	}
 
 	return c.EmbeddedPage.Wrap(
-		myui.Table[*downballotapi.PersonField]().
+		blazar.Table[*downballotapi.PersonField]().
 			Rows(c.personFields).
-			Columns([]myui.TableColumn[*downballotapi.PersonField]{
+			Columns([]blazar.TableColumn[*downballotapi.PersonField]{
 				{
 					Name: "ID",
 					Value: func(row *downballotapi.PersonField) any {
@@ -112,7 +112,7 @@ func (c *OrganizationIDPersonFieldPage) Render() app.UI {
 					},
 				},
 			}).
-			Action(myui.TableAction{
+			Action(blazar.TableAction{
 				Name:     "New Person Field",
 				Icon:     "plus",
 				To:       fmt.Sprintf("/organization/%s/person-field/new", c.organizationID),

@@ -3,7 +3,7 @@ package demo
 import (
 	"log/slog"
 
-	"github.com/downballot/ui/myui"
+	"github.com/go-app-blazar/blazar/blazar"
 	"github.com/maxence-charriere/go-app/v11/pkg/app"
 )
 
@@ -24,62 +24,62 @@ func (c *ButtonPage) Render() app.UI {
 		app.Window().Call("alert", "Button clicked")
 	}
 
-	return myui.Page().
+	return blazar.Page().
 		Body(
 			app.FieldSet().
 				Body(
 					app.Legend().Text("Navigation"),
 					app.Div().Body(
-						myui.Button().
+						blazar.Button().
 							Label("Default").
 							To("/"),
-						myui.Button().
+						blazar.Button().
 							Label("Flat").
 							Flat(true).
 							To("/"),
-						myui.Button().
+						blazar.Button().
 							Label("Round").
 							Round(true).
 							To("/"),
-						myui.Button().
+						blazar.Button().
 							Label("Disabled").
 							Disabled(true).
 							To("/"),
 					),
 					app.Div().Body(
-						myui.Button().
+						blazar.Button().
 							Label("Default").
 							Icon("home").
 							To("/"),
-						myui.Button().
+						blazar.Button().
 							Label("Flat").
 							Flat(true).
 							Icon("home").
 							To("/"),
-						myui.Button().
+						blazar.Button().
 							Label("Round").
 							Round(true).
 							Icon("home").
 							To("/"),
-						myui.Button().
+						blazar.Button().
 							Label("Disabled").
 							Disabled(true).
 							Icon("home").
 							To("/"),
 					),
 					app.Div().Body(
-						myui.Button().
+						blazar.Button().
 							Icon("home").
 							To("/"),
-						myui.Button().
+						blazar.Button().
 							Flat(true).
 							Icon("home").
 							To("/"),
-						myui.Button().
+						blazar.Button().
 							Round(true).
 							Icon("home").
 							To("/"),
-						myui.Button().
+						blazar.Button().
 							Disabled(true).
 							Icon("home").
 							To("/"),
@@ -89,56 +89,56 @@ func (c *ButtonPage) Render() app.UI {
 				Body(
 					app.Legend().Text("Action"),
 					app.Div().Body(
-						myui.Button().
+						blazar.Button().
 							Label("Default").
 							On("click", clickFunction),
-						myui.Button().
+						blazar.Button().
 							Label("Flat").
 							Flat(true).
 							On("click", clickFunction),
-						myui.Button().
+						blazar.Button().
 							Label("Round").
 							Round(true).
 							On("click", clickFunction),
-						myui.Button().
+						blazar.Button().
 							Label("Disabled").
 							Disabled(true).
 							On("click", clickFunction),
 					),
 					app.Div().Body(
-						myui.Button().
+						blazar.Button().
 							Label("Default").
 							Icon("home").
 							On("click", clickFunction),
-						myui.Button().
+						blazar.Button().
 							Label("Flat").
 							Flat(true).
 							Icon("home").
 							On("click", clickFunction),
-						myui.Button().
+						blazar.Button().
 							Label("Round").
 							Round(true).
 							Icon("home").
 							On("click", clickFunction),
-						myui.Button().
+						blazar.Button().
 							Label("Disabled").
 							Disabled(true).
 							Icon("home").
 							On("click", clickFunction),
 					),
 					app.Div().Body(
-						myui.Button().
+						blazar.Button().
 							Icon("home").
 							On("click", clickFunction),
-						myui.Button().
+						blazar.Button().
 							Flat(true).
 							Icon("home").
 							On("click", clickFunction),
-						myui.Button().
+						blazar.Button().
 							Round(true).
 							Icon("home").
 							On("click", clickFunction),
-						myui.Button().
+						blazar.Button().
 							Disabled(true).
 							Icon("home").
 							On("click", clickFunction),

@@ -8,7 +8,7 @@ import (
 
 	"github.com/downballot/ui/component/layout"
 	"github.com/downballot/ui/material"
-	"github.com/downballot/ui/myui"
+	"github.com/go-app-blazar/blazar/blazar"
 	"github.com/go-app-blazar/router"
 	"github.com/maxence-charriere/go-app/v11/pkg/app"
 )
@@ -137,7 +137,7 @@ func (c *OrganizationLayout) Render() app.UI {
 					}
 				}).
 				Body(
-					myui.Icon().Icon("bars"),
+					blazar.Icon().Icon("bars"),
 				),
 			Headline:   c.organizationName,
 			HeadlineUI: headline,

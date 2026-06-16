@@ -6,7 +6,7 @@ import (
 
 	"github.com/downballot/ui/component/layout"
 	"github.com/downballot/ui/material"
-	"github.com/downballot/ui/myui"
+	"github.com/go-app-blazar/blazar/blazar"
 	"github.com/go-app-blazar/router"
 	"github.com/maxence-charriere/go-app/v11/pkg/app"
 )
@@ -53,12 +53,12 @@ func (c *DownballotLayout) Render() app.UI {
 			SubtitleUI: app.Div().
 				Class("downballotlayout-menu").
 				Body(
-					myui.Item().
+					blazar.Item().
 						Icon("building").
 						Label("Organizations").
 						To("/organization"),
 					app.Span().Style("flex", "1"),
-					myui.Item().
+					blazar.Item().
 						Icon("user").
 						Label("Profile").
 						To("/profile"),

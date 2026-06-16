@@ -10,7 +10,7 @@ import (
 	"github.com/downballot/downballot/downballotapi"
 	"github.com/downballot/ui/api"
 	"github.com/downballot/ui/component"
-	"github.com/downballot/ui/myui"
+	"github.com/go-app-blazar/blazar/blazar"
 	"github.com/go-app-blazar/router"
 	"github.com/maxence-charriere/go-app/v11/pkg/app"
 )
@@ -85,16 +85,16 @@ func (c *OrganizationIDPersonFieldIDPage) Render() app.UI {
 
 	if c.personField == nil {
 		return c.EmbeddedPage.Wrap(
-			myui.StatusBar().
+			blazar.StatusBar().
 				Text("Not found").
 				Bad(),
 		)
 	}
 
 	return c.EmbeddedPage.Wrap(
-		myui.Table[*downballotapi.PersonField]().
+		blazar.Table[*downballotapi.PersonField]().
 			Rows([]*downballotapi.PersonField{c.personField}).
-			Columns([]myui.TableColumn[*downballotapi.PersonField]{
+			Columns([]blazar.TableColumn[*downballotapi.PersonField]{
 				{
 					Name: "ID",
 					Value: func(row *downballotapi.PersonField) any {

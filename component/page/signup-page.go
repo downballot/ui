@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/downballot/downballot/downballotapi"
-	"github.com/downballot/ui/myui"
+	"github.com/go-app-blazar/blazar/blazar"
 	"github.com/maxence-charriere/go-app/v11/pkg/app"
 )
 
@@ -28,23 +28,23 @@ func (c *SignupPage) OnNav(ctx app.Context) {
 }
 
 func (c *SignupPage) Render() app.UI {
-	return myui.Page().Body(
+	return blazar.Page().Body(
 		app.Div().
 			Body(
 				app.H2().Text("Downballot Signup"),
 			),
-		myui.Form().
+		blazar.Form().
 			Body(
-				myui.Input[string]().
+				blazar.Input[string]().
 					Label("Name").
 					Type("text").
 					Bind(&c.name),
-				myui.Input[string]().
+				blazar.Input[string]().
 					Label("E-mail address").
 					Type("text").
 					Bind(&c.username),
 				app.If(c.error != "", func() app.UI {
-					return myui.StatusBar().
+					return blazar.StatusBar().
 						Text(c.error).
 						Bad()
 				}),

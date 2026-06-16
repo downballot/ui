@@ -9,7 +9,7 @@ import (
 	"github.com/downballot/downballot/downballotapi"
 	"github.com/downballot/ui/api"
 	"github.com/downballot/ui/component"
-	"github.com/downballot/ui/myui"
+	"github.com/go-app-blazar/blazar/blazar"
 	"github.com/go-app-blazar/router"
 	"github.com/maxence-charriere/go-app/v11/pkg/app"
 )
@@ -105,17 +105,17 @@ func (c *OrganizationIDGroupIDEditPage) Render() app.UI {
 	}
 
 	return c.EmbeddedPage.Wrap(
-		myui.Form().
+		blazar.Form().
 			Body(
-				myui.Input[string]().
+				blazar.Input[string]().
 					Label("Name").
 					Type("text").
 					Bind(&c.Name),
-				myui.Input[string]().
+				blazar.Input[string]().
 					Label("Parent").
 					Type("text").
 					Bind(&c.ParentID),
-				myui.Input[string]().
+				blazar.Input[string]().
 					Label("Filter").
 					Type("text").
 					Bind(&c.Filter),
@@ -143,7 +143,7 @@ func (c *OrganizationIDGroupIDEditPage) Render() app.UI {
 					c.Reload(ctx)
 				})
 			}).
-			Action(myui.FormAction{
+			Action(blazar.FormAction{
 				Name: "Delete",
 				Icon: "trash",
 				Function: func(ctx app.Context) {

@@ -12,7 +12,7 @@ import (
 	"github.com/downballot/downballot/downballotapi"
 	"github.com/downballot/ui/api"
 	"github.com/downballot/ui/component"
-	"github.com/downballot/ui/myui"
+	"github.com/go-app-blazar/blazar/blazar"
 	"github.com/go-app-blazar/router"
 	"github.com/google/uuid"
 	"github.com/maxence-charriere/go-app/v11/pkg/app"
@@ -124,7 +124,7 @@ func (c *OrganizationIDPersonIDPage) Render() app.UI {
 
 	if c.person == nil {
 		return c.EmbeddedPage.Wrap(
-			myui.StatusBar().
+			blazar.StatusBar().
 				Text("Not found").
 				Bad(),
 		)
@@ -135,7 +135,7 @@ func (c *OrganizationIDPersonIDPage) Render() app.UI {
 		Value string
 	}
 
-	columns := []myui.TableColumn[Record]{
+	columns := []blazar.TableColumn[Record]{
 		{
 			Name: "Field",
 			Value: func(row Record) any {
@@ -159,18 +159,18 @@ func (c *OrganizationIDPersonIDPage) Render() app.UI {
 	})
 
 	return c.EmbeddedPage.Wrap(
-		myui.Table[Record]().
+		blazar.Table[Record]().
 			Title("Fields").
 			Rows(rows).
 			Columns(columns).
-			Action(myui.TableAction{
+			Action(blazar.TableAction{
 				Name: "Add Field",
 				Icon: "plus",
 				Function: func(ctx app.Context) {
 					c.addFieldDialog.Open(ctx)
 				},
 			}).
-			RowAction(myui.RowAction[Record]{
+			RowAction(blazar.RowAction[Record]{
 				Name: "Edit",
 				Icon: "edit",
 				Function: func(ctx app.Context, row Record) {
@@ -180,10 +180,10 @@ func (c *OrganizationIDPersonIDPage) Render() app.UI {
 				},
 			}),
 		&c.addFieldDialog,
-		myui.Table[*downballotapi.PersonAudit]().
+		blazar.Table[*downballotapi.PersonAudit]().
 			Title("Audit Log").
 			Rows(c.audits).
-			Columns([]myui.TableColumn[*downballotapi.PersonAudit]{
+			Columns([]blazar.TableColumn[*downballotapi.PersonAudit]{
 				{
 					Name: "ID",
 					Value: func(row *downballotapi.PersonAudit) any {

@@ -3,7 +3,7 @@ package demo
 import (
 	"log/slog"
 
-	"github.com/downballot/ui/myui"
+	"github.com/go-app-blazar/blazar/blazar"
 	"github.com/maxence-charriere/go-app/v11/pkg/app"
 )
 
@@ -36,14 +36,14 @@ func (c *FormPage) Render() app.UI {
 		app.Window().Call("alert", "Action 2 called")
 	}
 
-	return myui.Page().
+	return blazar.Page().
 		Body(
 			app.FieldSet().
 				Body(
 					app.Legend().Text("Default"),
-					myui.Form().
+					blazar.Form().
 						Body(
-							myui.Input[string]().
+							blazar.Input[string]().
 								Label("Name").
 								Bind(&c.name),
 						),
@@ -51,9 +51,9 @@ func (c *FormPage) Render() app.UI {
 			app.FieldSet().
 				Body(
 					app.Legend().Text("With cancel"),
-					myui.Form().
+					blazar.Form().
 						Body(
-							myui.Input[string]().
+							blazar.Input[string]().
 								Label("Name").
 								Bind(&c.name),
 						).
@@ -62,9 +62,9 @@ func (c *FormPage) Render() app.UI {
 			app.FieldSet().
 				Body(
 					app.Legend().Text("With submit"),
-					myui.Form().
+					blazar.Form().
 						Body(
-							myui.Input[string]().
+							blazar.Input[string]().
 								Label("Name").
 								Bind(&c.name),
 						).
@@ -73,9 +73,9 @@ func (c *FormPage) Render() app.UI {
 			app.FieldSet().
 				Body(
 					app.Legend().Text("With both submit and cancel"),
-					myui.Form().
+					blazar.Form().
 						Body(
-							myui.Input[string]().
+							blazar.Input[string]().
 								Label("Name").
 								Bind(&c.name),
 						).
@@ -85,9 +85,9 @@ func (c *FormPage) Render() app.UI {
 			app.FieldSet().
 				Body(
 					app.Legend().Text("With custom labels"),
-					myui.Form().
+					blazar.Form().
 						Body(
-							myui.Input[string]().
+							blazar.Input[string]().
 								Label("Name").
 								Bind(&c.name),
 						).
@@ -101,23 +101,23 @@ func (c *FormPage) Render() app.UI {
 			app.FieldSet().
 				Body(
 					app.Legend().Text("With custom actions only"),
-					myui.Form().
+					blazar.Form().
 						Body(
-							myui.Input[string]().
+							blazar.Input[string]().
 								Label("Name").
 								Bind(&c.name),
 						).
 						Action(
-							myui.FormAction{Name: "Action 1", Icon: "person", Function: action1Function},
-							myui.FormAction{Name: "Action 2", Icon: "gear", Function: action2Function},
+							blazar.FormAction{Name: "Action 1", Icon: "person", Function: action1Function},
+							blazar.FormAction{Name: "Action 2", Icon: "gear", Function: action2Function},
 						),
 				),
 			app.FieldSet().
 				Body(
 					app.Legend().Text("With custom actions and default actions"),
-					myui.Form().
+					blazar.Form().
 						Body(
-							myui.Input[string]().
+							blazar.Input[string]().
 								Label("Name").
 								Bind(&c.name),
 						).
@@ -128,17 +128,17 @@ func (c *FormPage) Render() app.UI {
 						SubmitIcon("save").
 						SubmitFunction(submitFunction).
 						Action(
-							myui.FormAction{Name: "Action 1", Icon: "person", Function: action1Function},
-							myui.FormAction{Name: "Action 2", Icon: "gear", Function: action2Function},
+							blazar.FormAction{Name: "Action 1", Icon: "person", Function: action1Function},
+							blazar.FormAction{Name: "Action 2", Icon: "gear", Function: action2Function},
 						),
 				),
 			app.FieldSet().
 				Body(
 					app.Legend().Text("With actions to the left"),
-					myui.Form().
+					blazar.Form().
 						Spacer(false).
 						Body(
-							myui.Input[string]().
+							blazar.Input[string]().
 								Label("Name").
 								Bind(&c.name),
 						).
@@ -146,8 +146,8 @@ func (c *FormPage) Render() app.UI {
 						SubmitIcon("save").
 						SubmitFunction(submitFunction).
 						Action(
-							myui.FormAction{Name: "Action 1", Icon: "person", Function: action1Function},
-							myui.FormAction{Name: "Action 2", Icon: "gear", Function: action2Function},
+							blazar.FormAction{Name: "Action 1", Icon: "person", Function: action1Function},
+							blazar.FormAction{Name: "Action 2", Icon: "gear", Function: action2Function},
 						),
 				),
 		)

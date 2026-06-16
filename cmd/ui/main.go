@@ -11,11 +11,11 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/downballot/ui/blazarapp"
 	"github.com/downballot/ui/component/customlayout"
-	"github.com/downballot/ui/fontawesome"
 	"github.com/downballot/ui/material"
-	"github.com/downballot/ui/myui"
+	"github.com/go-app-blazar/blazar/blazar"
+	"github.com/go-app-blazar/blazar/blazarapp"
+	"github.com/go-app-blazar/blazar/fontawesome"
 	"github.com/go-app-blazar/router"
 	"github.com/joho/godotenv"
 	"github.com/lmittmann/tint"
@@ -112,7 +112,6 @@ func main() {
 		Styles: []string{
 			"/web/main.css",
 			"/web/material.css",
-			"/web/myui.css",
 		},
 		Env: map[string]string{
 			"GOOGLE_MAPS_API_KEY": os.Getenv("GOOGLE_MAPS_API_KEY"),
@@ -122,9 +121,11 @@ func main() {
 		Location: "/web/fontawesome/",
 		Minify:   false,
 	}))
+	blazarApp.AddPlugin(blazar.NewPlugin(blazar.Config{
+		Location: "/web/blazar/",
+	}))
 
 	blazarApp.Handle("/web/material.css", material.CSS())
-	blazarApp.Handle("/web/myui.css", myui.CSS())
 
 	slog.InfoContext(ctx, "Disable service worker?", "disableServiceWorker", disableServiceWorker)
 	if disableServiceWorker {

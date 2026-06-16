@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/downballot/downballot/permissionset"
-	"github.com/downballot/ui/myui"
+	"github.com/go-app-blazar/blazar/blazar"
 	"github.com/go-app-blazar/router"
 	"github.com/maxence-charriere/go-app/v11/pkg/app"
 )
@@ -90,7 +90,7 @@ func (c *OrganizationMenu) Render() app.UI {
 			app.Range(c.menuItems).Slice(func(i int) app.UI {
 				item := c.menuItems[i]
 
-				return myui.Item().
+				return blazar.Item().
 					Icon(item.Icon).
 					Label(item.Name).
 					To(item.To)
