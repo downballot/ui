@@ -35,6 +35,7 @@ type Coordinate struct {
 type Marker struct {
 	Coordinate
 	Title   string
+	Body    func() []app.UI
 	OnClick func(ctx app.Context, event app.Event)
 }
 
@@ -125,7 +126,7 @@ func (c *HTMLGoogleMap) Render() app.UI {
 				Body(
 					app.Range(c.MarkersValue).Slice(func(i int) app.UI {
 						marker := c.MarkersValue[i]
-						return app.Elem("gmp-advanced-marker").
+						element := app.Elem("gmp-advanced-marker").
 							Attr("position", fmt.Sprintf("%f,%f", marker.Latitude, marker.Longitude)).
 							Attr("title", marker.Title).
 							Attr("gmp-clickable", "true").
@@ -137,6 +138,11 @@ func (c *HTMLGoogleMap) Render() app.UI {
 								}
 								marker.OnClick(ctx, event)
 							})
+
+						if marker.Body != nil {
+							element = element.Body(marker.Body()...)
+						}
+						return element
 					}),
 				),
 			app.Script().Text(`
