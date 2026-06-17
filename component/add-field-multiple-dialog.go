@@ -12,12 +12,11 @@ import (
 	"github.com/maxence-charriere/go-app/v11/pkg/app"
 )
 
-type AddFieldDialog struct {
+type AddFieldMultipleDialog struct {
 	app.Compo
 
 	OrganizationID string
-	VoterID        string
-	Person         *downballotapi.Person
+	voterIDs       []string
 
 	DialogID string
 	error    string
@@ -31,9 +30,9 @@ type AddFieldDialog struct {
 	ValueValue         string
 }
 
-func (c *AddFieldDialog) Open(ctx app.Context) {
-	slog.InfoContext(ctx.Context, "AddFieldDialog: Open", "DialogID", c.DialogID)
-	slog.InfoContext(ctx.Context, "AddFieldDialog: Open", "JSValue", c.JSValue(), "JSValue", app.Window().Get("JSON").Call("stringify", c.JSValue()))
+func (c *AddFieldMultipleDialog) Open(ctx app.Context, voterIDs []string) {
+	slog.InfoContext(ctx.Context, "AddFieldMultipleDialog: Open", "DialogID", c.DialogID)
+	slog.InfoContext(ctx.Context, "AddFieldMultipleDialog: Open", "JSValue", c.JSValue(), "JSValue", app.Window().Get("JSON").Call("stringify", c.JSValue()))
 
 	dialogElement := app.Window().GetElementByID(c.DialogID)
 	if dialogElement == nil || dialogElement.IsNull() {
@@ -42,21 +41,8 @@ func (c *AddFieldDialog) Open(ctx app.Context) {
 	}
 	dialogElement.Call("showModal")
 
-	ctx.Async(func() {
-		var output downballotapi.GetPersonResponse
-		err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.OrganizationID+"/person/"+c.VoterID, nil, &output)
-		if err != nil {
-			slog.ErrorContext(ctx.Context, "Could not get person", "err", err)
-			return
-		}
+	c.voterIDs = voterIDs
 
-		ctx.Dispatch(func(ctx app.Context) {
-			slog.InfoContext(ctx.Context, "Dispatch: Setting person", "person", output.Person)
-			c.Person = output.Person
-
-			ctx.Update()
-		})
-	})
 	ctx.Async(func() {
 		var output downballotapi.ListPersonFieldsResponse
 		err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.OrganizationID+"/person-field", nil, &output)
@@ -74,7 +60,7 @@ func (c *AddFieldDialog) Open(ctx app.Context) {
 	})
 }
 
-func (c *AddFieldDialog) Close(ctx app.Context) {
+func (c *AddFieldMultipleDialog) Close(ctx app.Context) {
 	dialogElement := app.Window().GetElementByID(c.DialogID)
 	if dialogElement == nil || dialogElement.IsNull() {
 		slog.ErrorContext(context.TODO(), "Could not get dialog element", "dialogID", c.DialogID)
@@ -83,8 +69,8 @@ func (c *AddFieldDialog) Close(ctx app.Context) {
 	dialogElement.Call("close")
 }
 
-func (c *AddFieldDialog) Render() app.UI {
-	slog.InfoContext(context.TODO(), "AddFieldDialog: Render", "OrganizationID", c.OrganizationID, "VoterID", c.VoterID, "Person", c.Person)
+func (c *AddFieldMultipleDialog) Render() app.UI {
+	slog.InfoContext(context.TODO(), "AddFieldMultipleDialog: Render", "OrganizationID", c.OrganizationID, "voterIDs", c.voterIDs)
 
 	submitName := c.SubmitNameValue
 	if submitName == "" {
@@ -190,14 +176,13 @@ func (c *AddFieldDialog) Render() app.UI {
 				}()...).
 			Bind(&c.SelectedFieldValue).
 			On("change", func(ctx app.Context, e app.Event) {
-				slog.InfoContext(ctx.Context, "AddFieldDialog: OnChange", "SelectedFieldValue", c.SelectedFieldValue)
+				slog.InfoContext(ctx.Context, "AddFieldMultipleDialog: OnChange", "SelectedFieldValue", c.SelectedFieldValue)
 
-				if c.SelectedFieldValue == "" {
-					c.ValueValue = ""
-				} else {
-					c.ValueValue = c.Person.Fields[c.SelectedFieldValue]
-				}
-				slog.InfoContext(ctx.Context, "AddFieldDialog: OnChange", "ValueValue", c.ValueValue)
+				c.ValueValue = ""
+
+				// TODO: Can we pick the first option if it's a dropdown?
+
+				slog.InfoContext(ctx.Context, "AddFieldMultipleDialog: OnChange", "ValueValue", c.ValueValue)
 				ctx.Update()
 			}),
 	}
@@ -212,16 +197,18 @@ func (c *AddFieldDialog) Render() app.UI {
 				CancelFunction(c.Close).
 				SubmitLabel("Save").
 				SubmitFunction(func(ctx app.Context) {
-					slog.InfoContext(ctx.Context, "AddFieldDialog: SubmitFunction", "SelectedFieldValue", c.SelectedFieldValue, "ValueValue", c.ValueValue)
-					input := downballotapi.PatchPersonRequest{
-						Fields: map[string]*string{},
-					}
-					input.Fields[c.SelectedFieldValue] = &c.ValueValue
-					var output downballotapi.PatchPersonRequest
-					err := api.Do(ctx, http.MethodPatch, "/api/v1/organization/"+c.OrganizationID+"/person/"+c.VoterID, input, &output)
-					if err != nil {
-						slog.ErrorContext(ctx.Context, "Could not update person", "err", err)
-						return
+					slog.InfoContext(ctx.Context, "AddFieldMultipleDialog: SubmitFunction", "SelectedFieldValue", c.SelectedFieldValue, "ValueValue", c.ValueValue)
+					for _, voterID := range c.voterIDs {
+						input := downballotapi.PatchPersonRequest{
+							Fields: map[string]*string{},
+						}
+						input.Fields[c.SelectedFieldValue] = &c.ValueValue
+						var output downballotapi.PatchPersonRequest
+						err := api.Do(ctx, http.MethodPatch, "/api/v1/organization/"+c.OrganizationID+"/person/"+voterID, input, &output)
+						if err != nil {
+							slog.ErrorContext(ctx.Context, "Could not update person", "err", err)
+							return
+						}
 					}
 
 					if c.OnSubmit != nil {
