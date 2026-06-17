@@ -268,6 +268,16 @@ func (c *OrganizationIDGroupIDPersonPage) Render() app.UI {
 					Longitude: longitude,
 				},
 				Title: title,
+				Body: func() []app.UI {
+					parts := strings.SplitN(person.Fields["residential_address"], " ", 2)
+					streetNumber := parts[0]
+
+					return []app.UI{
+						app.Div().
+							Class("map-marker").
+							Text(streetNumber),
+					}
+				},
 				OnClick: func(ctx app.Context, event app.Event) {
 					ctx.PreventUpdate()
 
