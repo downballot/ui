@@ -53,23 +53,9 @@ func (c *OrganizationIDPersonIDPage) OnNav(ctx app.Context) {
 		OrganizationID: c.organizationID,
 		VoterID:        c.voterID,
 		DialogID:       "id-" + uuid.New().String(),
-	}
-
-	c.addFieldDialog.SubmitFunctionValue = func(ctx app.Context) error {
-		slog.InfoContext(ctx.Context, "AddFieldDialog: SubmitFunctionValue", "SelectedFieldValue", c.addFieldDialog.SelectedFieldValue, "ValueValue", c.addFieldDialog.ValueValue)
-		input := downballotapi.PatchPersonRequest{
-			Fields: map[string]*string{},
-		}
-		input.Fields[c.addFieldDialog.SelectedFieldValue] = &c.addFieldDialog.ValueValue
-		var output downballotapi.PatchPersonRequest
-		err := api.Do(ctx, http.MethodPatch, "/api/v1/organization/"+c.organizationID+"/person/"+c.voterID, input, &output)
-		if err != nil {
-			slog.ErrorContext(ctx.Context, "Could not update person", "err", err)
-			return err
-		}
-
-		c.Reload(ctx)
-		return nil
+		OnSubmit: func(ctx app.Context) {
+			c.Reload(ctx)
+		},
 	}
 
 	c.Reload(ctx)

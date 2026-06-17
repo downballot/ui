@@ -17,6 +17,7 @@ import (
 	"github.com/downballot/ui/googlemap"
 	"github.com/go-app-blazar/blazar/blazar"
 	"github.com/go-app-blazar/router"
+	"github.com/google/uuid"
 	"github.com/maxence-charriere/go-app/v11/pkg/app"
 	"github.com/tekkamanendless/restapiclient"
 )
@@ -45,6 +46,8 @@ type OrganizationIDGroupIDPersonPage struct {
 	FilterOpen  bool
 	MapOpen     bool
 	ResultsOpen bool
+
+	addFieldDialog component.AddFieldMultipleDialog
 }
 
 var _ app.Navigator = (*OrganizationIDGroupIDPersonPage)(nil)
@@ -94,6 +97,14 @@ func (c *OrganizationIDGroupIDPersonPage) OnNav(ctx app.Context) {
 	c.FilterOpen = false
 	c.MapOpen = true
 	c.ResultsOpen = true
+
+	c.addFieldDialog = component.AddFieldMultipleDialog{
+		OrganizationID: c.organizationID,
+		DialogID:       "id-" + uuid.New().String(),
+		OnSubmit: func(ctx app.Context) {
+			// Do nothing.
+		},
+	}
 
 	ctx.Async(func() {
 		var wg sync.WaitGroup
@@ -407,7 +418,19 @@ func (c *OrganizationIDGroupIDPersonPage) Render() app.UI {
 					PageSize(10).
 					Columns(c.PersonsTableColumns).
 					VisibleColumns(c.PersonsTableVisibleColumns).
-					Rows(c.Persons),
+					Rows(c.Persons).
+					MultiRowAction(blazar.MultiRowAction[*downballotapi.Person]{
+						Name: "Edit",
+						Icon: "pencil",
+						Function: func(ctx app.Context, rows []*downballotapi.Person) {
+							voterIDs := []string{}
+							for _, row := range rows {
+								voterIDs = append(voterIDs, row.VoterID)
+							}
+							c.addFieldDialog.Open(ctx, voterIDs)
+						},
+					}),
+				&c.addFieldDialog,
 			),
 	)
 }
