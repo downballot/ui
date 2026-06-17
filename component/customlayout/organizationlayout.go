@@ -128,7 +128,7 @@ func (c *OrganizationLayout) Render() app.UI {
 					drawerElement := mainLayoutElement.Call("querySelector", ".main-layout-drawer")
 					slog.InfoContext(ctx.Context, "OrganizationLayout: Header: Leading: OnClick", "drawerElement", drawerElement)
 					if !drawerElement.IsNull() {
-						drawerElement.Get("classList").Call("toggle", "hidden")
+						drawerElement.Get("classList").Call("toggle", "visible")
 					}
 				}
 			}).
