@@ -100,13 +100,13 @@ func (c *OrganizationIDFilterPage) Render() app.UI {
 			}).
 			Action(blazar.TableAction{
 				Name:     "New filter",
-				Icon:     "plus",
+				Icon:     component.IconAdd,
 				To:       fmt.Sprintf("/organization/%s/filter/new", c.organizationID),
 				Disabled: !c.permissionSet.Match(iam.IAMFilterCreate),
 			}).
 			RowAction(blazar.RowAction[*downballotapi.Filter]{
 				Name: "Edit",
-				Icon: "edit",
+				Icon: component.IconEdit,
 				To: func(row *downballotapi.Filter) string {
 					return fmt.Sprintf("/organization/%s/filter/%s/edit", c.organizationID, row.ID)
 				},

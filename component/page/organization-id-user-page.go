@@ -91,20 +91,20 @@ func (c *OrganizationIDUserPage) Render() app.UI {
 			}).
 			Action(blazar.TableAction{
 				Name: "Add user",
-				Icon: "plus",
+				Icon: component.IconAdd,
 				To:   fmt.Sprintf("/organization/%s/user/new", c.organizationID),
 			}).
 			RowAction(
 				blazar.RowAction[*downballotapi.User]{
 					Name: "Edit",
-					Icon: "edit",
+					Icon: component.IconEdit,
 					To: func(row *downballotapi.User) string {
 						return fmt.Sprintf("/organization/%s/user/%s/edit", c.organizationID, row.ID)
 					},
 				},
 				blazar.RowAction[*downballotapi.User]{
 					Name: "Remove",
-					Icon: "trash",
+					Icon: component.IconDelete,
 					Function: func(ctx app.Context, row *downballotapi.User) {
 						ctx.PreventUpdate()
 

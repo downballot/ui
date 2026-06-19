@@ -4,6 +4,7 @@ import (
 	"context"
 	"log/slog"
 
+	"github.com/downballot/ui/component"
 	"github.com/downballot/ui/component/layout"
 	"github.com/go-app-blazar/blazar/blazar"
 	"github.com/go-app-blazar/router"
@@ -53,12 +54,12 @@ func (c *DownballotLayout) Render() app.UI {
 				Class("downballotlayout-menu").
 				Body(
 					blazar.Item().
-						Icon("building").
+						Icon(component.IconOrganization).
 						Label("Organizations").
 						To("/organization"),
 					app.Span().Style("flex", "1"),
 					blazar.Item().
-						Icon("user").
+						Icon(component.IconUser).
 						Label("Profile").
 						To("/profile"),
 				),

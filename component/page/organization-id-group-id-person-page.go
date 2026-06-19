@@ -385,17 +385,17 @@ func (c *OrganizationIDGroupIDPersonPage) Render() app.UI {
 			Action(
 				blazar.FormAction{
 					Name:     "Search",
-					Icon:     "search",
+					Icon:     component.IconSearch,
 					Function: c.search,
 				},
 				blazar.FormAction{
 					Name:     "CSV",
-					Icon:     "download",
+					Icon:     component.IconDownload,
 					Function: c.csv,
 				},
 				blazar.FormAction{
 					Name:     "Mailing Labels",
-					Icon:     "envelopes-bulk",
+					Icon:     component.IconMailingLabel,
 					Function: c.mailingLabels,
 				},
 			),
@@ -431,7 +431,7 @@ func (c *OrganizationIDGroupIDPersonPage) Render() app.UI {
 					Rows(c.Persons).
 					MultiRowAction(blazar.MultiRowAction[*downballotapi.Person]{
 						Name: "Edit",
-						Icon: "pencil",
+						Icon: component.IconEdit,
 						Function: func(ctx app.Context, rows []*downballotapi.Person) {
 							voterIDs := []string{}
 							for _, row := range rows {

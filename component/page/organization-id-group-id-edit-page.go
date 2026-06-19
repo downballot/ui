@@ -123,7 +123,7 @@ func (c *OrganizationIDGroupIDEditPage) Render() app.UI {
 			CancelLabel("Reset").
 			CancelFunction(c.Reload).
 			SubmitLabel("Save").
-			SubmitIcon("save").
+			SubmitIcon(component.IconSave).
 			SubmitFunction(func(ctx app.Context) {
 				ctx.PreventUpdate()
 
@@ -145,7 +145,7 @@ func (c *OrganizationIDGroupIDEditPage) Render() app.UI {
 			}).
 			Action(blazar.FormAction{
 				Name: "Delete",
-				Icon: "trash",
+				Icon: component.IconDelete,
 				Function: func(ctx app.Context) {
 					ctx.PreventUpdate()
 

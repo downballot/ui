@@ -114,9 +114,17 @@ func (c *OrganizationIDPersonFieldPage) Render() app.UI {
 			}).
 			Action(blazar.TableAction{
 				Name:     "New Person Field",
-				Icon:     "plus",
+				Icon:     component.IconAdd,
 				To:       fmt.Sprintf("/organization/%s/person-field/new", c.organizationID),
 				Disabled: !c.permissionSet.Match(iam.IAMPersonFieldDefinitionCreate),
+			}).
+			RowAction(blazar.RowAction[*downballotapi.PersonField]{
+				Name: "Edit",
+				Icon: component.IconEdit,
+				To: func(row *downballotapi.PersonField) string {
+					return fmt.Sprintf("/organization/%s/person-field/%s/edit", c.organizationID, row.ID)
+				},
+				Disabled: !c.permissionSet.Match(iam.IAMPersonFieldDefinitionUpdate),
 			}),
 	)
 }

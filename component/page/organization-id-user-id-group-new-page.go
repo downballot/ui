@@ -124,7 +124,7 @@ func (c *OrganizationIDUserIDGroupNewPage) Render() app.UI {
 					Bind(&c.owner),
 			).
 			SubmitLabel("Add User To Group").
-			SubmitIcon("save").
+			SubmitIcon(component.IconSave).
 			SubmitFunction(func(ctx app.Context) {
 				ctx.PreventUpdate()
 
@@ -145,7 +145,7 @@ func (c *OrganizationIDUserIDGroupNewPage) Render() app.UI {
 			}).
 			Action(blazar.FormAction{
 				Name: "Delete",
-				Icon: "trash",
+				Icon: component.IconDelete,
 				Function: func(ctx app.Context) {
 					ctx.PreventUpdate()
 

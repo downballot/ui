@@ -8,6 +8,8 @@ import (
 	"sync"
 
 	"github.com/downballot/downballot/downballotapi"
+	"github.com/downballot/downballot/iam"
+	"github.com/downballot/downballot/permissionset"
 	"github.com/downballot/ui/api"
 	"github.com/downballot/ui/component"
 	"github.com/go-app-blazar/blazar/blazar"
@@ -24,6 +26,7 @@ type OrganizationIDPersonFieldIDPage struct {
 	organizationID string
 	personFieldID  string
 	personField    *downballotapi.PersonField
+	permissionSet  permissionset.PermissionSet
 }
 
 func (c *OrganizationIDPersonFieldIDPage) OnNav(ctx app.Context) {
@@ -42,6 +45,8 @@ func (c *OrganizationIDPersonFieldIDPage) OnNav(ctx app.Context) {
 	if c.personFieldID == "" {
 		return
 	}
+
+	ctx.GetState("organization/"+c.organizationID+"/permission-set", &c.permissionSet)
 
 	ctx.Async(func() {
 		var wg sync.WaitGroup
@@ -91,49 +96,58 @@ func (c *OrganizationIDPersonFieldIDPage) Render() app.UI {
 		)
 	}
 
-	return c.EmbeddedPage.Wrap(
-		blazar.Table[*downballotapi.PersonField]().
-			Rows([]*downballotapi.PersonField{c.personField}).
-			Columns([]blazar.TableColumn[*downballotapi.PersonField]{
-				{
-					Name: "ID",
-					Value: func(row *downballotapi.PersonField) any {
-						return row.ID
+	return c.EmbeddedPage.
+		Action(
+			component.PageAction{
+				Name:     "Edit",
+				Icon:     component.IconEdit,
+				To:       fmt.Sprintf("/organization/%s/person-field/%s/edit", c.organizationID, c.personFieldID),
+				Disabled: !c.permissionSet.Match(iam.IAMPersonFieldDefinitionUpdate),
+			},
+		).
+		Wrap(
+			blazar.Table[*downballotapi.PersonField]().
+				Rows([]*downballotapi.PersonField{c.personField}).
+				Columns([]blazar.TableColumn[*downballotapi.PersonField]{
+					{
+						Name: "ID",
+						Value: func(row *downballotapi.PersonField) any {
+							return row.ID
+						},
 					},
-				},
-				{
-					Name: "Name",
-					Value: func(row *downballotapi.PersonField) any {
-						return row.Name
+					{
+						Name: "Name",
+						Value: func(row *downballotapi.PersonField) any {
+							return row.Name
+						},
+						To: func(row *downballotapi.PersonField) string {
+							return fmt.Sprintf("/organization/%s/person-field/%s", c.organizationID, row.ID)
+						},
 					},
-					To: func(row *downballotapi.PersonField) string {
-						return fmt.Sprintf("/organization/%s/person-field/%s", c.organizationID, row.ID)
+					{
+						Name: "Type",
+						Value: func(row *downballotapi.PersonField) any {
+							return row.Type
+						},
 					},
-				},
-				{
-					Name: "Type",
-					Value: func(row *downballotapi.PersonField) any {
-						return row.Type
+					{
+						Name: "Allow Empty",
+						Value: func(row *downballotapi.PersonField) any {
+							return row.AllowEmpty
+						},
 					},
-				},
-				{
-					Name: "Allow Empty",
-					Value: func(row *downballotapi.PersonField) any {
-						return row.AllowEmpty
+					{
+						Name: "Allowed Regex",
+						Value: func(row *downballotapi.PersonField) any {
+							return row.AllowedRegex
+						},
 					},
-				},
-				{
-					Name: "Allowed Regex",
-					Value: func(row *downballotapi.PersonField) any {
-						return row.AllowedRegex
+					{
+						Name: "Allowed Values",
+						Value: func(row *downballotapi.PersonField) any {
+							return row.AllowedValues
+						},
 					},
-				},
-				{
-					Name: "Allowed Values",
-					Value: func(row *downballotapi.PersonField) any {
-						return row.AllowedValues
-					},
-				},
-			}),
-	)
+				}),
+		)
 }

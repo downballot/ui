@@ -146,20 +146,20 @@ func (c *OrganizationIDUserIDPage) Render() app.UI {
 			}).
 			Action(blazar.TableAction{
 				Name: "Add to group",
-				Icon: "plus",
+				Icon: component.IconAdd,
 				To:   fmt.Sprintf("/organization/%s/user/%s/group/new", c.organizationID, c.userID),
 			}).
 			RowAction(
 				blazar.RowAction[*downballotapi.UserGroup]{
 					Name: "Edit",
-					Icon: "edit",
+					Icon: component.IconEdit,
 					To: func(row *downballotapi.UserGroup) string {
 						return fmt.Sprintf("/organization/%s/user/%s/group/%s/edit", c.organizationID, c.userID, row.ID)
 					},
 				},
 				blazar.RowAction[*downballotapi.UserGroup]{
 					Name: "Remove",
-					Icon: "trash",
+					Icon: component.IconDelete,
 					Function: func(ctx app.Context, row *downballotapi.UserGroup) {
 						ctx.PreventUpdate()
 
