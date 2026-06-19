@@ -151,14 +151,14 @@ func (c *OrganizationIDPersonIDPage) Render() app.UI {
 			Columns(columns).
 			Action(blazar.TableAction{
 				Name: "Add Field",
-				Icon: "plus",
+				Icon: component.IconAdd,
 				Function: func(ctx app.Context) {
 					c.addFieldDialog.Open(ctx)
 				},
 			}).
 			RowAction(blazar.RowAction[Record]{
 				Name: "Edit",
-				Icon: "edit",
+				Icon: component.IconEdit,
 				Function: func(ctx app.Context, row Record) {
 					c.addFieldDialog.SelectedFieldValue = row.Field
 					c.addFieldDialog.ValueValue = row.Value

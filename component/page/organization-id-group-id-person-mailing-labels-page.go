@@ -258,7 +258,7 @@ func (c *OrganizationIDGroupIDPersonMailingLabelsPage) Render() app.UI {
 						Action(
 							blazar.FormAction{
 								Name:     "Search",
-								Icon:     "search",
+								Icon:     component.IconSearch,
 								Function: c.search,
 							},
 						),

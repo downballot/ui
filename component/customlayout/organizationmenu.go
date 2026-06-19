@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/downballot/downballot/permissionset"
+	"github.com/downballot/ui/component"
 	"github.com/go-app-blazar/blazar/blazar"
 	"github.com/go-app-blazar/router"
 	"github.com/maxence-charriere/go-app/v11/pkg/app"
@@ -29,27 +30,27 @@ type OrganizationMenuItem struct {
 
 var allMenuItems = []OrganizationMenuItem{
 	{
-		Icon: "house",
+		Icon: component.IconHome,
 		Name: "Home",
 		To:   "/organization/:organization_id",
 	},
 	{
-		Icon: "people-group",
+		Icon: component.IconGroup,
 		Name: "Groups",
 		To:   "/organization/:organization_id/group",
 	},
 	{
-		Icon: "filter",
+		Icon: component.IconFilter,
 		Name: "Filters",
 		To:   "/organization/:organization_id/filter",
 	},
 	{
-		Icon: "user-gear",
+		Icon: component.IconPersonField,
 		Name: "Person Fields",
 		To:   "/organization/:organization_id/person-field",
 	},
 	{
-		Icon: "user",
+		Icon: component.IconUser,
 		Name: "Users",
 		To:   "/organization/:organization_id/user",
 	},

@@ -115,15 +115,21 @@ func (c *OrganizationIDGroupIDPage) Render() app.UI {
 		Action(
 			component.PageAction{
 				Name:     "Persons",
-				Icon:     "people-group",
+				Icon:     component.IconPerson,
 				To:       fmt.Sprintf("/organization/%s/group/%s/person", c.organizationID, c.groupID),
 				Disabled: !c.permissionSet.Match(iam.IAMPersonRead),
 			},
 			component.PageAction{
 				Name:     "Edit",
-				Icon:     "edit",
+				Icon:     component.IconEdit,
 				To:       fmt.Sprintf("/organization/%s/group/%s/edit", c.organizationID, c.groupID),
 				Disabled: c.group.ParentID == "" || !c.permissionSet.Match(iam.IAMGroupUpdate),
+			},
+			component.PageAction{
+				Name:     "Parent",
+				Icon:     component.IconGroup,
+				To:       fmt.Sprintf("/organization/%s/group/%s", c.organizationID, c.group.ParentID),
+				Disabled: c.group.ParentID == "",
 			},
 		).
 		Wrap(
@@ -150,14 +156,14 @@ func (c *OrganizationIDGroupIDPage) Render() app.UI {
 				VisibleColumns(c.IChildrenVisibleColumns).
 				Action(blazar.TableAction{
 					Name:     "New group",
-					Icon:     "plus",
+					Icon:     component.IconAdd,
 					To:       fmt.Sprintf("/organization/%s/group/new?parent_id=%s", c.organizationID, c.groupID),
 					Disabled: !c.permissionSet.Match(iam.IAMGroupCreate),
 				}).
 				RowAction(
 					blazar.RowAction[*downballotapi.Group]{
 						Name: "Persons",
-						Icon: "people-group",
+						Icon: component.IconPerson,
 						To: func(row *downballotapi.Group) string {
 							return fmt.Sprintf("/organization/%s/group/%s/person", c.organizationID, row.ID)
 						},
@@ -165,7 +171,7 @@ func (c *OrganizationIDGroupIDPage) Render() app.UI {
 					},
 					blazar.RowAction[*downballotapi.Group]{
 						Name: "Edit",
-						Icon: "edit",
+						Icon: component.IconEdit,
 						To: func(row *downballotapi.Group) string {
 							return fmt.Sprintf("/organization/%s/group/%s/edit", c.organizationID, row.ID)
 						},

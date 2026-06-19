@@ -36,19 +36,6 @@ func (c *OrganizationIDPersonFieldNewPage) OnNav(ctx app.Context) {
 	router.GetActiveRoute(ctx).ReadVariable("organization_id", &c.organizationID)
 
 	slog.InfoContext(ctx.Context, "OrganizationIDPersonFieldNewPage: OnNav", "OrganizationID", c.organizationID)
-
-	if c.organizationID == "" {
-		return
-	}
-
-	ctx.Async(func() {
-		var output downballotapi.GetOrganizationResponse
-		err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.organizationID, nil, &output)
-		if err != nil {
-			slog.ErrorContext(ctx.Context, "Could not get organizations", "err", err)
-			return
-		}
-	})
 }
 
 func (c *OrganizationIDPersonFieldNewPage) Render() app.UI {

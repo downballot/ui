@@ -324,13 +324,8 @@ var Routes = []router.Route{
 										},
 									},
 									{
-										Path: "/:person_field_id",
-										Component: func() app.Composer {
-											return &page.OrganizationIDPersonFieldIDPage{}
-										},
-										Meta: map[string]string{
-											MetaTitle: ":person_field_name",
-										},
+										Path:      "/:person_field_id",
+										Component: nil,
 										PathVariables: func(ctx app.Context, variables map[string]string) {
 											var output downballotapi.GetPersonFieldResponse
 											err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+variables["organization_id"]+"/person-field/"+variables["person_field_id"], nil, &output)
@@ -339,6 +334,26 @@ var Routes = []router.Route{
 												return
 											}
 											variables["person_field_name"] = output.PersonField.Name
+										},
+										Children: []router.Route{
+											{
+												Path: "/",
+												Component: func() app.Composer {
+													return &page.OrganizationIDPersonFieldIDPage{}
+												},
+												Meta: map[string]string{
+													MetaTitle: ":person_field_name",
+												},
+											},
+											{
+												Path: "/edit",
+												Component: func() app.Composer {
+													return &page.OrganizationIDPersonFieldIDEditPage{}
+												},
+												Meta: map[string]string{
+													MetaTitle: "Edit Person Field",
+												},
+											},
 										},
 									},
 								},
