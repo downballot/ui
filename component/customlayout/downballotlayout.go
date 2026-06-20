@@ -5,7 +5,6 @@ import (
 	"log/slog"
 
 	"github.com/downballot/ui/component"
-	"github.com/downballot/ui/component/layout"
 	"github.com/go-app-blazar/blazar/blazar"
 	"github.com/go-app-blazar/router"
 	"github.com/maxence-charriere/go-app/v11/pkg/app"
@@ -47,24 +46,22 @@ func (c *DownballotLayout) OnNav(ctx app.Context) {
 func (c *DownballotLayout) Render() app.UI {
 	slog.InfoContext(context.TODO(), "DownballotLayout: Render")
 
-	mainLayout := &layout.MainLayout{
-		Header: blazar.AppBar().
-			HeadlineText("Downballot").
-			Subtitle(app.Div().
-				Class("downballotlayout-menu").
-				Body(
-					blazar.Item().
-						Icon(component.IconOrganization).
-						Label("Organizations").
-						To("/organization"),
-					app.Span().Style("flex", "1"),
-					blazar.Item().
-						Icon(component.IconUser).
-						Label("Profile").
-						To("/profile"),
-				),
+	mainLayout := blazar.MainLayout().
+		HeadlineText("Downballot").
+		Subtitle(app.Div().
+			Class("downballotlayout-menu").
+			Body(
+				blazar.Item().
+					Icon(component.IconOrganization).
+					Label("Organizations").
+					To("/organization"),
+				app.Span().Style("flex", "1"),
+				blazar.Item().
+					Icon(component.IconUser).
+					Label("Profile").
+					To("/profile"),
 			),
-	}
+		)
 	mainLayout.SetRouterView(c.RouterView())
 
 	slog.InfoContext(context.TODO(), "DownballotLayout: Render", "mainLayout", mainLayout)
