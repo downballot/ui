@@ -6,7 +6,6 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/downballot/ui/component/layout"
 	"github.com/go-app-blazar/blazar/blazar"
 	"github.com/go-app-blazar/router"
 	"github.com/maxence-charriere/go-app/v11/pkg/app"
@@ -116,28 +115,12 @@ func (c *OrganizationLayout) Render() app.UI {
 		bodyItems...,
 	)
 
-	mainLayout := &layout.MainLayout{
-		Header: blazar.AppBar().
-			IconFunction(func(ctx app.Context, e app.Event) {
-				slog.InfoContext(ctx.Context, "OrganizationLayout: Header: Leading: OnClick")
-				ctx.PreventUpdate()
-
-				mainLayoutElement := e.Get("target").Call("closest", ".main-layout")
-				slog.InfoContext(ctx.Context, "OrganizationLayout: Header: Leading: OnClick", "mainLayoutElement", mainLayoutElement)
-				if !mainLayoutElement.IsNull() {
-					drawerElement := mainLayoutElement.Call("querySelector", ".main-layout-drawer")
-					slog.InfoContext(ctx.Context, "OrganizationLayout: Header: Leading: OnClick", "drawerElement", drawerElement)
-					if !drawerElement.IsNull() {
-						drawerElement.Get("classList").Call("toggle", "visible")
-					}
-				}
-			}).
-			HeadlineText(c.organizationName).
-			Headline(headline),
-		Drawer: &OrganizationMenu{
+	mainLayout := blazar.MainLayout().
+		HeadlineText(c.organizationName).
+		Headline(headline).
+		Drawer(&OrganizationMenu{
 			OrganizationID: c.organizationID,
-		},
-	}
+		})
 	mainLayout.SetRouterView(c.RouterView())
 
 	return mainLayout

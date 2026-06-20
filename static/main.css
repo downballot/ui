@@ -51,62 +51,9 @@ h1, h2, h3, h4, h5, h6 {
     gap: 0.5em;
 }
 
-.main-layout {
-    height: 100vh;
-    min-width: 100%;
-    width: max-content;
-}
-
-.main-layout-drawer {
-    display: block;
-}
-
-.main-layout-drawer.visible {
-    display: block;
-}
-
-.main-layout-header .blazar-app-bar__icon {
-    display: none;
-}
-
 @media screen and (max-width: 900px) {
     .downballotlayout-header-leading {
         display: block;
-    }
-
-    .main-layout-header .blazar-app-bar__icon {
-        display: block;
-    }
-
-    .main-layout-drawer {
-        display: none;
-    }
-}
-
-.main-layout-header {
-}
-
-.main-layout-body {
-    display: flex;
-    justify-content: flex-start;
-}
-
-.main-layout-drawer {
-    padding: 1em;
-    min-width: 150px;
-}
-
-.main-layout-content {
-    flex: 1;
-}
-
-@media print {
-    .main-layout-header {
-        display: none !important;
-    }
-
-    .main-layout-drawer {
-        display: none !important;
     }
 }
 
