@@ -63,3 +63,10 @@ h1, h2, h3, h4, h5, h6 {
     background-color: indianred;
     color: white;
 }
+
+@media print {
+    .blazar-table table tbody td {
+        padding-top: 2em;
+        padding-bottom: 2em;
+    }
+}
