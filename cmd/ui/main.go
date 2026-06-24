@@ -70,7 +70,9 @@ func main() {
 					ReplaceAttr: slogConfig.ReplaceAttr,
 				})
 		} else {
-			handler = &JavascriptConsoleLogger{}
+			handler = &JavascriptConsoleLogger{
+				Level: slogConfig.Level,
+			}
 		}
 		slog.SetDefault(slog.New(slog.NewMultiHandler(
 			handler,
@@ -193,6 +195,7 @@ func (w *ResponseWriter) WriteHeader(statusCode int) {
 }
 
 type JavascriptConsoleLogger struct {
+	Level slog.Leveler
 	attrs []slog.Attr
 	group string
 }
@@ -200,7 +203,7 @@ type JavascriptConsoleLogger struct {
 var _ slog.Handler = (*JavascriptConsoleLogger)(nil)
 
 func (h *JavascriptConsoleLogger) Enabled(ctx context.Context, level slog.Level) bool {
-	return true
+	return level >= h.Level.Level()
 }
 func (h *JavascriptConsoleLogger) Handle(ctx context.Context, record slog.Record) error {
 	if app.IsServer {
