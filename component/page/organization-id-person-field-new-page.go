@@ -72,7 +72,16 @@ func (c *OrganizationIDPersonFieldNewPage) Render() app.UI {
 					Label("Allowed Values").
 					Type("text").
 					Value(strings.Join(c.AllowedValues, ",")).
-					On("change", c.ValueTo(&c.AllowedValues)),
+					On("change", func(ctx app.Context, e app.Event) {
+						var stringValue string
+						c.ValueTo(&stringValue)(ctx, e)
+						c.AllowedValues = strings.Split(stringValue, ",")
+						for i := range c.AllowedValues {
+							c.AllowedValues[i] = strings.TrimSpace(c.AllowedValues[i])
+						}
+
+						ctx.Update()
+					}),
 			).
 			SubmitLabel("Create").
 			SubmitFunction(func(ctx app.Context) {
