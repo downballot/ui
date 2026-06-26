@@ -3,8 +3,8 @@ module github.com/downballot/ui
 go 1.26.2
 
 require (
-	github.com/downballot/downballot v0.1.0
-	github.com/go-app-blazar/blazar v0.1.8
+	github.com/downballot/downballot v0.1.1
+	github.com/go-app-blazar/blazar v0.1.14
 	github.com/go-app-blazar/router v0.1.0
 	github.com/google/uuid v1.6.0
 	github.com/joho/godotenv v1.5.1
@@ -21,12 +21,12 @@ require (
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/tekkamanendless/restfulwrapper v0.2.0 // indirect
 	golang.org/x/sys v0.45.0 // indirect
-	golang.org/x/text v0.37.0 // indirect
+	golang.org/x/text v0.38.0 // indirect
 	gorm.io/gorm v1.31.1 // indirect
 )
 
 //replace github.com/downballot/downballot => ../downballot
 
-//replace github.com/maxence-charriere/go-app/v11 => github.com/tekkamanendless/fork-of-maxence-charriere-go-app/v11 v11.0.0-20260602191626-433345bdb528
+replace github.com/maxence-charriere/go-app/v11 => github.com/tekkamanendless/fork-of-maxence-charriere-go-app/v11 v11.0.0-20260624062618-c2f3e531f36d
 
 //replace github.com/go-app-blazar/blazar => ../../go-app-blazar/blazar
