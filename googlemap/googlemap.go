@@ -5,6 +5,7 @@ import (
 	_ "embed"
 	"fmt"
 	"log/slog"
+	"strconv"
 	"strings"
 
 	"github.com/google/uuid"
@@ -130,7 +131,21 @@ func (c *HTMLGoogleMap) Render() app.UI {
 							Attr("position", fmt.Sprintf("%f,%f", marker.Latitude, marker.Longitude)).
 							Attr("title", marker.Title).
 							Attr("gmp-clickable", "true").
+							DataSet("markerindex", fmt.Sprintf("%d", i)).
 							On("gmp-click", func(ctx app.Context, event app.Event) {
+								// For whatever reason, the event handler is not updated when the elemnt itself is updated.
+								// In this case, we need to have a generic function that will work no matter what, so we're going
+								// to store the marker index in the data set of the element itself, and then we'll ask for the current
+								// element that was clicked on.
+								markerIndexString := event.Get("target").Get("dataset").Get("markerindex").String()
+								markerIndex, err := strconv.Atoi(markerIndexString)
+								if err != nil {
+									slog.ErrorContext(ctx.Context, "GoogleMap: Marker clicked; could not parse marker index", "error", err)
+									ctx.PreventUpdate()
+									return
+								}
+								slog.InfoContext(ctx.Context, "GoogleMap: Marker clicked", "markerIndex", markerIndex)
+								marker := c.MarkersValue[markerIndex]
 								slog.InfoContext(ctx.Context, "GoogleMap: Marker clicked", "marker", marker)
 								if marker.OnClick == nil {
 									ctx.PreventUpdate()
