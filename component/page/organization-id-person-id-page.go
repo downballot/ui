@@ -10,6 +10,8 @@ import (
 	"time"
 
 	"github.com/downballot/downballot/downballotapi"
+	"github.com/downballot/downballot/iam"
+	"github.com/downballot/downballot/permissionset"
 	"github.com/downballot/ui/api"
 	"github.com/downballot/ui/component"
 	"github.com/go-app-blazar/blazar/blazar"
@@ -28,6 +30,7 @@ type OrganizationIDPersonIDPage struct {
 	voterID        string
 	person         *downballotapi.Person
 	audits         []*downballotapi.PersonAudit
+	permissionSet  permissionset.PermissionSet
 
 	addFieldDialog component.AddFieldDialog
 }
@@ -48,6 +51,8 @@ func (c *OrganizationIDPersonIDPage) OnNav(ctx app.Context) {
 	if c.voterID == "" {
 		return
 	}
+
+	ctx.GetState("organization/"+c.organizationID+"/permission-set", &c.permissionSet)
 
 	c.addFieldDialog = component.AddFieldDialog{
 		OrganizationID: c.organizationID,
@@ -156,15 +161,46 @@ func (c *OrganizationIDPersonIDPage) Render() app.UI {
 					c.addFieldDialog.Open(ctx)
 				},
 			}).
-			RowAction(blazar.RowAction[Record]{
-				Name: "Edit",
-				Icon: component.IconEdit,
-				Function: func(ctx app.Context, row Record) {
-					c.addFieldDialog.SelectedFieldValue = row.Field
-					c.addFieldDialog.ValueValue = row.Value
-					c.addFieldDialog.Open(ctx)
+			RowAction(
+				blazar.RowAction[Record]{
+					Name: "Edit",
+					Icon: component.IconEdit,
+					Function: func(ctx app.Context, row Record) {
+						c.addFieldDialog.SelectedFieldValue = row.Field
+						c.addFieldDialog.ValueValue = row.Value
+						c.addFieldDialog.Open(ctx)
+					},
+					Disabled: !c.permissionSet.Match(iam.IAMPersonUpdate),
 				},
-			}),
+				blazar.RowAction[Record]{
+					Name: "Delete",
+					Icon: component.IconDelete,
+					Function: func(ctx app.Context, row Record) {
+						result := app.Window().Call("confirm", "Are you sure you want to delete this field ("+row.Field+")?")
+						slog.InfoContext(ctx.Context, "OrganizationIDPersonIDPage: Delete button clicked", "result", result.Bool())
+						if !result.Bool() {
+							slog.InfoContext(ctx.Context, "OrganizationIDPersonIDPage: Delete button clicked: User cancelled", "result", result.Bool())
+							return
+						}
+
+						ctx.Async(func() {
+							input := downballotapi.PatchPersonRequest{
+								Fields: map[string]*string{
+									row.Field: nil,
+								},
+							}
+							err := api.Do(ctx, http.MethodPatch, "/api/v1/organization/"+c.organizationID+"/person/"+c.voterID, input, nil)
+							if err != nil {
+								slog.ErrorContext(ctx.Context, "Could not delete field", "err", err)
+								return
+							}
+
+							c.Reload(ctx)
+						})
+					},
+					Disabled: !c.permissionSet.Match(iam.IAMPersonUpdate),
+				},
+			),
 		&c.addFieldDialog,
 		blazar.Table[*downballotapi.PersonAudit]().
 			Title("Audit Log").
@@ -192,7 +228,7 @@ func (c *OrganizationIDPersonIDPage) Render() app.UI {
 					Name: "Old Value",
 					Value: func(row *downballotapi.PersonAudit) any {
 						if row.OldValue == nil {
-							return ""
+							return "—"
 						}
 						return *row.OldValue
 					},
@@ -201,7 +237,7 @@ func (c *OrganizationIDPersonIDPage) Render() app.UI {
 					Name: "New Value",
 					Value: func(row *downballotapi.PersonAudit) any {
 						if row.NewValue == nil {
-							return ""
+							return "—"
 						}
 						return *row.NewValue
 					},

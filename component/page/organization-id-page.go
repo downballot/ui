@@ -6,6 +6,8 @@ import (
 	"net/http"
 
 	"github.com/downballot/downballot/downballotapi"
+	"github.com/downballot/downballot/iam"
+	"github.com/downballot/downballot/permissionset"
 	"github.com/downballot/ui/api"
 	"github.com/downballot/ui/component"
 	"github.com/go-app-blazar/blazar/blazar"
@@ -21,6 +23,7 @@ type OrganizationIDPage struct {
 
 	organizationID string
 	organization   *downballotapi.Organization
+	permissionSet  permissionset.PermissionSet
 }
 
 func (c *OrganizationIDPage) OnNav(ctx app.Context) {
@@ -33,6 +36,8 @@ func (c *OrganizationIDPage) OnNav(ctx app.Context) {
 	if c.organizationID == "" {
 		return
 	}
+
+	ctx.GetState("organization/"+c.organizationID+"/permission-set", &c.permissionSet)
 
 	ctx.Async(func() {
 		var output downballotapi.GetOrganizationResponse
@@ -69,7 +74,57 @@ func (c *OrganizationIDPage) Render() app.UI {
 	}
 
 	return c.EmbeddedPage.Wrap(
-		app.Div().Text("ID: "+c.organization.ID),
-		app.Div().Text("Name: "+c.organization.Name),
+		app.If(c.permissionSet.Match(iam.IAMGroupRead), func() app.UI {
+			return app.Div().
+				Body(
+					app.Div().Body(
+						app.A().
+							Text("Groups").
+							Href("/organization/"+c.organizationID+"/group"),
+					),
+					app.Div().Body(
+						app.Span().Text("View and manage groups, which are used to subdivide the persons.  They can also be used for user permissions."),
+					),
+				)
+		}),
+		app.If(c.permissionSet.Match(iam.IAMFilterRead), func() app.UI {
+			return app.Div().
+				Body(
+					app.Div().Body(
+						app.A().
+							Text("Filters").
+							Href("/organization/"+c.organizationID+"/filter"),
+					),
+					app.Div().Body(
+						app.Span().Text("View and manage filters, which can be used on top of groups to further limit the results."),
+					),
+				)
+		}),
+		app.If(c.permissionSet.Match(iam.IAMPersonFieldDefinitionRead), func() app.UI {
+			return app.Div().
+				Body(
+					app.Div().Body(
+						app.A().
+							Text("Person Fields").
+							Href("/organization/"+c.organizationID+"/person-field"),
+					),
+					app.Div().Body(
+						app.Span().Text("View and manage person fields, which are the fields available for each person."),
+					),
+				)
+		}),
+		app.If(c.permissionSet.Match(iam.IAMGroupUserRead), func() app.UI {
+			return app.Div().
+				Body(
+					app.Div().Body(
+						app.A().
+							Text("Users").
+							Href("/organization/"+c.organizationID+"/user"),
+					),
+					app.Div().Body(
+						app.Span().Text("View and manage users in this organization."),
+					),
+				)
+		}),
 	)
 }
