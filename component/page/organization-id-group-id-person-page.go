@@ -12,6 +12,8 @@ import (
 	"sync"
 
 	"github.com/downballot/downballot/downballotapi"
+	"github.com/downballot/downballot/iam"
+	"github.com/downballot/downballot/permissionset"
 	"github.com/downballot/ui/api"
 	"github.com/downballot/ui/component"
 	"github.com/downballot/ui/googlemap"
@@ -32,6 +34,7 @@ type OrganizationIDGroupIDPersonPage struct {
 	organization   *downballotapi.Organization
 	groupID        string
 	group          *downballotapi.Group
+	permissionSet  permissionset.PermissionSet
 
 	Filter         string
 	Limit          uint
@@ -68,6 +71,8 @@ func (c *OrganizationIDGroupIDPersonPage) OnNav(ctx app.Context) {
 	if c.groupID == "" {
 		return
 	}
+
+	ctx.GetState("organization/"+c.organizationID+"/permission-set", &c.permissionSet)
 
 	var persistFilter string
 	ctx.GetState("persist-organization-id-group-id-person-page-filter", &persistFilter)
@@ -429,17 +434,20 @@ func (c *OrganizationIDGroupIDPersonPage) Render() app.UI {
 					Columns(c.PersonsTableColumns).
 					VisibleColumns(c.PersonsTableVisibleColumns).
 					Rows(c.Persons).
-					MultiRowAction(blazar.MultiRowAction[*downballotapi.Person]{
-						Name: "Edit",
-						Icon: component.IconEdit,
-						Function: func(ctx app.Context, rows []*downballotapi.Person) {
-							voterIDs := []string{}
-							for _, row := range rows {
-								voterIDs = append(voterIDs, row.VoterID)
-							}
-							c.addFieldDialog.Open(ctx, voterIDs)
+					MultiRowAction(
+						blazar.MultiRowAction[*downballotapi.Person]{
+							Name: "Edit",
+							Icon: component.IconEdit,
+							Function: func(ctx app.Context, rows []*downballotapi.Person) {
+								voterIDs := []string{}
+								for _, row := range rows {
+									voterIDs = append(voterIDs, row.VoterID)
+								}
+								c.addFieldDialog.Open(ctx, voterIDs)
+							},
+							Disabled: !c.permissionSet.Match(iam.IAMPersonUpdate),
 						},
-					}),
+					),
 				&c.addFieldDialog,
 			),
 	)
