@@ -369,6 +369,7 @@ func (c *OrganizationIDGroupIDPersonPage) Render() app.UI {
 							Label("Filter").
 							Type("text").
 							Placeholder("key = 'value' or ...").
+							Clearable(true).
 							Bind(&c.Filter).
 							On("change", func(ctx app.Context, e app.Event) {
 								ctx.SetState("persist-organization-id-group-id-person-page-filter", c.Filter).Persist()
