@@ -198,17 +198,17 @@ func (c *AddFieldMultipleDialog) Render() app.UI {
 				SubmitLabel("Save").
 				SubmitFunction(func(ctx app.Context) {
 					slog.InfoContext(ctx.Context, "AddFieldMultipleDialog: SubmitFunction", "SelectedFieldValue", c.SelectedFieldValue, "ValueValue", c.ValueValue)
-					for _, voterID := range c.voterIDs {
-						input := downballotapi.PatchPersonRequest{
-							Fields: map[string]*string{},
-						}
-						input.Fields[c.SelectedFieldValue] = &c.ValueValue
-						var output downballotapi.PatchPersonRequest
-						err := api.Do(ctx, http.MethodPatch, "/api/v1/organization/"+c.OrganizationID+"/person/"+voterID, input, &output)
-						if err != nil {
-							slog.ErrorContext(ctx.Context, "Could not update person", "err", err)
-							return
-						}
+
+					input := downballotapi.PostPersonUpdateRequest{
+						VoterIDs: c.voterIDs,
+						Fields:   map[string]*string{},
+					}
+					input.Fields[c.SelectedFieldValue] = &c.ValueValue
+					var output downballotapi.PostPersonUpdateResponse
+					err := api.Do(ctx, http.MethodPost, "/api/v1/organization/"+c.OrganizationID+"/person/update", input, &output)
+					if err != nil {
+						slog.ErrorContext(ctx.Context, "Could not update persons", "err", err)
+						return
 					}
 
 					if c.OnSubmit != nil {
