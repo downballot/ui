@@ -4,8 +4,8 @@ github.com/downballot/downballot v0.1.3 h1:2Xz/d2548wm7laJvYdfFehFDwelbZQWfnkJJ8
 github.com/downballot/downballot v0.1.3/go.mod h1:7Td5CwNxINe2zlcvWuH4bMQ8QoLPVo5nhu39v/6CLWE=
 github.com/emicklei/go-restful/v3 v3.13.0 h1:C4Bl2xDndpU6nJ4bc1jXd+uTmYPVUwkD6bFY/oTyCes=
 github.com/emicklei/go-restful/v3 v3.13.0/go.mod h1:6n3XBCmQQb25CM2LCACGz8ukIrRry+4bhvbpWn3mrbc=
-github.com/go-app-blazar/blazar v0.1.20 h1:SmCoAo0YJ8+r0iMUHYNspvcUvUDOoJU8MeE/DxNbPhc=
-github.com/go-app-blazar/blazar v0.1.20/go.mod h1:+OHNoKNZ0mTtO8Zl6odflQgOGwRCdPt1sqf0+svqh1s=
+github.com/go-app-blazar/blazar v0.1.22 h1:EeG2MVeT7Gm08h1BcWzOtUzRelKL2t8lPXVVj3dqId4=
+github.com/go-app-blazar/blazar v0.1.22/go.mod h1:+OHNoKNZ0mTtO8Zl6odflQgOGwRCdPt1sqf0+svqh1s=
 github.com/go-app-blazar/router v0.1.0 h1:2uRiN5HV9qTaoyw8zOtmPtU3BqnL6Tnrwh8a4csChxM=
 github.com/go-app-blazar/router v0.1.0/go.mod h1:yY7DcUn3ToFdcNAGeyx0v8LjikiTu3WJ1XkQiEIlJRY=
 github.com/google/uuid v1.6.0 h1:NIvaJDMOsjHA8n1jAhLSgzrAzy1Hgr+hNrb57e+94F0=
