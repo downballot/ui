@@ -434,6 +434,9 @@ func (c *OrganizationIDGroupIDPersonPage) Render() app.UI {
 					PageSize(10).
 					Columns(c.PersonsTableColumns).
 					VisibleColumns(c.PersonsTableVisibleColumns).
+					RowIDFunction(func(row *downballotapi.Person) string {
+						return row.VoterID
+					}).
 					Rows(c.Persons).
 					MultiRowAction(
 						blazar.MultiRowAction[*downballotapi.Person]{
