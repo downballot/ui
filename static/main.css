@@ -1,72 +1,80 @@
 html {
-    border: 0;
-    padding: 0;
-    margin: 0;
+	border: 0;
+	padding: 0;
+	margin: 0;
 
-    font-family: sans-serif;
+	font-family: sans-serif;
 
-    --blazar-theme-primary: #20a4f3;
-    --blazar-theme-secondary: #2ec4b6;
-    --blazar-theme-background: #ffffff;
-    --blazar-theme-on-primary: #ffffff;
-    --blazar-theme-on-secondary: #000000;
-    --blazar-theme-on-background: #000000;
-    --blazar-theme-success: #4caf50;
-    --blazar-theme-warning: #ff9800;
-    --blazar-theme-info: #2196f3;
-    --blazar-theme-error: #f44336;
-    --blazar-theme-on-success: #ffffff;
-    --blazar-theme-on-warning: #ffffff;
-    --blazar-theme-on-info: #ffffff;
-    --blazar-theme-on-error: #ffffff;
+	--blazar-theme-primary: #20a4f3;
+	--blazar-theme-secondary: #2ec4b6;
+	--blazar-theme-background: #ffffff;
+	--blazar-theme-on-primary: #ffffff;
+	--blazar-theme-on-secondary: #000000;
+	--blazar-theme-on-background: #000000;
+	--blazar-theme-success: #4caf50;
+	--blazar-theme-warning: #ff9800;
+	--blazar-theme-info: #2196f3;
+	--blazar-theme-error: #f44336;
+	--blazar-theme-on-success: #ffffff;
+	--blazar-theme-on-warning: #ffffff;
+	--blazar-theme-on-info: #ffffff;
+	--blazar-theme-on-error: #ffffff;
 }
 
 body {
-    border: 0;
-    padding: 0;
-    margin: 0;
+	border: 0;
+	padding: 0;
+	margin: 0;
 }
 
 h1, h2, h3, h4, h5, h6 {
-    margin: 0
+	margin: 0
 }
 
 @media print {
-    .no-print {
-        display: none !important;
-    }
+	.no-print {
+		display: none !important;
+	}
 }
 
 .center-layout {
-    background-color: rgba(0, 0, 0, 0.5);
+	background-color: rgba(0, 0, 0, 0.5);
 }
 
 .downballotlayout-header-leading {
-    display: none;
+	display: none;
 }
 
 .downballotlayout-menu {
-    display: flex;
-    flex-direction: row;
-    gap: 0.5em;
+	display: flex;
+	flex-direction: row;
+	gap: 0.5em;
 }
 
 @media screen and (max-width: 900px) {
-    .downballotlayout-header-leading {
-        display: block;
-    }
+	.downballotlayout-header-leading {
+		display: block;
+	}
 }
 
 .map-marker {
-    border: 1px solid black;
-    padding: 0.3em;
-    background-color: indianred;
-    color: white;
+	border: 1px solid black;
+	padding: 0.3em;
+	background-color: indianred;
+	color: white;
 }
 
 @media print {
-    .blazar-table table tbody td {
-        padding-top: 2em;
-        padding-bottom: 2em;
-    }
+	.blazar-table {
+		font-size: 0.7em;
+	}
+
+	.blazar-table tr {
+		background-color: transparent !important;
+	}
+
+	.blazar-table table tbody td {
+		padding-top: 2em;
+		padding-bottom: 2em;
+	}
 }
