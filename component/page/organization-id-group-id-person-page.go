@@ -181,11 +181,10 @@ func (c *OrganizationIDGroupIDPersonPage) OnNav(ctx app.Context) {
 
 			c.PersonsTableVisibleColumns = []string{
 				"Voter ID",
+				"birthday_year",
 				"name",
 				"phone_number",
 				"residential_address",
-				"residential_address_development",
-				"candidate.notes",
 			}
 			slices.Sort(c.PersonsTableVisibleColumns)
 			slog.InfoContext(ctx.Context, "OrganizationIDGroupIDPersonPage: OnNav: Async", "len(PersonsTableVisibleColumns)", len(c.PersonsTableVisibleColumns))

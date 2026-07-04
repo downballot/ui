@@ -30,7 +30,7 @@ func main() {
 
 	{
 		logLevel := "info"
-		if value, ok := os.LookupEnv("LOG_LEVEL"); ok {
+		if value := app.Getenv("LOG_LEVEL"); value != "" {
 			logLevel = value
 		}
 		slogConfig := slog.HandlerOptions{
@@ -77,16 +77,6 @@ func main() {
 		)))
 	}
 
-	disableServiceWorker := false
-	if value := os.Getenv("DISABLE_SERVICE_WORKER"); value != "" {
-		v, err := strconv.ParseBool(value)
-		if err != nil {
-			slog.ErrorContext(ctx, "Could not parse DISABLE_SERVICE_WORKER", "err", err)
-		} else {
-			disableServiceWorker = v
-		}
-	}
-
 	router.Register(ctx, customlayout.Routes...)
 
 	// Once the routes set up, the next thing to do is to either launch the app
@@ -101,6 +91,16 @@ func main() {
 	// lets room for server implementation without the need for precompiling
 	// instructions.
 	app.RunWhenOnBrowser()
+
+	disableServiceWorker := false
+	if value := os.Getenv("DISABLE_SERVICE_WORKER"); value != "" {
+		v, err := strconv.ParseBool(value)
+		if err != nil {
+			slog.ErrorContext(ctx, "Could not parse DISABLE_SERVICE_WORKER", "err", err)
+		} else {
+			disableServiceWorker = v
+		}
+	}
 
 	slog.InfoContext(ctx, "main", "GOOGLE_MAPS_API_KEY", os.Getenv("GOOGLE_MAPS_API_KEY"))
 

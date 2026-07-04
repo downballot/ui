@@ -4,7 +4,7 @@ go 1.26.2
 
 require (
 	github.com/downballot/downballot v0.1.3
-	github.com/go-app-blazar/blazar v0.1.24
+	github.com/go-app-blazar/blazar v0.1.25
 	github.com/go-app-blazar/router v0.1.0
 	github.com/google/uuid v1.6.0
 	github.com/joho/godotenv v1.5.1
