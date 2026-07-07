@@ -54,7 +54,7 @@ func (c *EmbeddedPage) Setup(ctx app.Context) {
 					var wg sync.WaitGroup
 					wg.Go(func() {
 						slog.InfoContext(ctx.Context, "EmbeddedPage: ObserveState: Async: Sleep", "api-error", c.IError)
-						time.Sleep(2 * time.Second)
+						time.Sleep(10 * time.Second)
 						slog.InfoContext(ctx.Context, "EmbeddedPage: ObserveState: Async: Sleep done", "api-error", c.IError)
 					})
 					wg.Wait()
