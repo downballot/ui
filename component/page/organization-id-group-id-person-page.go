@@ -19,7 +19,6 @@ import (
 	"github.com/downballot/ui/googlemap"
 	"github.com/go-app-blazar/blazar/blazar"
 	"github.com/go-app-blazar/router"
-	"github.com/google/uuid"
 	"github.com/maxence-charriere/go-app/v11/pkg/app"
 	"github.com/tekkamanendless/restapiclient"
 )
@@ -39,7 +38,6 @@ type OrganizationIDGroupIDPersonPage struct {
 	Filter         string
 	Limit          uint
 	PossibleFields []string
-	Error          string
 	Persons        []*downballotapi.Person
 	Filters        []*downballotapi.Filter
 
@@ -49,11 +47,16 @@ type OrganizationIDGroupIDPersonPage struct {
 	FilterOpen  bool
 	MapOpen     bool
 	ResultsOpen bool
-
-	addFieldDialog component.AddFieldMultipleDialog
 }
 
 var _ app.Navigator = (*OrganizationIDGroupIDPersonPage)(nil)
+var _ app.Mounter = (*OrganizationIDGroupIDPersonPage)(nil)
+
+func (c *OrganizationIDGroupIDPersonPage) OnMount(ctx app.Context) {
+	slog.InfoContext(ctx.Context, "OrganizationIDGroupIDPersonPage: OnMount")
+
+	c.EmbeddedPage.OnMount(ctx)
+}
 
 func (c *OrganizationIDGroupIDPersonPage) OnNav(ctx app.Context) {
 	slog.InfoContext(ctx.Context, "OrganizationIDGroupIDPersonPage: OnNav")
@@ -102,14 +105,6 @@ func (c *OrganizationIDGroupIDPersonPage) OnNav(ctx app.Context) {
 	c.FilterOpen = false
 	c.MapOpen = true
 	c.ResultsOpen = true
-
-	c.addFieldDialog = component.AddFieldMultipleDialog{
-		OrganizationID: c.organizationID,
-		DialogID:       "id-" + uuid.New().String(),
-		OnSubmit: func(ctx app.Context) {
-			// Do nothing.
-		},
-	}
 
 	ctx.Async(func() {
 		var wg sync.WaitGroup
@@ -321,6 +316,9 @@ func (c *OrganizationIDGroupIDPersonPage) Render() app.UI {
 
 	slog.InfoContext(context.TODO(), "OrganizationIDGroupIDPersonPage: Render", "PersonsTableVisibleColumns", c.PersonsTableVisibleColumns)
 
+	addFieldDialog := component.AddFieldMultipleDialog().
+		OrganizationID(c.organizationID)
+
 	return c.EmbeddedPage.Wrap(
 		blazar.Collapse().
 			Label("Filter").
@@ -404,11 +402,6 @@ func (c *OrganizationIDGroupIDPersonPage) Render() app.UI {
 					Function: c.mailingLabels,
 				},
 			),
-		app.If(c.Error != "", func() app.UI {
-			return blazar.StatusBar().
-				Text(c.Error).
-				Bad()
-		}),
 		blazar.Collapse().
 			Label("Map").
 			Bind(&c.MapOpen).
@@ -446,12 +439,12 @@ func (c *OrganizationIDGroupIDPersonPage) Render() app.UI {
 								for _, row := range rows {
 									voterIDs = append(voterIDs, row.VoterID)
 								}
-								c.addFieldDialog.Open(ctx, voterIDs)
+								addFieldDialog.Open(ctx, voterIDs)
 							},
 							Disabled: !c.permissionSet.Match(iam.IAMPersonUpdate),
 						},
 					),
-				&c.addFieldDialog,
+				addFieldDialog,
 			),
 	)
 }
@@ -463,13 +456,11 @@ func (c *OrganizationIDGroupIDPersonPage) search(ctx app.Context) {
 	var output downballotapi.ListPersonsResponse
 	err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.organizationID+"/group/"+c.groupID+"/person?"+queryParameters.Encode(), nil, &output)
 	if err != nil {
-		slog.ErrorContext(ctx.Context, "Could not get persons", "err", err)
-		c.Error = err.Error()
+		slog.ErrorContext(ctx.Context, "OrganizationIDGroupIDPersonPage: search: Could not get persons", "err", err)
 		return
 	}
-	c.Error = ""
 
-	slog.InfoContext(ctx.Context, "Setting persons", "len(persons)", len(output.Persons))
+	slog.InfoContext(ctx.Context, "OrganizationIDGroupIDPersonPage: search: Setting persons", "len(persons)", len(output.Persons))
 	c.Persons = output.Persons
 
 	slices.SortFunc(c.Persons, func(left, right *downballotapi.Person) int {

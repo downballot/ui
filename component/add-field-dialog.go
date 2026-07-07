@@ -2,98 +2,102 @@ package component
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/downballot/downballot/downballotapi"
 	"github.com/downballot/ui/api"
 	"github.com/go-app-blazar/blazar/blazar"
+	"github.com/go-app-blazar/blazar/htmlevent"
 	"github.com/maxence-charriere/go-app/v11/pkg/app"
 )
 
-type AddFieldDialog struct {
+type htmlAddFieldDialog struct {
 	app.Compo
 
-	OrganizationID string
-	VoterID        string
-	Person         *downballotapi.Person
+	IOrganizationID string
+	IVoterID        string
+	person          *downballotapi.Person
 
-	DialogID string
-	error    string
+	error string
 
-	PersonFields []*downballotapi.PersonField
+	personFields []*downballotapi.PersonField
 
-	SubmitNameValue string
-	OnSubmit        func(ctx app.Context)
+	ISubmitName string
+	IOnSubmit   func(ctx app.Context)
 
-	SelectedFieldValue string
-	ValueValue         string
+	selectedField string
+	value         string
 }
 
-func (c *AddFieldDialog) Open(ctx app.Context) {
-	slog.InfoContext(ctx.Context, "AddFieldDialog: Open", "DialogID", c.DialogID)
+var _ app.Mounter = (*htmlAddFieldDialog)(nil)
+
+func AddFieldDialog() *htmlAddFieldDialog {
+	return &htmlAddFieldDialog{}
+}
+
+const (
+	addFieldDialogEventOpen = "add-field-dialog-open"
+)
+
+func (c *htmlAddFieldDialog) OnMount(ctx app.Context) {
+	slog.InfoContext(ctx.Context, "htmlAddFieldDialog: OnMount")
+
+	ctx.Handle(addFieldDialogEventOpen, func(ctx app.Context, e app.Action) {
+		slog.InfoContext(ctx.Context, "htmlAddFieldDialog: Open", "Action", e)
+
+		c.selectedField = e.Value.(addFieldDialogOpenValue).FieldName
+		c.value = e.Value.(addFieldDialogOpenValue).FieldValue
+
+		c.JSValue().Call("showModal")
+	})
+}
+
+func (c *htmlAddFieldDialog) OnSubmit(onSubmit func(ctx app.Context)) *htmlAddFieldDialog {
+	c.IOnSubmit = onSubmit
+	return c
+}
+
+func (c *htmlAddFieldDialog) OrganizationID(organizationID string) *htmlAddFieldDialog {
+	c.IOrganizationID = organizationID
+	return c
+}
+
+func (c *htmlAddFieldDialog) VoterID(voterID string) *htmlAddFieldDialog {
+	c.IVoterID = voterID
+	return c
+}
+
+type addFieldDialogOpenValue struct {
+	FieldName  string
+	FieldValue string
+}
+
+func (c *htmlAddFieldDialog) Open(ctx app.Context, fieldName string, fieldValue string) {
+	slog.InfoContext(ctx.Context, "AddFieldDialog: Open", "FieldName", fieldName, "FieldValue", fieldValue)
 	slog.InfoContext(ctx.Context, "AddFieldDialog: Open", "JSValue", c.JSValue(), "JSValue", app.Window().Get("JSON").Call("stringify", c.JSValue()))
 
-	dialogElement := app.Window().GetElementByID(c.DialogID)
-	if dialogElement == nil || dialogElement.IsNull() {
-		slog.ErrorContext(context.TODO(), "Could not get dialog element", "dialogID", c.DialogID)
-		return
-	}
-	dialogElement.Call("showModal")
-
-	ctx.Async(func() {
-		var output downballotapi.GetPersonResponse
-		err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.OrganizationID+"/person/"+c.VoterID, nil, &output)
-		if err != nil {
-			slog.ErrorContext(ctx.Context, "Could not get person", "err", err)
-			return
-		}
-
-		ctx.Dispatch(func(ctx app.Context) {
-			slog.InfoContext(ctx.Context, "Dispatch: Setting person", "person", output.Person)
-			c.Person = output.Person
-
-			ctx.Update()
-		})
-	})
-	ctx.Async(func() {
-		var output downballotapi.ListPersonFieldsResponse
-		err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.OrganizationID+"/person-field", nil, &output)
-		if err != nil {
-			slog.ErrorContext(ctx.Context, "Could not get person fields", "err", err)
-			return
-		}
-
-		ctx.Dispatch(func(ctx app.Context) {
-			slog.InfoContext(ctx.Context, "Dispatch: Setting person fields", "person fields", output.PersonFields)
-			c.PersonFields = output.PersonFields
-
-			ctx.Update()
-		})
-	})
+	ctx.NewActionWithValue(addFieldDialogEventOpen, addFieldDialogOpenValue{FieldName: fieldName, FieldValue: fieldValue})
 }
 
-func (c *AddFieldDialog) Close(ctx app.Context) {
-	dialogElement := app.Window().GetElementByID(c.DialogID)
-	if dialogElement == nil || dialogElement.IsNull() {
-		slog.ErrorContext(context.TODO(), "Could not get dialog element", "dialogID", c.DialogID)
-		return
-	}
-	dialogElement.Call("close")
+func (c *htmlAddFieldDialog) Close(ctx app.Context) {
+	c.JSValue().Call("close")
 }
 
-func (c *AddFieldDialog) Render() app.UI {
-	slog.InfoContext(context.TODO(), "AddFieldDialog: Render", "OrganizationID", c.OrganizationID, "VoterID", c.VoterID, "Person", c.Person)
+func (c *htmlAddFieldDialog) Render() app.UI {
+	slog.InfoContext(context.TODO(), "AddFieldDialog: Render", "OrganizationID", c.IOrganizationID, "VoterID", c.IVoterID, "Person", c.person)
 
-	submitName := c.SubmitNameValue
+	submitName := c.ISubmitName
 	if submitName == "" {
 		submitName = "Submit"
 	}
 
 	var selectedPersonField *downballotapi.PersonField
-	for _, personField := range c.PersonFields {
-		if personField.Name == c.SelectedFieldValue {
+	for _, personField := range c.personFields {
+		if personField.Name == c.selectedField {
 			selectedPersonField = personField
 			break
 		}
@@ -108,19 +112,19 @@ func (c *AddFieldDialog) Render() app.UI {
 					Label("Value").
 					Type("date").
 					Placeholder("Value").
-					Bind(&c.ValueValue),
+					Bind(&c.value),
 				blazar.Button().
 					Flat(true).
 					Label("Yesterday").
 					On("click", func(ctx app.Context, e app.Event) {
-						c.ValueValue = time.Now().AddDate(0, 0, -1).Format("2006-01-02")
+						c.value = time.Now().AddDate(0, 0, -1).Format("2006-01-02")
 						ctx.Update()
 					}),
 				blazar.Button().
 					Flat(true).
 					Label("Today").
 					On("click", func(ctx app.Context, e app.Event) {
-						c.ValueValue = time.Now().Format("2006-01-02")
+						c.value = time.Now().Format("2006-01-02")
 						ctx.Update()
 					}),
 			)
@@ -136,7 +140,7 @@ func (c *AddFieldDialog) Render() app.UI {
 							}
 							return allowedValues
 						}()...).
-					Bind(&c.ValueValue),
+					Bind(&c.value),
 			)
 		case downballotapi.PersonFieldDefinitionTypeString:
 			valueElements = append(valueElements,
@@ -144,7 +148,7 @@ func (c *AddFieldDialog) Render() app.UI {
 					Label("Value").
 					Type("text").
 					Placeholder("Value").
-					Bind(&c.ValueValue),
+					Bind(&c.value),
 			)
 		case downballotapi.PersonFieldDefinitionTypeInteger:
 			valueElements = append(valueElements,
@@ -152,7 +156,7 @@ func (c *AddFieldDialog) Render() app.UI {
 					Label("Value").
 					Type("number").
 					Placeholder("Value").
-					Bind(&c.ValueValue),
+					Bind(&c.value),
 			)
 		case downballotapi.PersonFieldDefinitionTypeBoolean:
 			valueElements = append(valueElements,
@@ -162,7 +166,7 @@ func (c *AddFieldDialog) Render() app.UI {
 						blazar.SelectOption{Label: "true", Value: "true"},
 						blazar.SelectOption{Label: "false", Value: "false"},
 					).
-					Bind(&c.ValueValue),
+					Bind(&c.value),
 			)
 		default:
 			valueElements = append(valueElements,
@@ -170,7 +174,7 @@ func (c *AddFieldDialog) Render() app.UI {
 					Label("Value").
 					Type("text").
 					Placeholder("Value").
-					Bind(&c.ValueValue),
+					Bind(&c.value),
 			)
 		}
 	}
@@ -183,28 +187,27 @@ func (c *AddFieldDialog) Render() app.UI {
 				func() []blazar.SelectOption {
 					var allowedValues []blazar.SelectOption
 					allowedValues = append(allowedValues, blazar.SelectOption{Label: "", Value: "", Disabled: true})
-					for _, personField := range c.PersonFields {
+					for _, personField := range c.personFields {
 						allowedValues = append(allowedValues, blazar.SelectOption{Label: personField.Name, Value: personField.Name})
 					}
 					return allowedValues
 				}()...).
-			Bind(&c.SelectedFieldValue).
+			Bind(&c.selectedField).
 			On("change", func(ctx app.Context, e app.Event) {
-				slog.InfoContext(ctx.Context, "AddFieldDialog: OnChange", "SelectedFieldValue", c.SelectedFieldValue)
+				slog.InfoContext(ctx.Context, "AddFieldDialog: OnChange", "SelectedFieldValue", c.selectedField)
 
-				if c.SelectedFieldValue == "" {
-					c.ValueValue = ""
+				if c.selectedField == "" {
+					c.value = ""
 				} else {
-					c.ValueValue = c.Person.Fields[c.SelectedFieldValue]
+					c.value = c.person.Fields[c.selectedField]
 				}
-				slog.InfoContext(ctx.Context, "AddFieldDialog: OnChange", "ValueValue", c.ValueValue)
+				slog.InfoContext(ctx.Context, "AddFieldDialog: OnChange", "ValueValue", c.value)
 				ctx.Update()
 			}),
 	}
 	formBody = append(formBody, valueElements...)
 
 	return app.Dialog().
-		ID(c.DialogID).
 		Body(
 			app.H2().Text("Add Field"),
 			blazar.Form().
@@ -212,20 +215,20 @@ func (c *AddFieldDialog) Render() app.UI {
 				CancelFunction(c.Close).
 				SubmitLabel("Save").
 				SubmitFunction(func(ctx app.Context) {
-					slog.InfoContext(ctx.Context, "AddFieldDialog: SubmitFunction", "SelectedFieldValue", c.SelectedFieldValue, "ValueValue", c.ValueValue)
+					slog.InfoContext(ctx.Context, "AddFieldDialog: SubmitFunction", "SelectedFieldValue", c.selectedField, "ValueValue", c.value)
 					input := downballotapi.PatchPersonRequest{
 						Fields: map[string]*string{},
 					}
-					input.Fields[c.SelectedFieldValue] = &c.ValueValue
+					input.Fields[c.selectedField] = &c.value
 					var output downballotapi.PatchPersonRequest
-					err := api.Do(ctx, http.MethodPatch, "/api/v1/organization/"+c.OrganizationID+"/person/"+c.VoterID, input, &output)
+					err := api.Do(ctx, http.MethodPatch, "/api/v1/organization/"+c.IOrganizationID+"/person/"+c.IVoterID, input, &output)
 					if err != nil {
 						slog.ErrorContext(ctx.Context, "Could not update person", "err", err)
 						return
 					}
 
-					if c.OnSubmit != nil {
-						c.OnSubmit(ctx)
+					if c.IOnSubmit != nil {
+						c.IOnSubmit(ctx)
 					}
 
 					c.error = ""
@@ -236,5 +239,51 @@ func (c *AddFieldDialog) Render() app.UI {
 					Text(c.error).
 					Bad()
 			}),
-		)
+		).
+		On("toggle", func(ctx app.Context, e app.Event) {
+			var toggleEvent htmlevent.Toggle
+			htmlevent.MustParse(e, &toggleEvent)
+			slog.InfoContext(ctx.Context, "AddFieldDialog: OnToggle", "toggleEvent", fmt.Sprintf("%+v", toggleEvent))
+
+			// Don't do anything if we're closing the dialog.
+			if toggleEvent.NewState != "open" {
+				return
+			}
+
+			ctx.Async(func() {
+				var person *downballotapi.Person
+				var personFields []*downballotapi.PersonField
+
+				var wg sync.WaitGroup
+				wg.Go(func() {
+					var output downballotapi.GetPersonResponse
+					err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.IOrganizationID+"/person/"+c.IVoterID, nil, &output)
+					if err != nil {
+						slog.ErrorContext(ctx.Context, "Could not get person", "err", err)
+						return
+					}
+
+					person = output.Person
+				})
+				wg.Go(func() {
+					var output downballotapi.ListPersonFieldsResponse
+					err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.IOrganizationID+"/person-field", nil, &output)
+					if err != nil {
+						slog.ErrorContext(ctx.Context, "Could not get person fields", "err", err)
+						return
+					}
+
+					personFields = output.PersonFields
+				})
+				wg.Wait()
+
+				ctx.Dispatch(func(ctx app.Context) {
+					slog.InfoContext(ctx.Context, "Dispatch: Setting person and fields.")
+					c.person = person
+					c.personFields = personFields
+
+					ctx.Update()
+				})
+			})
+		})
 }

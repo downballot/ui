@@ -16,7 +16,6 @@ import (
 	"github.com/downballot/ui/component"
 	"github.com/go-app-blazar/blazar/blazar"
 	"github.com/go-app-blazar/router"
-	"github.com/google/uuid"
 	"github.com/maxence-charriere/go-app/v11/pkg/app"
 )
 
@@ -31,8 +30,6 @@ type OrganizationIDPersonIDPage struct {
 	person         *downballotapi.Person
 	audits         []*downballotapi.PersonAudit
 	permissionSet  permissionset.PermissionSet
-
-	addFieldDialog component.AddFieldDialog
 }
 
 func (c *OrganizationIDPersonIDPage) OnNav(ctx app.Context) {
@@ -53,15 +50,6 @@ func (c *OrganizationIDPersonIDPage) OnNav(ctx app.Context) {
 	}
 
 	ctx.GetState("organization/"+c.organizationID+"/permission-set", &c.permissionSet)
-
-	c.addFieldDialog = component.AddFieldDialog{
-		OrganizationID: c.organizationID,
-		VoterID:        c.voterID,
-		DialogID:       "id-" + uuid.New().String(),
-		OnSubmit: func(ctx app.Context) {
-			c.Reload(ctx)
-		},
-	}
 
 	c.Reload(ctx)
 }
@@ -149,6 +137,13 @@ func (c *OrganizationIDPersonIDPage) Render() app.UI {
 		return strings.Compare(left.Field, right.Field)
 	})
 
+	addFieldDialog := component.AddFieldDialog().
+		OrganizationID(c.organizationID).
+		VoterID(c.voterID).
+		OnSubmit(func(ctx app.Context) {
+			c.Reload(ctx)
+		})
+
 	return c.EmbeddedPage.Wrap(
 		blazar.Table[Record]().
 			Title("Fields").
@@ -158,7 +153,7 @@ func (c *OrganizationIDPersonIDPage) Render() app.UI {
 				Name: "Add Field",
 				Icon: component.IconAdd,
 				Function: func(ctx app.Context) {
-					c.addFieldDialog.Open(ctx)
+					addFieldDialog.Open(ctx, "", "")
 				},
 			}).
 			RowAction(
@@ -166,9 +161,7 @@ func (c *OrganizationIDPersonIDPage) Render() app.UI {
 					Name: "Edit",
 					Icon: component.IconEdit,
 					Function: func(ctx app.Context, row Record) {
-						c.addFieldDialog.SelectedFieldValue = row.Field
-						c.addFieldDialog.ValueValue = row.Value
-						c.addFieldDialog.Open(ctx)
+						addFieldDialog.Open(ctx, row.Field, row.Value)
 					},
 					Disabled: !c.permissionSet.Match(iam.IAMPersonUpdate),
 				},
@@ -201,7 +194,7 @@ func (c *OrganizationIDPersonIDPage) Render() app.UI {
 					Disabled: !c.permissionSet.Match(iam.IAMPersonUpdate),
 				},
 			),
-		&c.addFieldDialog,
+		addFieldDialog,
 		blazar.Table[*downballotapi.PersonAudit]().
 			Title("Audit Log").
 			Rows(c.audits).
