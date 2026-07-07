@@ -50,10 +50,17 @@ type OrganizationIDGroupIDPersonPage struct {
 	MapOpen     bool
 	ResultsOpen bool
 
-	addFieldDialog component.AddFieldMultipleDialog
+	addFieldDialogID string
 }
 
 var _ app.Navigator = (*OrganizationIDGroupIDPersonPage)(nil)
+var _ app.Mounter = (*OrganizationIDGroupIDPersonPage)(nil)
+
+func (c *OrganizationIDGroupIDPersonPage) OnMount(ctx app.Context) {
+	slog.InfoContext(ctx.Context, "OrganizationIDGroupIDPersonPage: OnMount")
+
+	c.addFieldDialogID = "id-" + uuid.New().String()
+}
 
 func (c *OrganizationIDGroupIDPersonPage) OnNav(ctx app.Context) {
 	slog.InfoContext(ctx.Context, "OrganizationIDGroupIDPersonPage: OnNav")
@@ -102,14 +109,6 @@ func (c *OrganizationIDGroupIDPersonPage) OnNav(ctx app.Context) {
 	c.FilterOpen = false
 	c.MapOpen = true
 	c.ResultsOpen = true
-
-	c.addFieldDialog = component.AddFieldMultipleDialog{
-		OrganizationID: c.organizationID,
-		DialogID:       "id-" + uuid.New().String(),
-		OnSubmit: func(ctx app.Context) {
-			// Do nothing.
-		},
-	}
 
 	ctx.Async(func() {
 		var wg sync.WaitGroup
@@ -321,6 +320,10 @@ func (c *OrganizationIDGroupIDPersonPage) Render() app.UI {
 
 	slog.InfoContext(context.TODO(), "OrganizationIDGroupIDPersonPage: Render", "PersonsTableVisibleColumns", c.PersonsTableVisibleColumns)
 
+	addFieldDialog := component.AddFieldMultipleDialog().
+		DialogID(c.addFieldDialogID).
+		OrganizationID(c.organizationID)
+
 	return c.EmbeddedPage.Wrap(
 		blazar.Collapse().
 			Label("Filter").
@@ -446,12 +449,12 @@ func (c *OrganizationIDGroupIDPersonPage) Render() app.UI {
 								for _, row := range rows {
 									voterIDs = append(voterIDs, row.VoterID)
 								}
-								c.addFieldDialog.Open(ctx, voterIDs)
+								addFieldDialog.Open(ctx, voterIDs)
 							},
 							Disabled: !c.permissionSet.Match(iam.IAMPersonUpdate),
 						},
 					),
-				&c.addFieldDialog,
+				addFieldDialog,
 			),
 	)
 }

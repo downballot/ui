@@ -2,6 +2,7 @@ package component
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"time"
@@ -12,16 +13,16 @@ import (
 	"github.com/maxence-charriere/go-app/v11/pkg/app"
 )
 
-type AddFieldMultipleDialog struct {
+type htmlAddFieldMultipleDialog struct {
 	app.Compo
 
-	OrganizationID string
-	voterIDs       []string
+	IOrganizationID string
+	voterIDs        []string
 
-	DialogID string
+	dialogID string
 	error    string
 
-	PersonFields []*downballotapi.PersonField
+	personFields []*downballotapi.PersonField
 
 	SubmitNameValue string
 	OnSubmit        func(ctx app.Context)
@@ -30,13 +31,27 @@ type AddFieldMultipleDialog struct {
 	ValueValue         string
 }
 
-func (c *AddFieldMultipleDialog) Open(ctx app.Context, voterIDs []string) {
-	slog.InfoContext(ctx.Context, "AddFieldMultipleDialog: Open", "DialogID", c.DialogID)
-	slog.InfoContext(ctx.Context, "AddFieldMultipleDialog: Open", "JSValue", c.JSValue(), "JSValue", app.Window().Get("JSON").Call("stringify", c.JSValue()))
+func AddFieldMultipleDialog() *htmlAddFieldMultipleDialog {
+	return &htmlAddFieldMultipleDialog{}
+}
 
-	dialogElement := app.Window().GetElementByID(c.DialogID)
+func (c *htmlAddFieldMultipleDialog) DialogID(dialogID string) *htmlAddFieldMultipleDialog {
+	c.dialogID = dialogID
+	return c
+}
+
+func (c *htmlAddFieldMultipleDialog) OrganizationID(organizationID string) *htmlAddFieldMultipleDialog {
+	c.IOrganizationID = organizationID
+	return c
+}
+
+func (c *htmlAddFieldMultipleDialog) Open(ctx app.Context, voterIDs []string) {
+	slog.InfoContext(ctx.Context, "htmlAddFieldMultipleDialog: Open", "DialogID", c.dialogID)
+	slog.InfoContext(ctx.Context, "htmlAddFieldMultipleDialog: Open", "JSValue", c.JSValue(), "JSValue", app.Window().Get("JSON").Call("stringify", c.JSValue()))
+
+	dialogElement := app.Window().GetElementByID(c.dialogID)
 	if dialogElement == nil || dialogElement.IsNull() {
-		slog.ErrorContext(context.TODO(), "Could not get dialog element", "dialogID", c.DialogID)
+		slog.ErrorContext(context.TODO(), "htmlAddFieldMultipleDialog: Open: Could not get dialog element", "dialogID", c.dialogID)
 		return
 	}
 	dialogElement.Call("showModal")
@@ -45,7 +60,7 @@ func (c *AddFieldMultipleDialog) Open(ctx app.Context, voterIDs []string) {
 
 	ctx.Async(func() {
 		var output downballotapi.ListPersonFieldsResponse
-		err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.OrganizationID+"/person-field", nil, &output)
+		err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.IOrganizationID+"/person-field", nil, &output)
 		if err != nil {
 			slog.ErrorContext(ctx.Context, "Could not get person fields", "err", err)
 			return
@@ -53,24 +68,27 @@ func (c *AddFieldMultipleDialog) Open(ctx app.Context, voterIDs []string) {
 
 		ctx.Dispatch(func(ctx app.Context) {
 			slog.InfoContext(ctx.Context, "Dispatch: Setting person fields", "person fields", output.PersonFields)
-			c.PersonFields = output.PersonFields
+			c.personFields = output.PersonFields
+
+			slog.InfoContext(ctx.Context, "htmlAddFieldMultipleDialog: Open", "Src", ctx.Src(), "Src", fmt.Sprintf("%T", ctx.Src()))
+			slog.InfoContext(ctx.Context, "htmlAddFieldMultipleDialog: Open", "JSSrc", ctx.JSSrc(), "JSSrc", app.Window().Get("JSON").Call("stringify", ctx.JSSrc()))
 
 			ctx.Update()
 		})
 	})
 }
 
-func (c *AddFieldMultipleDialog) Close(ctx app.Context) {
-	dialogElement := app.Window().GetElementByID(c.DialogID)
+func (c *htmlAddFieldMultipleDialog) Close(ctx app.Context) {
+	dialogElement := app.Window().GetElementByID(c.dialogID)
 	if dialogElement == nil || dialogElement.IsNull() {
-		slog.ErrorContext(context.TODO(), "Could not get dialog element", "dialogID", c.DialogID)
+		slog.ErrorContext(context.TODO(), "htmlAddFieldMultipleDialog: Close: Could not get dialog element", "dialogID", c.dialogID)
 		return
 	}
 	dialogElement.Call("close")
 }
 
-func (c *AddFieldMultipleDialog) Render() app.UI {
-	slog.InfoContext(context.TODO(), "AddFieldMultipleDialog: Render", "OrganizationID", c.OrganizationID, "voterIDs", c.voterIDs)
+func (c *htmlAddFieldMultipleDialog) Render() app.UI {
+	slog.InfoContext(context.TODO(), "htmlAddFieldMultipleDialog: Render", "OrganizationID", c.IOrganizationID, "voterIDs", c.voterIDs)
 
 	submitName := c.SubmitNameValue
 	if submitName == "" {
@@ -78,7 +96,7 @@ func (c *AddFieldMultipleDialog) Render() app.UI {
 	}
 
 	var selectedPersonField *downballotapi.PersonField
-	for _, personField := range c.PersonFields {
+	for _, personField := range c.personFields {
 		if personField.Name == c.SelectedFieldValue {
 			selectedPersonField = personField
 			break
@@ -169,27 +187,27 @@ func (c *AddFieldMultipleDialog) Render() app.UI {
 				func() []blazar.SelectOption {
 					var allowedValues []blazar.SelectOption
 					allowedValues = append(allowedValues, blazar.SelectOption{Label: "", Value: "", Disabled: true})
-					for _, personField := range c.PersonFields {
+					for _, personField := range c.personFields {
 						allowedValues = append(allowedValues, blazar.SelectOption{Label: personField.Name, Value: personField.Name})
 					}
 					return allowedValues
 				}()...).
 			Bind(&c.SelectedFieldValue).
 			On("change", func(ctx app.Context, e app.Event) {
-				slog.InfoContext(ctx.Context, "AddFieldMultipleDialog: OnChange", "SelectedFieldValue", c.SelectedFieldValue)
+				slog.InfoContext(ctx.Context, "htmlAddFieldMultipleDialog: OnChange", "SelectedFieldValue", c.SelectedFieldValue)
 
 				c.ValueValue = ""
 
 				// TODO: Can we pick the first option if it's a dropdown?
 
-				slog.InfoContext(ctx.Context, "AddFieldMultipleDialog: OnChange", "ValueValue", c.ValueValue)
+				slog.InfoContext(ctx.Context, "htmlAddFieldMultipleDialog: OnChange", "ValueValue", c.ValueValue)
 				ctx.Update()
 			}),
 	}
 	formBody = append(formBody, valueElements...)
 
 	return app.Dialog().
-		ID(c.DialogID).
+		ID(c.dialogID).
 		Body(
 			app.H2().Text("Add Field"),
 			blazar.Form().
@@ -197,7 +215,7 @@ func (c *AddFieldMultipleDialog) Render() app.UI {
 				CancelFunction(c.Close).
 				SubmitLabel("Save").
 				SubmitFunction(func(ctx app.Context) {
-					slog.InfoContext(ctx.Context, "AddFieldMultipleDialog: SubmitFunction", "SelectedFieldValue", c.SelectedFieldValue, "ValueValue", c.ValueValue)
+					slog.InfoContext(ctx.Context, "htmlAddFieldMultipleDialog: SubmitFunction", "SelectedFieldValue", c.SelectedFieldValue, "ValueValue", c.ValueValue)
 
 					input := downballotapi.PostPersonUpdateRequest{
 						VoterIDs: c.voterIDs,
@@ -205,7 +223,7 @@ func (c *AddFieldMultipleDialog) Render() app.UI {
 					}
 					input.Fields[c.SelectedFieldValue] = &c.ValueValue
 					var output downballotapi.PostPersonUpdateResponse
-					err := api.Do(ctx, http.MethodPost, "/api/v1/organization/"+c.OrganizationID+"/person/update", input, &output)
+					err := api.Do(ctx, http.MethodPost, "/api/v1/organization/"+c.IOrganizationID+"/person/update", input, &output)
 					if err != nil {
 						slog.ErrorContext(ctx.Context, "Could not update persons", "err", err)
 						return

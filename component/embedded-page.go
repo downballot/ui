@@ -2,6 +2,8 @@ package component
 
 import (
 	"log/slog"
+	"sync"
+	"time"
 
 	"github.com/go-app-blazar/blazar/blazar"
 	"github.com/maxence-charriere/go-app/v11/pkg/app"
@@ -46,6 +48,23 @@ func (c *EmbeddedPage) Setup(ctx app.Context) {
 	ctx.ObserveState("api-error", &c.IError).OnChange(
 		func() {
 			slog.InfoContext(ctx.Context, "EmbeddedPage: ObserveState", "api-error", c.IError)
+
+			if c.IError != "" {
+				ctx.Async(func() {
+					var wg sync.WaitGroup
+					wg.Go(func() {
+						slog.InfoContext(ctx.Context, "EmbeddedPage: ObserveState: Async: Sleep", "api-error", c.IError)
+						time.Sleep(2 * time.Second)
+						slog.InfoContext(ctx.Context, "EmbeddedPage: ObserveState: Async: Sleep done", "api-error", c.IError)
+					})
+					wg.Wait()
+
+					slog.InfoContext(ctx.Context, "EmbeddedPage: ObserveState: Async: Done waiting.")
+
+					slog.InfoContext(ctx.Context, "EmbeddedPage: ObserveState: Defer: Clear api-error")
+					ctx.SetState("api-error", "").ExpiresIn(1 * time.Millisecond)
+				})
+			}
 		})
 }
 
