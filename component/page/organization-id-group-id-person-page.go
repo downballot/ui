@@ -18,6 +18,7 @@ import (
 	"github.com/downballot/ui/component"
 	"github.com/downballot/ui/googlemap"
 	"github.com/go-app-blazar/blazar/blazar"
+	"github.com/go-app-blazar/blazar/deref"
 	"github.com/go-app-blazar/router"
 	"github.com/maxence-charriere/go-app/v11/pkg/app"
 	"github.com/tekkamanendless/restapiclient"
@@ -44,9 +45,9 @@ type OrganizationIDGroupIDPersonPage struct {
 	PersonsTableColumns        []blazar.TableColumn[*downballotapi.Person]
 	PersonsTableVisibleColumns []string
 
-	FilterOpen  bool
-	MapOpen     bool
-	ResultsOpen bool
+	filterOpen  bool
+	mapOpen     bool
+	resultsOpen bool
 }
 
 var _ app.Navigator = (*OrganizationIDGroupIDPersonPage)(nil)
@@ -77,6 +78,11 @@ func (c *OrganizationIDGroupIDPersonPage) OnNav(ctx app.Context) {
 
 	ctx.GetState("organization/"+c.organizationID+"/permission-set", &c.permissionSet)
 
+	c.Limit = 1000
+	c.filterOpen = false
+	c.mapOpen = true
+	c.resultsOpen = true
+
 	var persistFilter string
 	ctx.GetState("persist-organization-id-group-id-person-page-filter", &persistFilter)
 	if persistFilter != "" {
@@ -87,6 +93,33 @@ func (c *OrganizationIDGroupIDPersonPage) OnNav(ctx app.Context) {
 	ctx.GetState("persist-organization-id-group-id-person-page-limit", &persistLimit)
 	if persistLimit != 0 {
 		c.Limit = persistLimit
+	}
+
+	var persistFilterOpen *bool
+	ctx.GetState("persist-organization-id-group-id-person-page-filter-open", &persistFilterOpen)
+	if persistFilterOpen == nil {
+		slog.InfoContext(ctx.Context, "OrganizationIDGroupIDPersonPage: OnNav: Persist filter open is nil.")
+	} else {
+		slog.InfoContext(ctx.Context, "OrganizationIDGroupIDPersonPage: OnNav: Persist filter open is not nil.", "persistFilterOpen", deref.String(persistFilterOpen))
+		c.filterOpen = *persistFilterOpen
+	}
+
+	var persistMapOpen *bool
+	ctx.GetState("persist-organization-id-group-id-person-page-map-open", &persistMapOpen)
+	if persistMapOpen == nil {
+		slog.InfoContext(ctx.Context, "OrganizationIDGroupIDPersonPage: OnNav: Persist map open is nil.")
+	} else {
+		slog.InfoContext(ctx.Context, "OrganizationIDGroupIDPersonPage: OnNav: Persist map open is not nil.", "persistMapOpen", deref.String(persistMapOpen))
+		c.mapOpen = *persistMapOpen
+	}
+
+	var persistResultsOpen *bool
+	ctx.GetState("persist-organization-id-group-id-person-page-results-open", &persistResultsOpen)
+	if persistResultsOpen == nil {
+		slog.InfoContext(ctx.Context, "OrganizationIDGroupIDPersonPage: OnNav: Persist results open is nil.")
+	} else {
+		slog.InfoContext(ctx.Context, "OrganizationIDGroupIDPersonPage: OnNav: Persist results open is not nil.", "persistResultsOpen", deref.String(persistResultsOpen))
+		c.resultsOpen = *persistResultsOpen
 	}
 
 	if value := ctx.Page().URL().Query().Get("filter"); value != "" {
@@ -100,11 +133,6 @@ func (c *OrganizationIDGroupIDPersonPage) OnNav(ctx app.Context) {
 			c.Limit = uint(uintValue)
 		}
 	}
-
-	c.Limit = 1000
-	c.FilterOpen = false
-	c.MapOpen = true
-	c.ResultsOpen = true
 
 	ctx.Async(func() {
 		var wg sync.WaitGroup
@@ -322,7 +350,10 @@ func (c *OrganizationIDGroupIDPersonPage) Render() app.UI {
 	return c.EmbeddedPage.Wrap(
 		blazar.Collapse().
 			Label("Filter").
-			Bind(&c.FilterOpen).
+			Bind(&c.filterOpen).
+			OnOpenChange(func(ctx app.Context, open bool) {
+				ctx.SetState("persist-organization-id-group-id-person-page-filter-open", open).Persist()
+			}).
 			SummaryText(func() string {
 				summary := "Filter: "
 				if c.Filter == "" {
@@ -404,7 +435,10 @@ func (c *OrganizationIDGroupIDPersonPage) Render() app.UI {
 			),
 		blazar.Collapse().
 			Label("Map").
-			Bind(&c.MapOpen).
+			Bind(&c.mapOpen).
+			OnOpenChange(func(ctx app.Context, open bool) {
+				ctx.SetState("persist-organization-id-group-id-person-page-map-open", open).Persist()
+			}).
 			Body(
 				app.Div().
 					Class("map-container").
@@ -419,7 +453,10 @@ func (c *OrganizationIDGroupIDPersonPage) Render() app.UI {
 			),
 		blazar.Collapse().
 			Label("Results").
-			Bind(&c.ResultsOpen).
+			Bind(&c.resultsOpen).
+			OnOpenChange(func(ctx app.Context, open bool) {
+				ctx.SetState("persist-organization-id-group-id-person-page-results-open", open).Persist()
+			}).
 			SummaryText("Results: "+fmt.Sprintf("%d", len(c.Persons))).
 			Body(
 				blazar.Table[*downballotapi.Person]().
