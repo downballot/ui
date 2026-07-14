@@ -253,21 +253,10 @@ func (c *OrganizationIDGroupIDPersonPage) Render() app.UI {
 		Longitude: -75.75937795659787,
 	}
 	{
-		totalLatitude := 0.0
-		totalLongitude := 0.0
-		total := 0
-
 		coordinatesField := "coordinates" // TODO: Look this up instead.
 
+		personsByLocation := map[string][]*downballotapi.Person{}
 		for _, person := range c.Persons {
-			title := person.Fields["name"]
-			if person.Fields["residential_address"] != "" {
-				title += "\n" + person.Fields["residential_address"]
-			}
-			if person.Fields["residential_address_development"] != "" {
-				title += "\n" + person.Fields["residential_address_development"]
-			}
-
 			coordinates := person.Fields[coordinatesField]
 			if coordinates == "" {
 				continue
@@ -289,30 +278,132 @@ func (c *OrganizationIDGroupIDPersonPage) Render() app.UI {
 			if err != nil {
 				continue
 			}
+
+			locationString := fmt.Sprintf("%0.7f,%0.7f", latitude, longitude)
+			personsByLocation[locationString] = append(personsByLocation[locationString], person)
+		}
+
+		type Location struct {
+			Latitude  float64
+			Longitude float64
+			Title     string
+			Persons   []*downballotapi.Person
+		}
+
+		locations := make([]*Location, 0, len(personsByLocation))
+		for _, persons := range personsByLocation {
+			var latitude float64
+			var longitude float64
+			{
+				person := persons[0]
+				coordinates := person.Fields[coordinatesField]
+				if coordinates == "" {
+					continue
+				}
+				parts := strings.SplitN(coordinates, ",", 2)
+				if len(parts) != 2 {
+					continue
+				}
+				latitudeString := parts[0]
+				longitudeString := parts[1]
+				if latitudeString == "" || longitudeString == "" {
+					continue
+				}
+				var err error
+				latitude, err = strconv.ParseFloat(latitudeString, 64)
+				if err != nil {
+					continue
+				}
+				longitude, err = strconv.ParseFloat(longitudeString, 64)
+				if err != nil {
+					continue
+				}
+			}
+
+			var title string
+			{
+				person := persons[0]
+				if person.Fields["residential_address"] != "" {
+					title += "\n" + person.Fields["residential_address"]
+				}
+				if person.Fields["residential_address_development"] != "" {
+					title += "\n" + person.Fields["residential_address_development"]
+				}
+				title = strings.TrimSpace(title)
+			}
+			locations = append(locations, &Location{
+				Latitude:  latitude,
+				Longitude: longitude,
+				Title:     title,
+				Persons:   persons,
+			})
+		}
+
+		totalLatitude := 0.0
+		totalLongitude := 0.0
+		total := 0
+
+		for _, location := range locations {
+			title := location.Title
+			if len(location.Persons) == 1 {
+				title = location.Persons[0].Fields["name"] + "\n" + title
+			}
+
+			var streetNumber string
+			{
+				person := location.Persons[0]
+				parts := strings.SplitN(person.Fields["residential_address"], " ", 2)
+				streetNumber = parts[0]
+			}
+
+			slices.SortFunc(location.Persons, func(left, right *downballotapi.Person) int {
+				return strings.Compare(left.Fields["name"], right.Fields["name"])
+			})
+
 			markers = append(markers, googlemap.Marker{
 				Coordinate: googlemap.Coordinate{
-					Latitude:  latitude,
-					Longitude: longitude,
+					Latitude:  location.Latitude,
+					Longitude: location.Longitude,
 				},
 				Title: title,
 				Body: func() []app.UI {
-					parts := strings.SplitN(person.Fields["residential_address"], " ", 2)
-					streetNumber := parts[0]
+					var streetNumberElement app.UI
+					if len(location.Persons) == 1 {
+						streetNumberElement = app.A().
+							Href(fmt.Sprintf("/organization/%s/person/%s", c.organizationID, location.Persons[0].VoterID)).
+							Text(streetNumber)
+					} else {
+						streetNumberElement = app.Text(streetNumber)
+					}
 
 					return []app.UI{
 						app.Div().
 							Class("map-marker").
-							Text(streetNumber),
+							Body(
+								app.Div().
+									Class("map-marker-street-number").
+									Body(
+										streetNumberElement,
+									),
+								app.If(len(location.Persons) > 1, func() app.UI {
+									return app.Range(location.Persons).Slice(func(i int) app.UI {
+										person := location.Persons[i]
+										return app.Span().
+											Class("map-marker-person").
+											Body(
+												app.A().
+													Href(fmt.Sprintf("/organization/%s/person/%s", c.organizationID, person.VoterID)).
+													Text(fmt.Sprintf("%c", 'A'+i)).
+													Title(person.Fields["name"] + "\n" + location.Title),
+											)
+									})
+								}),
+							),
 					}
 				},
-				OnClick: func(ctx app.Context, event app.Event) {
-					ctx.PreventUpdate()
-
-					app.Window().Call("open", fmt.Sprintf("/organization/%s/person/%s", c.organizationID, person.VoterID), "_blank")
-				},
 			})
-			totalLatitude += latitude
-			totalLongitude += longitude
+			totalLatitude += location.Latitude
+			totalLongitude += location.Longitude
 			total++
 		}
 
