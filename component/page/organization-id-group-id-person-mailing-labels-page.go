@@ -186,7 +186,18 @@ func (c *OrganizationIDGroupIDPersonMailingLabelsPage) Render() app.UI {
 							if c.Filter == "" {
 								summary += "n/a"
 							} else {
-								summary += c.Filter
+								var namedFilter string
+								for _, filter := range c.Filters {
+									if filter.Filter == c.Filter {
+										namedFilter = filter.Name
+										break
+									}
+								}
+								if namedFilter == "" {
+									summary += c.Filter
+								} else {
+									summary += namedFilter
+								}
 							}
 
 							summary += " | Limit: "
