@@ -94,6 +94,41 @@ h1, h2, h3, h4, h5, h6 {
 	}
 }
 
+.person-summary {
+	.person-summary-header {
+		display: flex;
+		flex-direction: row;
+		gap: 0.5em;
+		font-size: 1.4em;
+		font-weight: bold;
+	}
+
+	.person-summary-registration {
+		font-size: 1.1em;
+		font-style: italic;
+	}
+
+	/*.person-summary-address {}*/
+
+	.person-summary-chips {
+		display: flex;
+		flex-direction: row;
+		gap: 0.5em;
+
+		.person-summary-chip {
+			border: 1px solid green;
+            border-radius: 1em;
+            padding-left: 0.5em;
+            padding-right: 0.5em;
+            font-size: 0.8em;
+            gap: 0.5em;
+            display: flex;
+            flex-direction: row;
+            background-color: lightgreen;
+		}
+	}
+}
+
 @media print {
 	.blazar-table {
 		font-size: 0.7em;
