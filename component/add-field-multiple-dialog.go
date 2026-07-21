@@ -27,8 +27,9 @@ type htmlAddFieldMultipleDialog struct {
 	ISubmitName string
 	IOnSubmit   func(ctx app.Context)
 
-	selectedFieldName string
-	selectedValue     string
+	selectedFieldName   string
+	selectedPersonField *downballotapi.PersonField
+	value               string
 }
 
 func AddFieldMultipleDialog() *htmlAddFieldMultipleDialog {
@@ -68,44 +69,35 @@ func (c *htmlAddFieldMultipleDialog) Close(ctx app.Context) {
 }
 
 func (c *htmlAddFieldMultipleDialog) Render() app.UI {
-	slog.InfoContext(context.TODO(), "htmlAddFieldMultipleDialog: Render", "OrganizationID", c.IOrganizationID, "voterIDs", c.voterIDs)
+	slog.InfoContext(context.TODO(), "htmlAddFieldMultipleDialog: Render", "IOrganizationID", c.IOrganizationID, "voterIDs", c.voterIDs)
 
 	submitName := c.ISubmitName
 	if submitName == "" {
 		submitName = "Submit"
 	}
 
-	var selectedPersonField *downballotapi.PersonField
-	for _, personField := range c.personFields {
-		if personField.Name == c.selectedFieldName {
-			selectedPersonField = personField
-			break
-		}
-	}
-	slog.InfoContext(context.TODO(), "htmlAddFieldMultipleDialog: Render", "selectedPersonField", selectedPersonField)
-
 	var valueElements []app.UI
-	if selectedPersonField != nil {
-		switch selectedPersonField.Type {
+	if c.selectedPersonField != nil {
+		switch c.selectedPersonField.Type {
 		case downballotapi.PersonFieldDefinitionTypeDate:
 			valueElements = append(valueElements,
 				blazar.Input[string]().
 					Label("Value").
 					Type("date").
 					Placeholder("Value").
-					Bind(&c.selectedValue),
+					Bind(&c.value),
 				blazar.Button().
 					Flat(true).
 					Label("Yesterday").
 					On("click", func(ctx app.Context, e app.Event) {
-						c.selectedValue = time.Now().AddDate(0, 0, -1).Format("2006-01-02")
+						c.value = time.Now().AddDate(0, 0, -1).Format("2006-01-02")
 						ctx.Update()
 					}),
 				blazar.Button().
 					Flat(true).
 					Label("Today").
 					On("click", func(ctx app.Context, e app.Event) {
-						c.selectedValue = time.Now().Format("2006-01-02")
+						c.value = time.Now().Format("2006-01-02")
 						ctx.Update()
 					}),
 			)
@@ -116,12 +108,12 @@ func (c *htmlAddFieldMultipleDialog) Render() app.UI {
 						func() []blazar.SelectOption {
 							var allowedValues []blazar.SelectOption
 							allowedValues = append(allowedValues, blazar.SelectOption{Label: "", Value: "", Disabled: true})
-							for _, allowedValue := range selectedPersonField.AllowedValues {
+							for _, allowedValue := range c.selectedPersonField.AllowedValues {
 								allowedValues = append(allowedValues, blazar.SelectOption{Label: allowedValue, Value: allowedValue})
 							}
 							return allowedValues
 						}()...).
-					Bind(&c.selectedValue),
+					Bind(&c.value),
 			)
 		case downballotapi.PersonFieldDefinitionTypeString:
 			valueElements = append(valueElements,
@@ -129,7 +121,7 @@ func (c *htmlAddFieldMultipleDialog) Render() app.UI {
 					Label("Value").
 					Type("text").
 					Placeholder("Value").
-					Bind(&c.selectedValue),
+					Bind(&c.value),
 			)
 		case downballotapi.PersonFieldDefinitionTypeInteger:
 			valueElements = append(valueElements,
@@ -137,7 +129,7 @@ func (c *htmlAddFieldMultipleDialog) Render() app.UI {
 					Label("Value").
 					Type("number").
 					Placeholder("Value").
-					Bind(&c.selectedValue),
+					Bind(&c.value),
 			)
 		case downballotapi.PersonFieldDefinitionTypeBoolean:
 			valueElements = append(valueElements,
@@ -147,7 +139,7 @@ func (c *htmlAddFieldMultipleDialog) Render() app.UI {
 						blazar.SelectOption{Label: "true", Value: "true"},
 						blazar.SelectOption{Label: "false", Value: "false"},
 					).
-					Bind(&c.selectedValue),
+					Bind(&c.value),
 			)
 		default:
 			valueElements = append(valueElements,
@@ -155,7 +147,7 @@ func (c *htmlAddFieldMultipleDialog) Render() app.UI {
 					Label("Value").
 					Type("text").
 					Placeholder("Value").
-					Bind(&c.selectedValue),
+					Bind(&c.value),
 			)
 		}
 	}
@@ -177,13 +169,33 @@ func (c *htmlAddFieldMultipleDialog) Render() app.UI {
 				}()...).
 			Bind(&c.selectedFieldName).
 			On("change", func(ctx app.Context, e app.Event) {
-				slog.InfoContext(ctx.Context, "htmlAddFieldMultipleDialog: OnChange", "SelectedFieldValue", c.selectedFieldName)
+				slog.InfoContext(ctx.Context, "htmlAddFieldMultipleDialog: OnChange", "selectedFieldName", c.selectedFieldName)
 
-				c.selectedValue = ""
+				c.selectedPersonField = nil
+				for _, personField := range c.personFields {
+					if personField.Name == c.selectedFieldName {
+						c.selectedPersonField = personField
+						break
+					}
+				}
+				slog.InfoContext(ctx.Context, "htmlAddFieldMultipleDialog: OnChange", "selectedPersonField", c.selectedPersonField)
 
-				// TODO: Can we pick the first option if it's a dropdown?
+				c.value = ""
+				if c.selectedPersonField != nil {
+					// Pick the first option if it's a dropdown.
+					switch c.selectedPersonField.Type {
+					case downballotapi.PersonFieldDefinitionTypeEnum:
+						if len(c.selectedPersonField.AllowedValues) > 0 {
+							c.value = c.selectedPersonField.AllowedValues[0]
+						}
+					case downballotapi.PersonFieldDefinitionTypeBoolean:
+						c.value = "true"
+					default:
+						c.value = ""
+					}
+				}
 
-				slog.InfoContext(ctx.Context, "htmlAddFieldMultipleDialog: OnChange", "ValueValue", c.selectedValue)
+				slog.InfoContext(ctx.Context, "htmlAddFieldMultipleDialog: OnChange", "value", c.value)
 				ctx.Update()
 			}),
 	}
@@ -197,13 +209,13 @@ func (c *htmlAddFieldMultipleDialog) Render() app.UI {
 				CancelFunction(c.Close).
 				SubmitLabel("Save").
 				SubmitFunction(func(ctx app.Context) {
-					slog.InfoContext(ctx.Context, "htmlAddFieldMultipleDialog: SubmitFunction", "SelectedFieldValue", c.selectedFieldName, "ValueValue", c.selectedValue)
+					slog.InfoContext(ctx.Context, "htmlAddFieldMultipleDialog: SubmitFunction", "selectedFieldName", c.selectedFieldName, "value", c.value)
 
 					input := downballotapi.PostPersonUpdateRequest{
 						VoterIDs: c.voterIDs,
 						Fields:   map[string]*string{},
 					}
-					input.Fields[c.selectedFieldName] = &c.selectedValue
+					input.Fields[c.selectedFieldName] = &c.value
 					var output downballotapi.PostPersonUpdateResponse
 					err := api.Do(ctx, http.MethodPost, "/api/v1/organization/"+c.IOrganizationID+"/person/update", input, &output)
 					if err != nil {

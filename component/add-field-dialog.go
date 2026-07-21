@@ -29,8 +29,9 @@ type htmlAddFieldDialog struct {
 	ISubmitName string
 	IOnSubmit   func(ctx app.Context)
 
-	selectedField string
-	value         string
+	selectedFieldName   string
+	selectedPersonField *downballotapi.PersonField
+	value               string
 }
 
 var _ app.Mounter = (*htmlAddFieldDialog)(nil)
@@ -49,7 +50,7 @@ func (c *htmlAddFieldDialog) OnMount(ctx app.Context) {
 	ctx.Handle(addFieldDialogEventOpen, func(ctx app.Context, e app.Action) {
 		slog.InfoContext(ctx.Context, "htmlAddFieldDialog: Open", "Action", e)
 
-		c.selectedField = e.Value.(addFieldDialogOpenValue).FieldName
+		c.selectedFieldName = e.Value.(addFieldDialogOpenValue).FieldName
 		c.value = e.Value.(addFieldDialogOpenValue).FieldValue
 
 		c.JSValue().Call("showModal")
@@ -77,8 +78,8 @@ type addFieldDialogOpenValue struct {
 }
 
 func (c *htmlAddFieldDialog) Open(ctx app.Context, fieldName string, fieldValue string) {
-	slog.InfoContext(ctx.Context, "AddFieldDialog: Open", "FieldName", fieldName, "FieldValue", fieldValue)
-	slog.InfoContext(ctx.Context, "AddFieldDialog: Open", "JSValue", c.JSValue(), "JSValue", app.Window().Get("JSON").Call("stringify", c.JSValue()))
+	slog.InfoContext(ctx.Context, "htmlAddFieldDialog: Open", "fieldName", fieldName, "fieldValue", fieldValue)
+	slog.InfoContext(ctx.Context, "htmlAddFieldDialog: Open", "JSValue", c.JSValue(), "JSValue", app.Window().Get("JSON").Call("stringify", c.JSValue()))
 
 	ctx.NewActionWithValue(addFieldDialogEventOpen, addFieldDialogOpenValue{FieldName: fieldName, FieldValue: fieldValue})
 }
@@ -88,24 +89,16 @@ func (c *htmlAddFieldDialog) Close(ctx app.Context) {
 }
 
 func (c *htmlAddFieldDialog) Render() app.UI {
-	slog.InfoContext(context.TODO(), "AddFieldDialog: Render", "OrganizationID", c.IOrganizationID, "VoterID", c.IVoterID, "Person", c.person)
+	slog.InfoContext(context.TODO(), "htmlAddFieldDialog: Render", "IOrganizationID", c.IOrganizationID, "IVoterID", c.IVoterID, "person", c.person)
 
 	submitName := c.ISubmitName
 	if submitName == "" {
 		submitName = "Submit"
 	}
 
-	var selectedPersonField *downballotapi.PersonField
-	for _, personField := range c.personFields {
-		if personField.Name == c.selectedField {
-			selectedPersonField = personField
-			break
-		}
-	}
-
 	var valueElements []app.UI
-	if selectedPersonField != nil {
-		switch selectedPersonField.Type {
+	if c.selectedPersonField != nil {
+		switch c.selectedPersonField.Type {
 		case downballotapi.PersonFieldDefinitionTypeDate:
 			valueElements = append(valueElements,
 				blazar.Input[string]().
@@ -135,7 +128,7 @@ func (c *htmlAddFieldDialog) Render() app.UI {
 						func() []blazar.SelectOption {
 							var allowedValues []blazar.SelectOption
 							allowedValues = append(allowedValues, blazar.SelectOption{Label: "", Value: "", Disabled: true})
-							for _, allowedValue := range selectedPersonField.AllowedValues {
+							for _, allowedValue := range c.selectedPersonField.AllowedValues {
 								allowedValues = append(allowedValues, blazar.SelectOption{Label: allowedValue, Value: allowedValue})
 							}
 							return allowedValues
@@ -192,16 +185,45 @@ func (c *htmlAddFieldDialog) Render() app.UI {
 					}
 					return allowedValues
 				}()...).
-			Bind(&c.selectedField).
+			Bind(&c.selectedFieldName).
 			On("change", func(ctx app.Context, e app.Event) {
-				slog.InfoContext(ctx.Context, "AddFieldDialog: OnChange", "SelectedFieldValue", c.selectedField)
+				slog.InfoContext(ctx.Context, "htmlAddFieldDialog: OnChange", "selectedFieldName", c.selectedFieldName)
 
-				if c.selectedField == "" {
+				if c.selectedFieldName == "" {
 					c.value = ""
 				} else {
-					c.value = c.person.Fields[c.selectedField]
+					c.value = c.person.Fields[c.selectedFieldName]
 				}
-				slog.InfoContext(ctx.Context, "AddFieldDialog: OnChange", "ValueValue", c.value)
+
+				c.selectedPersonField = nil
+				for _, personField := range c.personFields {
+					if personField.Name == c.selectedFieldName {
+						c.selectedPersonField = personField
+						break
+					}
+				}
+				slog.InfoContext(context.TODO(), "htmlAddFieldDialog: OnChange", "selectedPersonField", c.selectedPersonField)
+
+				c.value = ""
+				if c.selectedPersonField != nil {
+					if existingValue, ok := c.person.Fields[c.selectedFieldName]; ok {
+						c.value = existingValue
+					} else {
+						// Pick the first option if it's a dropdown.
+						switch c.selectedPersonField.Type {
+						case downballotapi.PersonFieldDefinitionTypeEnum:
+							if len(c.selectedPersonField.AllowedValues) > 0 {
+								c.value = c.selectedPersonField.AllowedValues[0]
+							}
+						case downballotapi.PersonFieldDefinitionTypeBoolean:
+							c.value = "true"
+						default:
+							c.value = ""
+						}
+					}
+				}
+
+				slog.InfoContext(ctx.Context, "htmlAddFieldDialog: OnChange", "value", c.value)
 				ctx.Update()
 			}),
 	}
@@ -215,11 +237,11 @@ func (c *htmlAddFieldDialog) Render() app.UI {
 				CancelFunction(c.Close).
 				SubmitLabel("Save").
 				SubmitFunction(func(ctx app.Context) {
-					slog.InfoContext(ctx.Context, "AddFieldDialog: SubmitFunction", "SelectedFieldValue", c.selectedField, "ValueValue", c.value)
+					slog.InfoContext(ctx.Context, "htmlAddFieldDialog: SubmitFunction", "selectedFieldName", c.selectedFieldName, "value", c.value)
 					input := downballotapi.PatchPersonRequest{
 						Fields: map[string]*string{},
 					}
-					input.Fields[c.selectedField] = &c.value
+					input.Fields[c.selectedFieldName] = &c.value
 					var output downballotapi.PatchPersonRequest
 					err := api.Do(ctx, http.MethodPatch, "/api/v1/organization/"+c.IOrganizationID+"/person/"+c.IVoterID, input, &output)
 					if err != nil {
@@ -243,7 +265,7 @@ func (c *htmlAddFieldDialog) Render() app.UI {
 		On("toggle", func(ctx app.Context, e app.Event) {
 			var toggleEvent htmlevent.Toggle
 			htmlevent.MustParse(e, &toggleEvent)
-			slog.InfoContext(ctx.Context, "AddFieldDialog: OnToggle", "toggleEvent", fmt.Sprintf("%+v", toggleEvent))
+			slog.InfoContext(ctx.Context, "htmlAddFieldDialog: OnToggle", "toggleEvent", fmt.Sprintf("%+v", toggleEvent))
 
 			// Don't do anything if we're closing the dialog.
 			if toggleEvent.NewState != "open" {
