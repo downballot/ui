@@ -51,6 +51,14 @@ func (c *htmlAddFieldDialog) OnMount(ctx app.Context) {
 		slog.InfoContext(ctx.Context, "htmlAddFieldDialog: Open", "Action", e)
 
 		c.selectedFieldName = e.Value.(addFieldDialogOpenValue).FieldName
+		c.selectedPersonField = nil
+		for _, personField := range c.personFields {
+			if personField.Name == c.selectedFieldName {
+				c.selectedPersonField = personField
+				break
+			}
+		}
+
 		c.value = e.Value.(addFieldDialogOpenValue).FieldValue
 
 		c.JSValue().Call("showModal")
@@ -303,6 +311,15 @@ func (c *htmlAddFieldDialog) Render() app.UI {
 					slog.InfoContext(ctx.Context, "Dispatch: Setting person and fields.")
 					c.person = person
 					c.personFields = personFields
+
+					if c.selectedPersonField == nil {
+						for _, personField := range c.personFields {
+							if personField.Name == c.selectedFieldName {
+								c.selectedPersonField = personField
+								break
+							}
+						}
+					}
 
 					ctx.Update()
 				})
