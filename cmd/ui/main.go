@@ -119,8 +119,9 @@ func main() {
 
 	slog.InfoContext(ctx, "Disable service worker?", "disableServiceWorker", disableServiceWorker)
 	if disableServiceWorker {
-		blazarApp.DisableServiceWorker()
+		blazarApp.DisableServiceWorker(disableServiceWorker)
 	}
+	blazarApp.AutoDisableServiceWorker(true)
 
 	// Send all API requests to the API server.
 	blazarApp.HandleFunc("/api/", func(w http.ResponseWriter, r *http.Request) {

@@ -4,7 +4,7 @@ go 1.26.2
 
 require (
 	github.com/downballot/downballot v0.1.3
-	github.com/go-app-blazar/blazar v0.1.34
+	github.com/go-app-blazar/blazar v0.1.38
 	github.com/go-app-blazar/router v0.1.1
 	github.com/google/uuid v1.6.0
 	github.com/joho/godotenv v1.5.1
@@ -19,6 +19,7 @@ require (
 	github.com/emicklei/go-restful/v3 v3.13.0 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
+	github.com/tekkamanendless/httprequest v0.1.1 // indirect
 	github.com/tekkamanendless/restfulwrapper v0.2.0 // indirect
 	golang.org/x/sys v0.45.0 // indirect
 	golang.org/x/text v0.38.0 // indirect

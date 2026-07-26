@@ -48,6 +48,7 @@ type OrganizationIDGroupIDPersonPage struct {
 	filterOpen  bool
 	mapOpen     bool
 	resultsOpen bool
+	pageSize    uint
 }
 
 var _ app.Navigator = (*OrganizationIDGroupIDPersonPage)(nil)
@@ -120,6 +121,14 @@ func (c *OrganizationIDGroupIDPersonPage) OnNav(ctx app.Context) {
 	} else {
 		slog.InfoContext(ctx.Context, "OrganizationIDGroupIDPersonPage: OnNav: Persist results open is not nil.", "persistResultsOpen", deref.String(persistResultsOpen))
 		c.resultsOpen = *persistResultsOpen
+	}
+
+	var persistPageSize uint
+	ctx.GetState("persist-organization-id-group-id-person-page-page-size", &persistPageSize)
+	if persistPageSize != 0 {
+		c.pageSize = persistPageSize
+	} else {
+		c.pageSize = 10
 	}
 
 	if value := ctx.Page().URL().Query().Get("filter"); value != "" {
@@ -562,7 +571,7 @@ func (c *OrganizationIDGroupIDPersonPage) Render() app.UI {
 			SummaryText("Results: "+fmt.Sprintf("%d", len(c.Persons))).
 			Body(
 				blazar.Table[*downballotapi.Person]().
-					PageSize(10).
+					PageSize(c.pageSize).
 					Columns(c.PersonsTableColumns).
 					VisibleColumns(c.PersonsTableVisibleColumns).
 					RowIDFunction(func(row *downballotapi.Person) string {
@@ -582,7 +591,10 @@ func (c *OrganizationIDGroupIDPersonPage) Render() app.UI {
 							},
 							Disabled: !c.permissionSet.Match(iam.IAMPersonUpdate),
 						},
-					),
+					).
+					OnPageSizeChange(func(ctx app.Context, pageSize uint) {
+						ctx.SetState("persist-organization-id-group-id-person-page-page-size", pageSize).Persist()
+					}),
 				addFieldDialog,
 			),
 	)
