@@ -344,10 +344,32 @@ func (c *OrganizationIDGroupIDPersonPage) Render() app.UI {
 				parts := strings.SplitN(person.Fields["residential_address"], " ", 2)
 				streetNumber = parts[0]
 			}
+			var apartmentNumber string
+			{
+				person := location.Persons[0]
+				parts := strings.SplitN(person.Fields["residential_address"], ",", 2)
+				if len(parts) > 1 {
+					streetPart := parts[0]
+					parts = strings.SplitN(streetPart, "#", 2)
+					if len(parts) > 1 {
+						apartmentNumber = parts[1]
+					}
+				}
+			}
 
 			slices.SortFunc(location.Persons, func(left, right *downballotapi.Person) int {
 				return strings.Compare(left.Fields["name"], right.Fields["name"])
 			})
+
+			var streetNumberBody []app.UI
+			{
+				streetNumberBody = []app.UI{
+					app.Text(streetNumber),
+				}
+				if apartmentNumber != "" {
+					streetNumberBody = append(streetNumberBody, app.Br(), app.Text("#"+apartmentNumber))
+				}
+			}
 
 			markers = append(markers, googlemap.Marker{
 				Coordinate: googlemap.Coordinate{
@@ -360,9 +382,9 @@ func (c *OrganizationIDGroupIDPersonPage) Render() app.UI {
 					if len(location.Persons) == 1 {
 						streetNumberElement = app.A().
 							Href(fmt.Sprintf("/organization/%s/person/%s", c.organizationID, location.Persons[0].VoterID)).
-							Text(streetNumber)
+							Body(streetNumberBody...)
 					} else {
-						streetNumberElement = app.Text(streetNumber)
+						streetNumberElement = app.Span().Body(streetNumberBody...)
 					}
 
 					return []app.UI{
