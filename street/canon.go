@@ -38,6 +38,9 @@ func Canon(address string) string {
 
 	parts := strings.SplitN(firstLine, " ", 2)
 	addressNumberString := parts[0]
+	if len(parts) != 2 {
+		return address
+	}
 	streetInfo := parts[1]
 	{
 		addressNumber, err := strconv.ParseInt(addressNumberString, 10, 64)

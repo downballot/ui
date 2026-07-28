@@ -36,6 +36,10 @@ func TestCanon(t *testing.T) {
 			input:  "11 Thorn Ln #2, Anytown, DE 12345",
 			output: "Thorn Ln o000000011#000000002, Anytown, DE 12345",
 		},
+		{
+			input:  "OFFICE\\CLUBHOUSE, 312 Christina Mill Dr, Newark, DE 19711",
+			output: "OFFICE\\CLUBHOUSE, 312 Christina Mill Dr, Newark, DE 19711",
+		},
 	}
 	for rowIndex, row := range rows {
 		t.Run(fmt.Sprintf("%d", rowIndex), func(t *testing.T) {
