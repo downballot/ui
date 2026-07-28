@@ -14,6 +14,7 @@ import (
 	"github.com/downballot/downballot/downballotapi"
 	"github.com/downballot/ui/api"
 	"github.com/downballot/ui/component"
+	"github.com/downballot/ui/street"
 	"github.com/go-app-blazar/blazar/blazar"
 	"github.com/go-app-blazar/router"
 	"github.com/maxence-charriere/go-app/v11/pkg/app"
@@ -303,8 +304,8 @@ func (c *OrganizationIDGroupIDPersonMailingLabelsPage) search(ctx app.Context) {
 	c.Persons = output.Persons
 
 	slices.SortFunc(c.Persons, func(left, right *downballotapi.Person) int {
-		leftAddress := streetCanon(left.Fields["residential_address"])
-		rightAddress := streetCanon(right.Fields["residential_address"])
+		leftAddress := street.Canon(left.Fields["residential_address"])
+		rightAddress := street.Canon(right.Fields["residential_address"])
 
 		return strings.Compare(leftAddress, rightAddress)
 	})

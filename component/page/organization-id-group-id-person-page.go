@@ -17,6 +17,7 @@ import (
 	"github.com/downballot/ui/api"
 	"github.com/downballot/ui/component"
 	"github.com/downballot/ui/googlemap"
+	"github.com/downballot/ui/street"
 	"github.com/go-app-blazar/blazar/blazar"
 	"github.com/go-app-blazar/blazar/deref"
 	"github.com/go-app-blazar/router"
@@ -230,27 +231,6 @@ func (c *OrganizationIDGroupIDPersonPage) OnNav(ctx app.Context) {
 			c.search(ctx)
 		})
 	})
-}
-
-func streetCanon(address string) string {
-	parts := strings.SplitN(address, " ", 2)
-	addressNumberString := parts[0]
-	remainder := parts[1]
-	{
-		addressNumber, err := strconv.ParseInt(addressNumberString, 10, 64)
-		if err == nil {
-			addressNumberString = fmt.Sprintf("%09d", addressNumber)
-			if addressNumber%2 == 0 {
-				addressNumberString = "e" + addressNumberString
-			} else {
-				addressNumberString = "o" + addressNumberString
-			}
-		}
-	}
-	parts = strings.SplitN(remainder, ",", 2)
-	streetInfo := parts[0]
-	remainder = parts[1]
-	return streetInfo + " " + addressNumberString + "," + remainder
 }
 
 func (c *OrganizationIDGroupIDPersonPage) Render() app.UI {
@@ -615,8 +595,8 @@ func (c *OrganizationIDGroupIDPersonPage) search(ctx app.Context) {
 	c.Persons = output.Persons
 
 	slices.SortFunc(c.Persons, func(left, right *downballotapi.Person) int {
-		leftAddress := streetCanon(left.Fields["residential_address"])
-		rightAddress := streetCanon(right.Fields["residential_address"])
+		leftAddress := street.Canon(left.Fields["residential_address"])
+		rightAddress := street.Canon(right.Fields["residential_address"])
 
 		return strings.Compare(leftAddress, rightAddress)
 	})
