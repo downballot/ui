@@ -3,7 +3,7 @@ module github.com/downballot/ui
 go 1.26.2
 
 require (
-	github.com/downballot/downballot v0.1.7
+	github.com/downballot/downballot v0.1.8
 	github.com/go-app-blazar/blazar v0.1.38
 	github.com/go-app-blazar/router v0.1.1
 	github.com/google/uuid v1.6.0

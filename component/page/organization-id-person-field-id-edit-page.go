@@ -76,6 +76,7 @@ func (c *OrganizationIDPersonFieldIDEditPage) Reload(ctx app.Context) {
 				c.AllowEmpty = output.PersonField.AllowEmpty
 				c.AllowedRegex = output.PersonField.AllowedRegex
 				c.AllowedValues = output.PersonField.AllowedValues
+				c.ComputedExpression = output.PersonField.ComputedExpression
 			})
 		})
 		wg.Wait()
