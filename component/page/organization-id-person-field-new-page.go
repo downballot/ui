@@ -21,11 +21,12 @@ type OrganizationIDPersonFieldNewPage struct {
 
 	organizationID string
 
-	Name          string
-	Type          string
-	AllowEmpty    bool
-	AllowedRegex  string
-	AllowedValues []string
+	Name               string
+	Type               string
+	AllowEmpty         bool
+	AllowedRegex       string
+	AllowedValues      []string
+	ComputedExpression string
 
 	Error string
 }
@@ -82,6 +83,10 @@ func (c *OrganizationIDPersonFieldNewPage) Render() app.UI {
 
 						ctx.Update()
 					}),
+				blazar.Input[string]().
+					Label("Computed Expression").
+					Type("text").
+					Bind(&c.ComputedExpression),
 			).
 			SubmitLabel("Create").
 			SubmitFunction(func(ctx app.Context) {
@@ -89,11 +94,12 @@ func (c *OrganizationIDPersonFieldNewPage) Render() app.UI {
 
 				ctx.Async(func() {
 					input := downballotapi.CreatePersonFieldRequest{
-						Name:          c.Name,
-						Type:          downballotapi.PersonFieldDefinitionType(c.Type),
-						AllowEmpty:    c.AllowEmpty,
-						AllowedRegex:  c.AllowedRegex,
-						AllowedValues: c.AllowedValues,
+						Name:               c.Name,
+						Type:               downballotapi.PersonFieldDefinitionType(c.Type),
+						AllowEmpty:         c.AllowEmpty,
+						AllowedRegex:       c.AllowedRegex,
+						AllowedValues:      c.AllowedValues,
+						ComputedExpression: c.ComputedExpression,
 					}
 					var output downballotapi.CreatePersonFieldResponse
 					err := api.Do(ctx, http.MethodPost, "/api/v1/organization/"+c.organizationID+"/person-field", input, &output)

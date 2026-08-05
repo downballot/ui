@@ -186,6 +186,11 @@ func (c *OrganizationIDGroupIDPersonPage) OnNav(ctx app.Context) {
 			}
 			slices.Sort(possibleFields)
 
+			fieldNameMap := map[string]bool{}
+			for _, personField := range output.PersonFields {
+				fieldNameMap[personField.Name] = true
+			}
+
 			c.PersonsTableColumns = []blazar.TableColumn[*downballotapi.Person]{
 				{
 					Name: "Voter ID",
@@ -214,10 +219,14 @@ func (c *OrganizationIDGroupIDPersonPage) OnNav(ctx app.Context) {
 
 			c.PersonsTableVisibleColumns = []string{
 				"Voter ID",
-				"birthday_year",
 				"name",
 				"phone_number",
 				"residential_address",
+			}
+			if fieldNameMap["computed.age"] {
+				c.PersonsTableVisibleColumns = append(c.PersonsTableVisibleColumns, "computed.age")
+			} else {
+				c.PersonsTableVisibleColumns = append(c.PersonsTableVisibleColumns, "birthday_year")
 			}
 			slices.Sort(c.PersonsTableVisibleColumns)
 			slog.InfoContext(ctx.Context, "OrganizationIDGroupIDPersonPage: OnNav: Async", "len(PersonsTableVisibleColumns)", len(c.PersonsTableVisibleColumns))
