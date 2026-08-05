@@ -25,11 +25,12 @@ type OrganizationIDPersonFieldIDEditPage struct {
 
 	loaded bool
 
-	Name          string
-	Type          string
-	AllowEmpty    bool
-	AllowedRegex  string
-	AllowedValues []string
+	Name               string
+	Type               string
+	AllowEmpty         bool
+	AllowedRegex       string
+	AllowedValues      []string
+	ComputedExpression string
 
 	Error string
 }
@@ -138,6 +139,10 @@ func (c *OrganizationIDPersonFieldIDEditPage) Render() app.UI {
 
 						ctx.Update()
 					}),
+				blazar.Input[string]().
+					Label("Computed Expression").
+					Type("text").
+					Bind(&c.ComputedExpression),
 			).
 			CancelLabel("Reset").
 			CancelFunction(c.Reload).
@@ -147,11 +152,12 @@ func (c *OrganizationIDPersonFieldIDEditPage) Render() app.UI {
 
 				ctx.Async(func() {
 					input := downballotapi.PatchPersonFieldRequest{
-						Name:          &c.Name,
-						Type:          (*downballotapi.PersonFieldDefinitionType)(&c.Type),
-						AllowEmpty:    &c.AllowEmpty,
-						AllowedRegex:  &c.AllowedRegex,
-						AllowedValues: c.AllowedValues,
+						Name:               &c.Name,
+						Type:               (*downballotapi.PersonFieldDefinitionType)(&c.Type),
+						AllowEmpty:         &c.AllowEmpty,
+						AllowedRegex:       &c.AllowedRegex,
+						AllowedValues:      c.AllowedValues,
+						ComputedExpression: &c.ComputedExpression,
 					}
 					var output downballotapi.PatchPersonFieldResponse
 					err := api.Do(ctx, http.MethodPatch, "/api/v1/organization/"+c.organizationID+"/person-field/"+c.personFieldID, input, &output)

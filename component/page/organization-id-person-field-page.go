@@ -111,6 +111,12 @@ func (c *OrganizationIDPersonFieldPage) Render() app.UI {
 						return row.AllowedValues
 					},
 				},
+				{
+					Name: "Computed Expression",
+					Value: func(row *downballotapi.PersonField) any {
+						return row.ComputedExpression
+					},
+				},
 			}).
 			Action(blazar.TableAction{
 				Name:     "New Person Field",

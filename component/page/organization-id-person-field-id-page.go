@@ -148,6 +148,12 @@ func (c *OrganizationIDPersonFieldIDPage) Render() app.UI {
 							return row.AllowedValues
 						},
 					},
+					{
+						Name: "Computed Expression",
+						Value: func(row *downballotapi.PersonField) any {
+							return row.ComputedExpression
+						},
+					},
 				}),
 		)
 }
