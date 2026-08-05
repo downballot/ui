@@ -207,6 +207,12 @@ func (c *OrganizationIDGroupIDPersonPage) OnNav(ctx app.Context) {
 				c.PersonsTableColumns = append(c.PersonsTableColumns, blazar.TableColumn[*downballotapi.Person]{
 					Name: name,
 					Value: func(row *downballotapi.Person) any {
+						if name == "computed.likely" {
+							if row.Fields[name] == "true" {
+								return blazar.Icon().Icon("star")
+							}
+							return ""
+						}
 						return row.Fields[name]
 					},
 				})
@@ -227,6 +233,9 @@ func (c *OrganizationIDGroupIDPersonPage) OnNav(ctx app.Context) {
 				c.PersonsTableVisibleColumns = append(c.PersonsTableVisibleColumns, "computed.age")
 			} else {
 				c.PersonsTableVisibleColumns = append(c.PersonsTableVisibleColumns, "birthday_year")
+			}
+			if fieldNameMap["computed.likely"] {
+				c.PersonsTableVisibleColumns = append(c.PersonsTableVisibleColumns, "computed.likely")
 			}
 			slices.Sort(c.PersonsTableVisibleColumns)
 			slog.InfoContext(ctx.Context, "OrganizationIDGroupIDPersonPage: OnNav: Async", "len(PersonsTableVisibleColumns)", len(c.PersonsTableVisibleColumns))
