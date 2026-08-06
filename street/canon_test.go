@@ -61,7 +61,7 @@ func TestCanon(t *testing.T) {
 	}
 	for rowIndex, row := range rows {
 		t.Run(fmt.Sprintf("%d", rowIndex), func(t *testing.T) {
-			output := Canon(row.input, true)
+			output := Canon(row.input, row.splitEvenOdd)
 			assert.Equal(t, row.output, output)
 		})
 	}
