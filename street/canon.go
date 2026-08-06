@@ -9,7 +9,7 @@ import (
 
 var apartmentNumberRegex = regexp.MustCompile(`^(\d+)(.*)$`)
 
-func Canon(address string) string {
+func Canon(address string, splitEvenOdd bool) string {
 	lines := strings.SplitN(address, ",", 2)
 	if len(lines) != 2 {
 		return address
@@ -46,10 +46,12 @@ func Canon(address string) string {
 		addressNumber, err := strconv.ParseInt(addressNumberString, 10, 64)
 		if err == nil {
 			addressNumberString = fmt.Sprintf("%09d", addressNumber)
-			if addressNumber%2 == 0 {
-				addressNumberString = "e" + addressNumberString
-			} else {
-				addressNumberString = "o" + addressNumberString
+			if splitEvenOdd {
+				if addressNumber%2 == 0 {
+					addressNumberString = "e" + addressNumberString
+				} else {
+					addressNumberString = "o" + addressNumberString
+				}
 			}
 		}
 	}

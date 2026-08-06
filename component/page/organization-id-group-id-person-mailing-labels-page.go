@@ -16,6 +16,7 @@ import (
 	"github.com/downballot/ui/component"
 	"github.com/downballot/ui/street"
 	"github.com/go-app-blazar/blazar/blazar"
+	"github.com/go-app-blazar/blazar/deref"
 	"github.com/go-app-blazar/router"
 	"github.com/maxence-charriere/go-app/v11/pkg/app"
 )
@@ -32,6 +33,7 @@ type OrganizationIDGroupIDPersonMailingLabelsPage struct {
 
 	Filter         string
 	Limit          uint
+	splitEvenOdd   bool
 	PossibleFields []string
 	Error          string
 	Persons        []*downballotapi.Person
@@ -74,10 +76,22 @@ func (c *OrganizationIDGroupIDPersonMailingLabelsPage) OnNav(ctx app.Context) {
 		c.Filter = persistFilter
 	}
 
+	c.Limit = 1000
+	c.splitEvenOdd = true
+
 	var persistLimit uint
 	ctx.GetState("persist-organization-id-group-id-person-page-limit", &persistLimit)
 	if persistLimit != 0 {
 		c.Limit = persistLimit
+	}
+
+	var persistSplitEvenOdd *bool
+	ctx.GetState("persist-organization-id-group-id-person-page-split-even-odd", &persistSplitEvenOdd)
+	if persistSplitEvenOdd == nil {
+		slog.InfoContext(ctx.Context, "OrganizationIDGroupIDPersonMailingLabelsPage: OnNav: Persist split even odd is nil.")
+	} else {
+		slog.InfoContext(ctx.Context, "OrganizationIDGroupIDPersonMailingLabelsPage: OnNav: Persist split even odd is not nil.", "persistSplitEvenOdd", deref.String(persistSplitEvenOdd))
+		c.splitEvenOdd = *persistSplitEvenOdd
 	}
 
 	if value := ctx.Page().URL().Query().Get("filter"); value != "" {
@@ -249,6 +263,12 @@ func (c *OrganizationIDGroupIDPersonMailingLabelsPage) Render() app.UI {
 										On("change", func(ctx app.Context, e app.Event) {
 											ctx.SetState("persist-organization-id-group-id-person-page-limit", c.Limit).Persist()
 										}),
+									blazar.Input[bool]().
+										Label("Split Even and Odd addresses").
+										Bind(&c.splitEvenOdd).
+										On("change", func(ctx app.Context, e app.Event) {
+											ctx.SetState("persist-organization-id-group-id-person-page-split-even-odd", c.splitEvenOdd).Persist()
+										}),
 								),
 						),
 					blazar.Collapse().
@@ -304,8 +324,8 @@ func (c *OrganizationIDGroupIDPersonMailingLabelsPage) search(ctx app.Context) {
 	c.Persons = output.Persons
 
 	slices.SortFunc(c.Persons, func(left, right *downballotapi.Person) int {
-		leftAddress := street.Canon(left.Fields["residential_address"])
-		rightAddress := street.Canon(right.Fields["residential_address"])
+		leftAddress := street.Canon(left.Fields["residential_address"], c.splitEvenOdd)
+		rightAddress := street.Canon(right.Fields["residential_address"], c.splitEvenOdd)
 
 		return strings.Compare(leftAddress, rightAddress)
 	})
