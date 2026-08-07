@@ -536,6 +536,53 @@ func (c *OrganizationIDGroupIDCalltimePage) Render() app.UI {
 						To:   fmt.Sprintf("/organization/%s/person/%s", c.organizationID, person.VoterID),
 					},
 					blazar.FormAction{
+						Name: "Bad Number",
+						Icon: component.IconEdit,
+						Function: func(ctx app.Context) {
+							result := app.Window().Call("confirm", "Are you sure you want to mark this as a bad number?")
+							slog.InfoContext(ctx.Context, "OrganizationIDGroupIDCalltimePage: Bad Number button clicked", "result", result.Bool())
+							if !result.Bool() {
+								slog.InfoContext(ctx.Context, "OrganizationIDGroupIDCalltimePage: Bad number button clicked: User cancelled", "result", result.Bool())
+								return
+							}
+
+							phoneNumber := person.Fields["phone_number"]
+							if phoneNumber != "" {
+								queryParameters := url.Values{}
+								queryParameters.Set("filter", "phone_number = '"+phoneNumber+"'")
+								queryParameters.Set("limit", fmt.Sprintf("%d", 100))
+								var output downballotapi.ListPersonsResponse
+								err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.organizationID+"/group/"+c.groupID+"/person?"+queryParameters.Encode(), nil, &output)
+								if err != nil {
+									slog.ErrorContext(ctx.Context, "OrganizationIDGroupIDCalltimePage: search: Could not get persons", "err", err)
+									return
+								}
+
+								var voterIDs []string
+								for _, person := range output.Persons {
+									voterIDs = append(voterIDs, person.VoterID)
+								}
+
+								if len(voterIDs) > 0 {
+									input := downballotapi.PostPersonUpdateRequest{
+										VoterIDs: voterIDs,
+										Fields: map[string]*string{
+											"phone_number": nil,
+										},
+									}
+									var output downballotapi.PostPersonUpdateResponse
+									err := api.Do(ctx, http.MethodPost, "/api/v1/organization/"+c.organizationID+"/person/update", input, &output)
+									if err != nil {
+										slog.ErrorContext(ctx.Context, "Could not update persons", "err", err)
+										return
+									}
+								}
+							}
+
+							c.search(ctx)
+						},
+					},
+					blazar.FormAction{
 						Name: "Called",
 						Icon: component.IconEdit,
 						Function: func(ctx app.Context) {
