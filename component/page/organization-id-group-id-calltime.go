@@ -4,28 +4,27 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"math/rand/v2"
 	"net/http"
 	"net/url"
 	"slices"
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/downballot/downballot/downballotapi"
-	"github.com/downballot/downballot/iam"
 	"github.com/downballot/downballot/permissionset"
 	"github.com/downballot/ui/api"
 	"github.com/downballot/ui/component"
 	"github.com/downballot/ui/googlemap"
-	"github.com/downballot/ui/street"
 	"github.com/go-app-blazar/blazar/blazar"
 	"github.com/go-app-blazar/blazar/deref"
 	"github.com/go-app-blazar/router"
 	"github.com/maxence-charriere/go-app/v11/pkg/app"
-	"github.com/tekkamanendless/restapiclient"
 )
 
-type OrganizationIDGroupIDPersonPage struct {
+type OrganizationIDGroupIDCalltimePage struct {
 	app.Compo
 	component.EmbeddedPage
 
@@ -37,39 +36,33 @@ type OrganizationIDGroupIDPersonPage struct {
 	group          *downballotapi.Group
 	permissionSet  permissionset.PermissionSet
 
-	Filter         string
-	Limit          uint
-	splitEvenOdd   bool
-	PossibleFields []string
-	Persons        []*downballotapi.Person
-	Filters        []*downballotapi.Filter
+	Filter  string
+	Persons []*downballotapi.Person
+	Filters []*downballotapi.Filter
 
 	PersonsTableColumns        []blazar.TableColumn[*downballotapi.Person]
 	PersonsTableVisibleColumns []string
 
-	filterOpen  bool
-	mapOpen     bool
-	resultsOpen bool
-	pageSize    uint
+	filterOpen bool
 }
 
-var _ app.Navigator = (*OrganizationIDGroupIDPersonPage)(nil)
-var _ app.Mounter = (*OrganizationIDGroupIDPersonPage)(nil)
+var _ app.Navigator = (*OrganizationIDGroupIDCalltimePage)(nil)
+var _ app.Mounter = (*OrganizationIDGroupIDCalltimePage)(nil)
 
-func (c *OrganizationIDGroupIDPersonPage) OnMount(ctx app.Context) {
-	slog.InfoContext(ctx.Context, "OrganizationIDGroupIDPersonPage: OnMount")
+func (c *OrganizationIDGroupIDCalltimePage) OnMount(ctx app.Context) {
+	slog.InfoContext(ctx.Context, "OrganizationIDGroupIDCalltimePage: OnMount")
 
 	c.EmbeddedPage.OnMount(ctx)
 }
 
-func (c *OrganizationIDGroupIDPersonPage) OnNav(ctx app.Context) {
-	slog.InfoContext(ctx.Context, "OrganizationIDGroupIDPersonPage: OnNav")
+func (c *OrganizationIDGroupIDCalltimePage) OnNav(ctx app.Context) {
+	slog.InfoContext(ctx.Context, "OrganizationIDGroupIDCalltimePage: OnNav")
 
 	router.GetActiveRoute(ctx).ReadVariable("organization_id", &c.organizationID)
 	router.GetActiveRoute(ctx).ReadVariable("group_id", &c.groupID)
 
-	slog.InfoContext(ctx.Context, "OrganizationIDGroupIDPersonPage: OnNav", "OrganizationID", c.organizationID)
-	slog.InfoContext(ctx.Context, "OrganizationIDGroupIDPersonPage: OnNav", "GroupID", c.groupID)
+	slog.InfoContext(ctx.Context, "OrganizationIDGroupIDCalltimePage: OnNav", "OrganizationID", c.organizationID)
+	slog.InfoContext(ctx.Context, "OrganizationIDGroupIDCalltimePage: OnNav", "GroupID", c.groupID)
 
 	if c.organizationID == "" {
 		return
@@ -81,11 +74,7 @@ func (c *OrganizationIDGroupIDPersonPage) OnNav(ctx app.Context) {
 
 	ctx.GetState("organization/"+c.organizationID+"/permission-set", &c.permissionSet)
 
-	c.Limit = 1000
-	c.splitEvenOdd = true
 	c.filterOpen = false
-	c.mapOpen = true
-	c.resultsOpen = true
 
 	var persistFilter string
 	ctx.GetState("persist-organization-id-group-id-person-page-filter", &persistFilter)
@@ -93,66 +82,17 @@ func (c *OrganizationIDGroupIDPersonPage) OnNav(ctx app.Context) {
 		c.Filter = persistFilter
 	}
 
-	var persistLimit uint
-	ctx.GetState("persist-organization-id-group-id-person-page-limit", &persistLimit)
-	if persistLimit != 0 {
-		c.Limit = persistLimit
-	}
-
-	var persistSplitEvenOdd *bool
-	ctx.GetState("persist-organization-id-group-id-person-page-split-even-odd", &persistSplitEvenOdd)
-	if persistSplitEvenOdd == nil {
-		slog.InfoContext(ctx.Context, "OrganizationIDGroupIDPersonPage: OnNav: Persist split even odd is nil.")
-	} else {
-		slog.InfoContext(ctx.Context, "OrganizationIDGroupIDPersonPage: OnNav: Persist split even odd is not nil.", "persistSplitEvenOdd", deref.String(persistSplitEvenOdd))
-		c.splitEvenOdd = *persistSplitEvenOdd
-	}
-
 	var persistFilterOpen *bool
 	ctx.GetState("persist-organization-id-group-id-person-page-filter-open", &persistFilterOpen)
 	if persistFilterOpen == nil {
-		slog.InfoContext(ctx.Context, "OrganizationIDGroupIDPersonPage: OnNav: Persist filter open is nil.")
+		slog.InfoContext(ctx.Context, "OrganizationIDGroupIDCalltimePage: OnNav: Persist filter open is nil.")
 	} else {
-		slog.InfoContext(ctx.Context, "OrganizationIDGroupIDPersonPage: OnNav: Persist filter open is not nil.", "persistFilterOpen", deref.String(persistFilterOpen))
+		slog.InfoContext(ctx.Context, "OrganizationIDGroupIDCalltimePage: OnNav: Persist filter open is not nil.", "persistFilterOpen", deref.String(persistFilterOpen))
 		c.filterOpen = *persistFilterOpen
-	}
-
-	var persistMapOpen *bool
-	ctx.GetState("persist-organization-id-group-id-person-page-map-open", &persistMapOpen)
-	if persistMapOpen == nil {
-		slog.InfoContext(ctx.Context, "OrganizationIDGroupIDPersonPage: OnNav: Persist map open is nil.")
-	} else {
-		slog.InfoContext(ctx.Context, "OrganizationIDGroupIDPersonPage: OnNav: Persist map open is not nil.", "persistMapOpen", deref.String(persistMapOpen))
-		c.mapOpen = *persistMapOpen
-	}
-
-	var persistResultsOpen *bool
-	ctx.GetState("persist-organization-id-group-id-person-page-results-open", &persistResultsOpen)
-	if persistResultsOpen == nil {
-		slog.InfoContext(ctx.Context, "OrganizationIDGroupIDPersonPage: OnNav: Persist results open is nil.")
-	} else {
-		slog.InfoContext(ctx.Context, "OrganizationIDGroupIDPersonPage: OnNav: Persist results open is not nil.", "persistResultsOpen", deref.String(persistResultsOpen))
-		c.resultsOpen = *persistResultsOpen
-	}
-
-	var persistPageSize uint
-	ctx.GetState("persist-organization-id-group-id-person-page-page-size", &persistPageSize)
-	if persistPageSize != 0 {
-		c.pageSize = persistPageSize
-	} else {
-		c.pageSize = 10
 	}
 
 	if value := ctx.Page().URL().Query().Get("filter"); value != "" {
 		c.Filter = value
-	}
-	if value := ctx.Page().URL().Query().Get("limit"); value != "" {
-		uintValue, err := strconv.ParseUint(value, 10, 64)
-		if err != nil {
-			slog.ErrorContext(ctx.Context, "Could not parse limit", "err", err)
-		} else {
-			c.Limit = uint(uintValue)
-		}
 	}
 
 	ctx.Async(func() {
@@ -239,27 +179,7 @@ func (c *OrganizationIDGroupIDPersonPage) OnNav(ctx app.Context) {
 				})
 			}
 
-			slog.InfoContext(ctx.Context, "OrganizationIDGroupIDPersonPage: OnNav: Async", "len(PersonsTableColumns)", len(c.PersonsTableColumns))
-
-			c.PossibleFields = possibleFields
-			slog.InfoContext(ctx.Context, "OrganizationIDGroupIDPersonPage: OnNav: Async", "len(PossibleFields)", len(c.PossibleFields))
-
-			c.PersonsTableVisibleColumns = []string{
-				"Voter ID",
-				"name",
-				"phone_number",
-				"residential_address",
-			}
-			if fieldNameMap["computed.age"] {
-				c.PersonsTableVisibleColumns = append(c.PersonsTableVisibleColumns, "computed.age")
-			} else {
-				c.PersonsTableVisibleColumns = append(c.PersonsTableVisibleColumns, "birthday_year")
-			}
-			if fieldNameMap["computed.likely"] {
-				c.PersonsTableVisibleColumns = append(c.PersonsTableVisibleColumns, "computed.likely")
-			}
-			slices.Sort(c.PersonsTableVisibleColumns)
-			slog.InfoContext(ctx.Context, "OrganizationIDGroupIDPersonPage: OnNav: Async", "len(PersonsTableVisibleColumns)", len(c.PersonsTableVisibleColumns))
+			slog.InfoContext(ctx.Context, "OrganizationIDGroupIDCalltimePage: OnNav: Async", "len(PersonsTableColumns)", len(c.PersonsTableColumns))
 		})
 		wg.Wait()
 
@@ -272,8 +192,8 @@ func (c *OrganizationIDGroupIDPersonPage) OnNav(ctx app.Context) {
 	})
 }
 
-func (c *OrganizationIDGroupIDPersonPage) Render() app.UI {
-	slog.InfoContext(context.TODO(), "OrganizationIDGroupIDPersonPage: Render")
+func (c *OrganizationIDGroupIDCalltimePage) Render() app.UI {
+	slog.InfoContext(context.TODO(), "OrganizationIDGroupIDCalltimePage: Render")
 
 	markers := []googlemap.Marker{}
 	center := googlemap.Coordinate{
@@ -483,10 +403,182 @@ func (c *OrganizationIDGroupIDPersonPage) Render() app.UI {
 		)
 	}
 
-	slog.InfoContext(context.TODO(), "OrganizationIDGroupIDPersonPage: Render", "PersonsTableVisibleColumns", c.PersonsTableVisibleColumns)
+	slog.InfoContext(context.TODO(), "OrganizationIDGroupIDCalltimePage: Render", "PersonsTableVisibleColumns", c.PersonsTableVisibleColumns)
 
-	addFieldDialog := component.AddFieldMultipleDialog().
-		OrganizationID(c.organizationID)
+	var personItems []app.UI
+	if len(c.Persons) > 0 {
+		person := c.Persons[0]
+
+		icon := "circle-question"
+		switch person.Fields["candidate.support"] {
+		case "-2":
+			icon = "thumbs-down"
+		case "-1":
+			icon = "thumbs-down"
+		case "0":
+			icon = "circle-question"
+		case "+1":
+			icon = "thumbs-up"
+		case "+2":
+			icon = "thumbs-up"
+		}
+
+		summaryItems := []app.UI{
+			app.Div().
+				Class("person-summary-header").
+				Body(
+					blazar.Icon().
+						Icon(icon),
+					app.Div().
+						Text(person.Fields["name"]),
+				),
+			app.Div().
+				Class("person-summary-registration").
+				Text("Registered as " + person.Fields["political_party"] + ", living in " + person.Fields["district_representative"] + ", " + person.Fields["district_senate"]),
+			app.Div().
+				Class("person-summary-address").
+				Body(
+					app.A().
+						Href(fmt.Sprintf("https://www.google.com/maps/search/?api=1&query=%s", url.QueryEscape(person.Fields["residential_address"]))).
+						Target("_blank").
+						Text(person.Fields["residential_address"]),
+				),
+			app.Div().
+				Class("person-summary-phone").
+				Text(person.Fields["phone_number"]),
+			app.Div().
+				Class("person-summary-chips").
+				Body(
+					app.If(person.Fields["candidate.connected"] == "true", func() app.UI {
+						return app.Div().
+							Class("person-summary-chip").
+							Body(
+								blazar.Icon().
+									Icon("handshake"),
+								app.Text("Connected"),
+							)
+					}),
+					app.If(person.Fields["candidate.support"] != "", func() app.UI {
+						return app.Div().
+							Class("person-summary-chip").
+							Text("Support: " + person.Fields["candidate.support"])
+					}),
+					app.If(person.Fields["candidate.cat"] == "true", func() app.UI {
+						return app.Div().
+							Class("person-summary-chip").
+							Body(
+								blazar.Icon().
+									Icon("cat"),
+								app.Text("Cat"),
+							)
+					}),
+					app.If(person.Fields["candidate.dog"] == "true", func() app.UI {
+						return app.Div().
+							Class("person-summary-chip").
+							Body(
+								blazar.Icon().
+									Icon("dog"),
+								app.Text("Dog"),
+							)
+					}),
+					app.If(person.Fields["candidate.date_called"] != "", func() app.UI {
+						return app.Div().
+							Class("person-summary-chip").
+							Text("Called on " + person.Fields["candidate.date_called"])
+					}),
+					app.If(person.Fields["candidate.date_canvassed"] != "", func() app.UI {
+						return app.Div().
+							Class("person-summary-chip").
+							Text("Canvassed on " + person.Fields["candidate.date_canvassed"])
+					}),
+					app.If(person.Fields["candidate.date_texted"] != "", func() app.UI {
+						return app.Div().
+							Class("person-summary-chip").
+							Text("Texted on " + person.Fields["candidate.date_texted"])
+					}),
+				),
+		}
+
+		personItems = append(personItems,
+			app.Div().
+				Class("person-summary").
+				Body(summaryItems...),
+			app.If(person.Fields["candidate.notes"] != "", func() app.UI {
+				return app.Hr()
+			}),
+			app.If(person.Fields["candidate.notes"] != "", func() app.UI {
+				return app.Div().
+					Class("person-summary-notes").
+					Text(person.Fields["candidate.notes"])
+			}),
+			app.Hr(),
+			app.Div().
+				Style("display", "flex").
+				Style("flex-direction", "row").
+				Style("gap", "2em").
+				Body(
+					blazar.Button().
+						Label("Call").
+						Icon(component.IconPhone).
+						To("tel:+1"+strings.ReplaceAll(person.Fields["phone_number"], "-", "")),
+					app.Div().
+						Style("font-size", "1.2em").
+						Text(person.Fields["phone_number"]),
+				),
+			app.Hr(),
+			blazar.Form().
+				Class("no-print").
+				Spacer(false).
+				Action(
+					blazar.FormAction{
+						Name: "Edit Person",
+						Icon: component.IconEdit,
+						To:   fmt.Sprintf("/organization/%s/person/%s", c.organizationID, person.VoterID),
+					},
+					blazar.FormAction{
+						Name: "Called",
+						Icon: component.IconEdit,
+						Function: func(ctx app.Context) {
+							phoneNumber := person.Fields["phone_number"]
+							if phoneNumber != "" {
+								queryParameters := url.Values{}
+								queryParameters.Set("filter", "phone_number = '"+phoneNumber+"'")
+								queryParameters.Set("limit", fmt.Sprintf("%d", 100))
+								var output downballotapi.ListPersonsResponse
+								err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.organizationID+"/group/"+c.groupID+"/person?"+queryParameters.Encode(), nil, &output)
+								if err != nil {
+									slog.ErrorContext(ctx.Context, "OrganizationIDGroupIDCalltimePage: search: Could not get persons", "err", err)
+									return
+								}
+
+								var voterIDs []string
+								for _, person := range output.Persons {
+									voterIDs = append(voterIDs, person.VoterID)
+								}
+
+								if len(voterIDs) > 0 {
+									dateCalled := time.Now().Format("2006-01-02")
+									input := downballotapi.PostPersonUpdateRequest{
+										VoterIDs: voterIDs,
+										Fields: map[string]*string{
+											"candidate.date_called": &dateCalled,
+										},
+									}
+									var output downballotapi.PostPersonUpdateResponse
+									err := api.Do(ctx, http.MethodPost, "/api/v1/organization/"+c.organizationID+"/person/update", input, &output)
+									if err != nil {
+										slog.ErrorContext(ctx.Context, "Could not update persons", "err", err)
+										return
+									}
+								}
+							}
+
+							c.search(ctx)
+						},
+					},
+				),
+		)
+	}
 
 	return c.EmbeddedPage.Wrap(
 		blazar.Collapse().
@@ -512,13 +604,6 @@ func (c *OrganizationIDGroupIDPersonPage) Render() app.UI {
 					} else {
 						summary += namedFilter
 					}
-				}
-
-				summary += " | Limit: "
-				if c.Limit == 0 {
-					summary += "n/a"
-				} else {
-					summary += fmt.Sprintf("%d", c.Limit)
 				}
 
 				return summary
@@ -555,20 +640,6 @@ func (c *OrganizationIDGroupIDPersonPage) Render() app.UI {
 								ctx.SetState("persist-organization-id-group-id-person-page-filter", c.Filter).Persist()
 								ctx.Update() // Update so that the other input can be updated.
 							}),
-						blazar.Input[uint]().
-							Label("Limit").
-							Type("number").
-							Placeholder("1000").
-							Bind(&c.Limit).
-							On("change", func(ctx app.Context, e app.Event) {
-								ctx.SetState("persist-organization-id-group-id-person-page-limit", c.Limit).Persist()
-							}),
-						blazar.Input[bool]().
-							Label("Split Even and Odd addresses").
-							Bind(&c.splitEvenOdd).
-							On("change", func(ctx app.Context, e app.Event) {
-								ctx.SetState("persist-organization-id-group-id-person-page-split-even-odd", c.splitEvenOdd).Persist()
-							}),
 					),
 			),
 		blazar.Form().
@@ -580,146 +651,31 @@ func (c *OrganizationIDGroupIDPersonPage) Render() app.UI {
 					Icon:     component.IconSearch,
 					Function: c.search,
 				},
-				blazar.FormAction{
-					Name:     "CSV",
-					Icon:     component.IconDownload,
-					Function: c.csv,
-				},
-				blazar.FormAction{
-					Name:     "Mailing Labels",
-					Icon:     component.IconMailingLabel,
-					Function: c.mailingLabels,
-				},
-				blazar.FormAction{
-					Name:     "Calltime",
-					Icon:     component.IconPhone,
-					Function: c.calltime,
-				},
 			),
-		blazar.Collapse().
-			Label("Map").
-			Bind(&c.mapOpen).
-			OnOpenChange(func(ctx app.Context, open bool) {
-				ctx.SetState("persist-organization-id-group-id-person-page-map-open", open).Persist()
-			}).
-			Body(
-				app.Div().
-					Class("map-container").
-					Style("width", "100%").
-					Style("height", "600px").
-					Body(
-						googlemap.GoogleMap().
-							APIKey(app.Getenv("GOOGLE_MAPS_API_KEY")).
-							Center(center).
-							Markers(markers),
-					),
-			),
-		blazar.Collapse().
-			Label("Results").
-			Bind(&c.resultsOpen).
-			OnOpenChange(func(ctx app.Context, open bool) {
-				ctx.SetState("persist-organization-id-group-id-person-page-results-open", open).Persist()
-			}).
-			SummaryText("Results: "+fmt.Sprintf("%d", len(c.Persons))).
-			Body(
-				blazar.Table[*downballotapi.Person]().
-					PageSize(c.pageSize).
-					Columns(c.PersonsTableColumns).
-					VisibleColumns(c.PersonsTableVisibleColumns).
-					RowIDFunction(func(row *downballotapi.Person) string {
-						return row.VoterID
-					}).
-					Rows(c.Persons).
-					MultiRowAction(
-						blazar.MultiRowAction[*downballotapi.Person]{
-							Name: "Edit",
-							Icon: component.IconEdit,
-							Function: func(ctx app.Context, rows []*downballotapi.Person) {
-								voterIDs := []string{}
-								for _, row := range rows {
-									voterIDs = append(voterIDs, row.VoterID)
-								}
-								addFieldDialog.Open(ctx, voterIDs)
-							},
-							Disabled: !c.permissionSet.Match(iam.IAMPersonUpdate),
-						},
-					).
-					OnPageSizeChange(func(ctx app.Context, pageSize uint) {
-						ctx.SetState("persist-organization-id-group-id-person-page-page-size", pageSize).Persist()
-					}),
-				addFieldDialog,
-			),
+		app.If(len(personItems) > 0, func() app.UI {
+			return app.Div().
+				Body(personItems...)
+		}),
 	)
 }
 
-func (c *OrganizationIDGroupIDPersonPage) search(ctx app.Context) {
+func (c *OrganizationIDGroupIDCalltimePage) search(ctx app.Context) {
 	queryParameters := url.Values{}
 	queryParameters.Set("filter", c.Filter)
-	queryParameters.Set("limit", fmt.Sprintf("%d", c.Limit))
+	queryParameters.Set("limit", fmt.Sprintf("%d", 100))
 	var output downballotapi.ListPersonsResponse
 	err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.organizationID+"/group/"+c.groupID+"/person?"+queryParameters.Encode(), nil, &output)
 	if err != nil {
-		slog.ErrorContext(ctx.Context, "OrganizationIDGroupIDPersonPage: search: Could not get persons", "err", err)
+		slog.ErrorContext(ctx.Context, "OrganizationIDGroupIDCalltimePage: search: Could not get persons", "err", err)
 		return
 	}
 
-	slog.InfoContext(ctx.Context, "OrganizationIDGroupIDPersonPage: search: Setting persons", "len(persons)", len(output.Persons))
+	slog.InfoContext(ctx.Context, "OrganizationIDGroupIDCalltimePage: search: Setting persons", "len(persons)", len(output.Persons))
 	c.Persons = output.Persons
 
-	slices.SortFunc(c.Persons, func(left, right *downballotapi.Person) int {
-		leftAddress := street.Canon(left.Fields["residential_address"], c.splitEvenOdd)
-		rightAddress := street.Canon(right.Fields["residential_address"], c.splitEvenOdd)
-
-		return strings.Compare(leftAddress, rightAddress)
+	rand.Shuffle(len(c.Persons), func(i, j int) {
+		c.Persons[i], c.Persons[j] = c.Persons[j], c.Persons[i]
 	})
 
 	ctx.Update()
-}
-
-func (c *OrganizationIDGroupIDPersonPage) mailingLabels(ctx app.Context) {
-	ctx.PreventUpdate()
-
-	queryParameters := url.Values{}
-	queryParameters.Set("filter", c.Filter)
-	queryParameters.Set("limit", fmt.Sprintf("%d", c.Limit))
-
-	ctx.Navigate("/organization/" + c.organizationID + "/group/" + c.groupID + "/person-mailing-labels?" + queryParameters.Encode())
-}
-
-func (c *OrganizationIDGroupIDPersonPage) calltime(ctx app.Context) {
-	ctx.PreventUpdate()
-
-	queryParameters := url.Values{}
-	queryParameters.Set("filter", c.Filter)
-
-	ctx.Navigate("/organization/" + c.organizationID + "/group/" + c.groupID + "/calltime?" + queryParameters.Encode())
-}
-
-func (c *OrganizationIDGroupIDPersonPage) csv(ctx app.Context) {
-	queryParameters := url.Values{}
-	queryParameters.Set("filter", c.Filter)
-	queryParameters.Set("limit", fmt.Sprintf("%d", c.Limit))
-	var output restapiclient.RawBytes
-	err := api.Do(ctx, http.MethodGet, "/api/v1/organization/"+c.organizationID+"/group/"+c.groupID+"/person?"+queryParameters.Encode(), nil, &output, restapiclient.OptionHeader("Accept", "text/csv"))
-	if err != nil {
-		slog.ErrorContext(ctx.Context, "Could not get persons", "err", err)
-		return
-	}
-
-	ctx.Dispatch(func(ctx app.Context) {
-		slog.InfoContext(ctx.Context, "Dispatch: Saving CSV")
-		blobConstructor := app.Window().Get("Blob")
-		arrayConstructor := app.Window().Get("Array")
-		array := arrayConstructor.New(string(output))
-		blob := blobConstructor.New(array, map[string]any{"type": "text/csv"})
-
-		aElement := app.Window().Get("document").Call("createElement", "a")
-		aElement.Set("style", "display: none;")
-		aElement.Set("href", app.Window().Get("URL").Call("createObjectURL", blob))
-		aElement.Set("download", "persons.csv")
-
-		app.Window().Get("document").Get("body").Call("appendChild", aElement)
-		aElement.Call("click")
-		app.Window().Get("document").Get("body").Call("removeChild", aElement)
-	})
 }

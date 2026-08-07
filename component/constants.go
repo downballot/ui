@@ -12,6 +12,7 @@ const (
 	IconOrganization = "building"
 	IconPerson       = "people-group"
 	IconPersonField  = "user-tag"
+	IconPhone        = "phone"
 	IconSave         = "save"
 	IconSearch       = "search"
 	IconUser         = "user"

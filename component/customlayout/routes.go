@@ -258,6 +258,15 @@ var Routes = []router.Route{
 													MetaTitle: "Mailing Labels",
 												},
 											},
+											{
+												Path: "/calltime",
+												Component: func() app.Composer {
+													return &page.OrganizationIDGroupIDCalltimePage{}
+												},
+												Meta: map[string]string{
+													MetaTitle: "Calltime",
+												},
+											},
 										},
 									},
 								},

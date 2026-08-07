@@ -22,6 +22,7 @@ type OrganizationIDPersonFieldNewPage struct {
 	organizationID string
 
 	Name               string
+	DisplayName        string
 	Type               string
 	AllowEmpty         bool
 	AllowedRegex       string
@@ -49,6 +50,10 @@ func (c *OrganizationIDPersonFieldNewPage) Render() app.UI {
 					Label("Name").
 					Type("text").
 					Bind(&c.Name),
+				blazar.Input[string]().
+					Label("Display Name").
+					Type("text").
+					Bind(&c.DisplayName),
 				blazar.Select().
 					Label("Type").
 					AllowedValue(
@@ -95,6 +100,7 @@ func (c *OrganizationIDPersonFieldNewPage) Render() app.UI {
 				ctx.Async(func() {
 					input := downballotapi.CreatePersonFieldRequest{
 						Name:               c.Name,
+						DisplayName:        c.DisplayName,
 						Type:               downballotapi.PersonFieldDefinitionType(c.Type),
 						AllowEmpty:         c.AllowEmpty,
 						AllowedRegex:       c.AllowedRegex,

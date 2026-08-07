@@ -125,6 +125,12 @@ func (c *OrganizationIDPersonFieldIDPage) Render() app.UI {
 						},
 					},
 					{
+						Name: "Display Name",
+						Value: func(row *downballotapi.PersonField) any {
+							return row.DisplayName
+						},
+					},
+					{
 						Name: "Type",
 						Value: func(row *downballotapi.PersonField) any {
 							return row.Type
