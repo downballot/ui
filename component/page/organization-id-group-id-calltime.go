@@ -537,7 +537,7 @@ func (c *OrganizationIDGroupIDCalltimePage) Render() app.UI {
 					},
 					blazar.FormAction{
 						Name: "Bad Number",
-						Icon: component.IconEdit,
+						Icon: component.IconDelete,
 						Function: func(ctx app.Context) {
 							result := app.Window().Call("confirm", "Are you sure you want to mark this as a bad number?")
 							slog.InfoContext(ctx.Context, "OrganizationIDGroupIDCalltimePage: Bad Number button clicked", "result", result.Bool())
