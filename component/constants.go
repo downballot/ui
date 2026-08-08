@@ -3,8 +3,10 @@ package component
 const (
 	IconAdd          = "plus"
 	IconDelete       = "trash"
+	IconDone         = "check"
 	IconDownload     = "download"
 	IconEdit         = "edit"
+	IconExternalLink = "arrow-up-right-from-square"
 	IconFilter       = "filter"
 	IconGroup        = "cubes"
 	IconHome         = "house"

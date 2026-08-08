@@ -4,8 +4,8 @@ github.com/downballot/downballot v0.1.9 h1:gtE2ysqVT2vlhlazKOvWRhYjqT5mBp1H0bCjJ
 github.com/downballot/downballot v0.1.9/go.mod h1:6B6dhk1e37kVQ759LV7b9IYOQBnfv4qcWGGtp0ZHNFI=
 github.com/emicklei/go-restful/v3 v3.13.0 h1:C4Bl2xDndpU6nJ4bc1jXd+uTmYPVUwkD6bFY/oTyCes=
 github.com/emicklei/go-restful/v3 v3.13.0/go.mod h1:6n3XBCmQQb25CM2LCACGz8ukIrRry+4bhvbpWn3mrbc=
-github.com/go-app-blazar/blazar v0.1.39 h1:FO/h8pvozuSJTecPHAdEzcgVv5WNwqjamjQim3btbJ8=
-github.com/go-app-blazar/blazar v0.1.39/go.mod h1:0Xp0xmNI4zbclIDvxUGuHRW27ZYi7UvaoTv4lFXlkKU=
+github.com/go-app-blazar/blazar v0.1.42 h1:Xc9xAqFHWs1PpLxrl3DxDfP0r9t3R9+rTP17XlpHTi8=
+github.com/go-app-blazar/blazar v0.1.42/go.mod h1:0Xp0xmNI4zbclIDvxUGuHRW27ZYi7UvaoTv4lFXlkKU=
 github.com/go-app-blazar/router v0.1.1 h1:6vM6VJTOwqoMwhUUbx2P+j4glXEfEmMUKn40pxPAMG4=
 github.com/go-app-blazar/router v0.1.1/go.mod h1:yY7DcUn3ToFdcNAGeyx0v8LjikiTu3WJ1XkQiEIlJRY=
 github.com/google/uuid v1.6.0 h1:NIvaJDMOsjHA8n1jAhLSgzrAzy1Hgr+hNrb57e+94F0=
@@ -24,8 +24,8 @@ github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZb
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/stretchr/testify v1.11.1 h1:7s2iGBzp5EwR7/aIZr8ao5+dra3wiQyKjjFuvgVKu7U=
 github.com/stretchr/testify v1.11.1/go.mod h1:wZwfW3scLgRK+23gO65QZefKpKQRnfz6sD981Nm4B6U=
-github.com/tekkamanendless/fork-of-maxence-charriere-go-app/v11 v11.0.0-20260624062618-c2f3e531f36d h1:Dd/ER4ty52bLOcYC+zOK0N6EakLudySILbsHZT+ae88=
-github.com/tekkamanendless/fork-of-maxence-charriere-go-app/v11 v11.0.0-20260624062618-c2f3e531f36d/go.mod h1:03mGNjBIo1LJq9VGPxOcmBFAv/sNL2GIF5LxCV3BRgA=
+github.com/tekkamanendless/fork-of-maxence-charriere-go-app/v11 v11.0.0-20260808032732-1170f3332705 h1:4WDWn4rmyo35jkn34ayKC99gCKa3kRHbJXo4cvoN4FU=
+github.com/tekkamanendless/fork-of-maxence-charriere-go-app/v11 v11.0.0-20260808032732-1170f3332705/go.mod h1:03mGNjBIo1LJq9VGPxOcmBFAv/sNL2GIF5LxCV3BRgA=
 github.com/tekkamanendless/httperror v1.0.1 h1:lKf7qlWcb6Khdxj8ZY3H2GdBX30+J1ACMNgb8jnNr8Y=
 github.com/tekkamanendless/httperror v1.0.1/go.mod h1:tYTDnOTP2Av5x3e2CUf9t671QPMIJvgS/8ErXGQ4pK0=
 github.com/tekkamanendless/httprequest v0.1.1 h1:oYgt5Xd96MznUuWxICj10+ROx3z+OJTigb4XFputrmU=

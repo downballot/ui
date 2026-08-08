@@ -4,7 +4,7 @@ go 1.26.2
 
 require (
 	github.com/downballot/downballot v0.1.9
-	github.com/go-app-blazar/blazar v0.1.39
+	github.com/go-app-blazar/blazar v0.1.42
 	github.com/go-app-blazar/router v0.1.1
 	github.com/google/uuid v1.6.0
 	github.com/joho/godotenv v1.5.1
@@ -32,6 +32,9 @@ require (
 
 //replace github.com/downballot/downballot => ../downballot
 
-replace github.com/maxence-charriere/go-app/v11 => github.com/tekkamanendless/fork-of-maxence-charriere-go-app/v11 v11.0.0-20260624062618-c2f3e531f36d
+// Branch: expand-static-site
+//replace github.com/maxence-charriere/go-app/v11 => github.com/tekkamanendless/fork-of-maxence-charriere-go-app/v11 v11.0.0-20260624062618-c2f3e531f36d
+// Branch: ddm-master (expand-static-site, support-tel-scheme)
+replace github.com/maxence-charriere/go-app/v11 => github.com/tekkamanendless/fork-of-maxence-charriere-go-app/v11 v11.0.0-20260808032732-1170f3332705
 
 //replace github.com/go-app-blazar/blazar => ../../go-app-blazar/blazar

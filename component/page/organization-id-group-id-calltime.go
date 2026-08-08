@@ -523,6 +523,8 @@ func (c *OrganizationIDGroupIDCalltimePage) Render() app.UI {
 						To("tel:+1"+strings.ReplaceAll(person.Fields["phone_number"], "-", "")),
 					app.Div().
 						Style("font-size", "1.2em").
+						Style("margin-top", "auto").
+						Style("margin-bottom", "auto").
 						Text(person.Fields["phone_number"]),
 				),
 			app.Hr(),
@@ -531,13 +533,15 @@ func (c *OrganizationIDGroupIDCalltimePage) Render() app.UI {
 				Spacer(false).
 				Action(
 					blazar.FormAction{
-						Name: "Edit Person",
-						Icon: component.IconEdit,
-						To:   fmt.Sprintf("/organization/%s/person/%s", c.organizationID, person.VoterID),
+						Name:   "Edit Person",
+						Icon:   component.IconExternalLink,
+						To:     fmt.Sprintf("/organization/%s/person/%s", c.organizationID, person.VoterID),
+						Target: "_blank",
 					},
 					blazar.FormAction{
-						Name: "Bad Number",
-						Icon: component.IconDelete,
+						Name:            "Bad Number",
+						Icon:            component.IconDelete,
+						BackgroundColor: "red",
 						Function: func(ctx app.Context) {
 							result := app.Window().Call("confirm", "Are you sure you want to mark this as a bad number?")
 							slog.InfoContext(ctx.Context, "OrganizationIDGroupIDCalltimePage: Bad Number button clicked", "result", result.Bool())
@@ -583,8 +587,9 @@ func (c *OrganizationIDGroupIDCalltimePage) Render() app.UI {
 						},
 					},
 					blazar.FormAction{
-						Name: "Called",
-						Icon: component.IconEdit,
+						Name:            "Called",
+						Icon:            component.IconDone,
+						BackgroundColor: "green",
 						Function: func(ctx app.Context) {
 							phoneNumber := person.Fields["phone_number"]
 							if phoneNumber != "" {
