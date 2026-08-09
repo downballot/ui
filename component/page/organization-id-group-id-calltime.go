@@ -516,6 +516,7 @@ func (c *OrganizationIDGroupIDCalltimePage) Render() app.UI {
 				Style("display", "flex").
 				Style("flex-direction", "row").
 				Style("gap", "2em").
+				Style("font-size", "1.5em").
 				Body(
 					blazar.Button().
 						Label("Call").
