@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"net/url"
 	"slices"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -17,7 +16,6 @@ import (
 	"github.com/downballot/downballot/permissionset"
 	"github.com/downballot/ui/api"
 	"github.com/downballot/ui/component"
-	"github.com/downballot/ui/googlemap"
 	"github.com/go-app-blazar/blazar/blazar"
 	"github.com/go-app-blazar/blazar/deref"
 	"github.com/go-app-blazar/router"
@@ -37,11 +35,11 @@ type OrganizationIDGroupIDCalltimePage struct {
 	permissionSet  permissionset.PermissionSet
 
 	Filter  string
-	Persons []*downballotapi.Person
+	persons []*downballotapi.Person
+	person  *downballotapi.Person
 	Filters []*downballotapi.Filter
 
-	PersonsTableColumns        []blazar.TableColumn[*downballotapi.Person]
-	PersonsTableVisibleColumns []string
+	PersonsTableColumns []blazar.TableColumn[*downballotapi.Person]
 
 	filterOpen bool
 
@@ -197,194 +195,6 @@ func (c *OrganizationIDGroupIDCalltimePage) OnNav(ctx app.Context) {
 func (c *OrganizationIDGroupIDCalltimePage) Render() app.UI {
 	slog.InfoContext(context.TODO(), "OrganizationIDGroupIDCalltimePage: Render")
 
-	markers := []googlemap.Marker{}
-	center := googlemap.Coordinate{
-		Latitude:  39.713171422509426,
-		Longitude: -75.75937795659787,
-	}
-	{
-		coordinatesField := "coordinates" // TODO: Look this up instead.
-
-		personsByLocation := map[string][]*downballotapi.Person{}
-		for _, person := range c.Persons {
-			coordinates := person.Fields[coordinatesField]
-			if coordinates == "" {
-				continue
-			}
-			parts := strings.SplitN(coordinates, ",", 2)
-			if len(parts) != 2 {
-				continue
-			}
-			latitudeString := parts[0]
-			longitudeString := parts[1]
-			if latitudeString == "" || longitudeString == "" {
-				continue
-			}
-			latitude, err := strconv.ParseFloat(latitudeString, 64)
-			if err != nil {
-				continue
-			}
-			longitude, err := strconv.ParseFloat(longitudeString, 64)
-			if err != nil {
-				continue
-			}
-
-			locationString := fmt.Sprintf("%0.7f,%0.7f", latitude, longitude)
-			personsByLocation[locationString] = append(personsByLocation[locationString], person)
-		}
-
-		type Location struct {
-			Latitude  float64
-			Longitude float64
-			Title     string
-			Persons   []*downballotapi.Person
-		}
-
-		locations := make([]*Location, 0, len(personsByLocation))
-		for _, persons := range personsByLocation {
-			var latitude float64
-			var longitude float64
-			{
-				person := persons[0]
-				coordinates := person.Fields[coordinatesField]
-				if coordinates == "" {
-					continue
-				}
-				parts := strings.SplitN(coordinates, ",", 2)
-				if len(parts) != 2 {
-					continue
-				}
-				latitudeString := parts[0]
-				longitudeString := parts[1]
-				if latitudeString == "" || longitudeString == "" {
-					continue
-				}
-				var err error
-				latitude, err = strconv.ParseFloat(latitudeString, 64)
-				if err != nil {
-					continue
-				}
-				longitude, err = strconv.ParseFloat(longitudeString, 64)
-				if err != nil {
-					continue
-				}
-			}
-
-			var title string
-			{
-				person := persons[0]
-				if person.Fields["residential_address"] != "" {
-					title += "\n" + person.Fields["residential_address"]
-				}
-				if person.Fields["residential_address_development"] != "" {
-					title += "\n" + person.Fields["residential_address_development"]
-				}
-				title = strings.TrimSpace(title)
-			}
-			locations = append(locations, &Location{
-				Latitude:  latitude,
-				Longitude: longitude,
-				Title:     title,
-				Persons:   persons,
-			})
-		}
-
-		totalLatitude := 0.0
-		totalLongitude := 0.0
-		total := 0
-
-		for _, location := range locations {
-			title := location.Title
-			if len(location.Persons) == 1 {
-				title = location.Persons[0].Fields["name"] + "\n" + title
-			}
-
-			var streetNumber string
-			{
-				person := location.Persons[0]
-				parts := strings.SplitN(person.Fields["residential_address"], " ", 2)
-				streetNumber = parts[0]
-			}
-			var apartmentNumber string
-			{
-				person := location.Persons[0]
-				parts := strings.SplitN(person.Fields["residential_address"], ",", 2)
-				if len(parts) > 1 {
-					streetPart := parts[0]
-					parts = strings.SplitN(streetPart, "#", 2)
-					if len(parts) > 1 {
-						apartmentNumber = parts[1]
-					}
-				}
-			}
-
-			slices.SortFunc(location.Persons, func(left, right *downballotapi.Person) int {
-				return strings.Compare(left.Fields["name"], right.Fields["name"])
-			})
-
-			var streetNumberBody []app.UI
-			{
-				streetNumberBody = []app.UI{
-					app.Text(streetNumber),
-				}
-				if apartmentNumber != "" {
-					streetNumberBody = append(streetNumberBody, app.Br(), app.Text("#"+apartmentNumber))
-				}
-			}
-
-			markers = append(markers, googlemap.Marker{
-				Coordinate: googlemap.Coordinate{
-					Latitude:  location.Latitude,
-					Longitude: location.Longitude,
-				},
-				Title: title,
-				Body: func() []app.UI {
-					var streetNumberElement app.UI
-					if len(location.Persons) == 1 {
-						streetNumberElement = app.A().
-							Href(fmt.Sprintf("/organization/%s/person/%s", c.organizationID, location.Persons[0].VoterID)).
-							Body(streetNumberBody...)
-					} else {
-						streetNumberElement = app.Span().Body(streetNumberBody...)
-					}
-
-					return []app.UI{
-						app.Div().
-							Class("map-marker").
-							Body(
-								app.Div().
-									Class("map-marker-street-number").
-									Body(
-										streetNumberElement,
-									),
-								app.If(len(location.Persons) > 1, func() app.UI {
-									return app.Range(location.Persons).Slice(func(i int) app.UI {
-										person := location.Persons[i]
-										return app.Span().
-											Class("map-marker-person").
-											Body(
-												app.A().
-													Href(fmt.Sprintf("/organization/%s/person/%s", c.organizationID, person.VoterID)).
-													Text(fmt.Sprintf("%c", 'A'+i)).
-													Title(person.Fields["name"] + "\n" + location.Title),
-											)
-									})
-								}),
-							),
-					}
-				},
-			})
-			totalLatitude += location.Latitude
-			totalLongitude += location.Longitude
-			total++
-		}
-
-		if total > 0 {
-			center.Latitude = totalLatitude / float64(total)
-			center.Longitude = totalLongitude / float64(total)
-		}
-	}
-
 	var allPossibleFilterStrings []string
 	for _, filter := range c.Filters {
 		allPossibleFilterStrings = append(allPossibleFilterStrings, filter.Filter)
@@ -405,14 +215,10 @@ func (c *OrganizationIDGroupIDCalltimePage) Render() app.UI {
 		)
 	}
 
-	slog.InfoContext(context.TODO(), "OrganizationIDGroupIDCalltimePage: Render", "PersonsTableVisibleColumns", c.PersonsTableVisibleColumns)
-
 	var personItems []app.UI
-	if len(c.Persons) > 0 {
-		person := c.Persons[0]
-
+	if c.person != nil {
 		icon := "circle-question"
-		switch person.Fields["candidate.support"] {
+		switch c.person.Fields["candidate.support"] {
 		case "-2":
 			icon = "thumbs-down"
 		case "-1":
@@ -432,26 +238,26 @@ func (c *OrganizationIDGroupIDCalltimePage) Render() app.UI {
 					blazar.Icon().
 						Icon(icon),
 					app.Div().
-						Text(person.Fields["name"]),
+						Text(c.person.Fields["name"]),
 				),
 			app.Div().
 				Class("person-summary-registration").
-				Text("Registered as " + person.Fields["political_party"] + ", living in " + person.Fields["district_representative"] + ", " + person.Fields["district_senate"]),
+				Text("Registered as " + c.person.Fields["political_party"] + ", living in " + c.person.Fields["district_representative"] + ", " + c.person.Fields["district_senate"]),
 			app.Div().
 				Class("person-summary-address").
 				Body(
 					app.A().
-						Href(fmt.Sprintf("https://www.google.com/maps/search/?api=1&query=%s", url.QueryEscape(person.Fields["residential_address"]))).
+						Href(fmt.Sprintf("https://www.google.com/maps/search/?api=1&query=%s", url.QueryEscape(c.person.Fields["residential_address"]))).
 						Target("_blank").
-						Text(person.Fields["residential_address"]),
+						Text(c.person.Fields["residential_address"]),
 				),
 			app.Div().
 				Class("person-summary-phone").
-				Text(person.Fields["phone_number"]),
+				Text(c.person.Fields["phone_number"]),
 			app.Div().
 				Class("person-summary-chips").
 				Body(
-					app.If(person.Fields["candidate.connected"] == "true", func() app.UI {
+					app.If(c.person.Fields["candidate.connected"] == "true", func() app.UI {
 						return app.Div().
 							Class("person-summary-chip").
 							Body(
@@ -460,12 +266,12 @@ func (c *OrganizationIDGroupIDCalltimePage) Render() app.UI {
 								app.Text("Connected"),
 							)
 					}),
-					app.If(person.Fields["candidate.support"] != "", func() app.UI {
+					app.If(c.person.Fields["candidate.support"] != "", func() app.UI {
 						return app.Div().
 							Class("person-summary-chip").
-							Text("Support: " + person.Fields["candidate.support"])
+							Text("Support: " + c.person.Fields["candidate.support"])
 					}),
-					app.If(person.Fields["candidate.cat"] == "true", func() app.UI {
+					app.If(c.person.Fields["candidate.cat"] == "true", func() app.UI {
 						return app.Div().
 							Class("person-summary-chip").
 							Body(
@@ -474,7 +280,7 @@ func (c *OrganizationIDGroupIDCalltimePage) Render() app.UI {
 								app.Text("Cat"),
 							)
 					}),
-					app.If(person.Fields["candidate.dog"] == "true", func() app.UI {
+					app.If(c.person.Fields["candidate.dog"] == "true", func() app.UI {
 						return app.Div().
 							Class("person-summary-chip").
 							Body(
@@ -483,20 +289,20 @@ func (c *OrganizationIDGroupIDCalltimePage) Render() app.UI {
 								app.Text("Dog"),
 							)
 					}),
-					app.If(person.Fields["candidate.date_called"] != "", func() app.UI {
+					app.If(c.person.Fields["candidate.date_called"] != "", func() app.UI {
 						return app.Div().
 							Class("person-summary-chip").
-							Text("Called on " + person.Fields["candidate.date_called"])
+							Text("Called on " + c.person.Fields["candidate.date_called"])
 					}),
-					app.If(person.Fields["candidate.date_canvassed"] != "", func() app.UI {
+					app.If(c.person.Fields["candidate.date_canvassed"] != "", func() app.UI {
 						return app.Div().
 							Class("person-summary-chip").
-							Text("Canvassed on " + person.Fields["candidate.date_canvassed"])
+							Text("Canvassed on " + c.person.Fields["candidate.date_canvassed"])
 					}),
-					app.If(person.Fields["candidate.date_texted"] != "", func() app.UI {
+					app.If(c.person.Fields["candidate.date_texted"] != "", func() app.UI {
 						return app.Div().
 							Class("person-summary-chip").
-							Text("Texted on " + person.Fields["candidate.date_texted"])
+							Text("Texted on " + c.person.Fields["candidate.date_texted"])
 					}),
 				),
 		}
@@ -505,13 +311,13 @@ func (c *OrganizationIDGroupIDCalltimePage) Render() app.UI {
 			app.Div().
 				Class("person-summary").
 				Body(summaryItems...),
-			app.If(person.Fields["candidate.notes"] != "", func() app.UI {
+			app.If(c.person.Fields["candidate.notes"] != "", func() app.UI {
 				return app.Hr()
 			}),
-			app.If(person.Fields["candidate.notes"] != "", func() app.UI {
+			app.If(c.person.Fields["candidate.notes"] != "", func() app.UI {
 				return app.Div().
 					Class("person-summary-notes").
-					Text(person.Fields["candidate.notes"])
+					Text(c.person.Fields["candidate.notes"])
 			}),
 			app.Hr(),
 			app.Div().
@@ -523,18 +329,18 @@ func (c *OrganizationIDGroupIDCalltimePage) Render() app.UI {
 					blazar.Button().
 						Label("Call").
 						Icon(component.IconPhone).
-						To("tel:+1"+strings.ReplaceAll(person.Fields["phone_number"], "-", "")).
+						To("tel:+1"+strings.ReplaceAll(c.person.Fields["phone_number"], "-", "")).
 						On("click", func(ctx app.Context, e app.Event) {
-							c.lastCalledVoterID = person.VoterID
+							c.lastCalledVoterID = c.person.VoterID
 						}),
 					app.Div().
 						Style("font-size", "1.2em").
 						Style("margin-top", "auto").
 						Style("margin-bottom", "auto").
-						Text(person.Fields["phone_number"]),
+						Text(c.person.Fields["phone_number"]),
 				),
 			app.Hr(),
-			app.If(c.lastCalledVoterID == person.VoterID, func() app.UI {
+			app.If(c.lastCalledVoterID == c.person.VoterID, func() app.UI {
 				return blazar.Form().
 					Class("no-print").
 					Spacer(false).
@@ -542,7 +348,7 @@ func (c *OrganizationIDGroupIDCalltimePage) Render() app.UI {
 						blazar.FormAction{
 							Name:   "Edit Person",
 							Icon:   component.IconExternalLink,
-							To:     fmt.Sprintf("/organization/%s/person/%s", c.organizationID, person.VoterID),
+							To:     fmt.Sprintf("/organization/%s/person/%s", c.organizationID, c.person.VoterID),
 							Target: "_blank",
 						},
 						blazar.FormAction{
@@ -557,7 +363,7 @@ func (c *OrganizationIDGroupIDCalltimePage) Render() app.UI {
 									return
 								}
 
-								phoneNumber := person.Fields["phone_number"]
+								phoneNumber := c.person.Fields["phone_number"]
 								if phoneNumber != "" {
 									queryParameters := url.Values{}
 									queryParameters.Set("filter", "phone_number = '"+phoneNumber+"'")
@@ -598,7 +404,7 @@ func (c *OrganizationIDGroupIDCalltimePage) Render() app.UI {
 							Icon:            component.IconDone,
 							BackgroundColor: "green",
 							Function: func(ctx app.Context) {
-								phoneNumber := person.Fields["phone_number"]
+								phoneNumber := c.person.Fields["phone_number"]
 								if phoneNumber != "" {
 									queryParameters := url.Values{}
 									queryParameters.Set("filter", "phone_number = '"+phoneNumber+"'")
@@ -731,11 +537,17 @@ func (c *OrganizationIDGroupIDCalltimePage) search(ctx app.Context) {
 	}
 
 	slog.InfoContext(ctx.Context, "OrganizationIDGroupIDCalltimePage: search: Setting persons", "len(persons)", len(output.Persons))
-	c.Persons = output.Persons
+	c.persons = output.Persons
 
-	rand.Shuffle(len(c.Persons), func(i, j int) {
-		c.Persons[i], c.Persons[j] = c.Persons[j], c.Persons[i]
+	rand.Shuffle(len(c.persons), func(i, j int) {
+		c.persons[i], c.persons[j] = c.persons[j], c.persons[i]
 	})
+
+	if len(c.persons) == 0 {
+		c.person = nil
+	} else {
+		c.person = c.persons[0]
+	}
 
 	ctx.Update()
 }
