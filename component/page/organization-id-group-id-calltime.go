@@ -18,6 +18,7 @@ import (
 	"github.com/downballot/ui/component"
 	"github.com/go-app-blazar/blazar/blazar"
 	"github.com/go-app-blazar/blazar/deref"
+	"github.com/go-app-blazar/blazar/htmlevent"
 	"github.com/go-app-blazar/router"
 	"github.com/maxence-charriere/go-app/v11/pkg/app"
 )
@@ -333,11 +334,15 @@ func (c *OrganizationIDGroupIDCalltimePage) Render() app.UI {
 						On("click", func(ctx app.Context, e app.Event) {
 							c.lastCalledVoterID = c.person.VoterID
 						}),
-					app.Div().
+					blazar.Copy().
 						Style("font-size", "1.2em").
 						Style("margin-top", "auto").
 						Style("margin-bottom", "auto").
-						Text(c.person.Fields["phone_number"]),
+						Text(c.person.Fields["phone_number"]).
+						Value(c.person.Fields["phone_number"]).
+						OnClick(func(ctx app.Context, e htmlevent.PointerEvent) {
+							c.lastCalledVoterID = c.person.VoterID
+						}),
 				),
 			app.Hr(),
 			app.If(c.lastCalledVoterID == c.person.VoterID, func() app.UI {
