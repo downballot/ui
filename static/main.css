@@ -113,6 +113,7 @@ h1, h2, h3, h4, h5, h6 {
 	.person-summary-chips {
 		display: flex;
 		flex-direction: row;
+		flex-flow: wrap;
 		gap: 0.5em;
 
 		.person-summary-chip {
@@ -125,6 +126,7 @@ h1, h2, h3, h4, h5, h6 {
             display: flex;
             flex-direction: row;
             background-color: lightgreen;
+			text-wrap-mode: nowrap;
 		}
 	}
 }

@@ -215,8 +215,18 @@ func (c *OrganizationIDGroupIDPersonPage) OnNav(ctx app.Context) {
 			}
 
 			for _, name := range possibleFields {
+				displayName := name
+				for _, personField := range output.PersonFields {
+					if personField.Name == name {
+						if personField.DisplayName != "" {
+							displayName = personField.DisplayName
+						}
+						break
+					}
+				}
 				c.PersonsTableColumns = append(c.PersonsTableColumns, blazar.TableColumn[*downballotapi.Person]{
-					Name: name,
+					Name:        name,
+					DisplayName: displayName,
 					Value: func(row *downballotapi.Person) any {
 						if name == "computed.likely" {
 							if row.Fields[name] == "true" {
@@ -580,6 +590,11 @@ func (c *OrganizationIDGroupIDPersonPage) Render() app.UI {
 					Icon:     component.IconMailingLabel,
 					Function: c.mailingLabels,
 				},
+				blazar.FormAction{
+					Name:     "Calltime",
+					Icon:     component.IconPhone,
+					Function: c.calltime,
+				},
 			),
 		blazar.Collapse().
 			Label("Map").
@@ -669,6 +684,15 @@ func (c *OrganizationIDGroupIDPersonPage) mailingLabels(ctx app.Context) {
 	queryParameters.Set("limit", fmt.Sprintf("%d", c.Limit))
 
 	ctx.Navigate("/organization/" + c.organizationID + "/group/" + c.groupID + "/person-mailing-labels?" + queryParameters.Encode())
+}
+
+func (c *OrganizationIDGroupIDPersonPage) calltime(ctx app.Context) {
+	ctx.PreventUpdate()
+
+	queryParameters := url.Values{}
+	queryParameters.Set("filter", c.Filter)
+
+	ctx.Navigate("/organization/" + c.organizationID + "/group/" + c.groupID + "/calltime?" + queryParameters.Encode())
 }
 
 func (c *OrganizationIDGroupIDPersonPage) csv(ctx app.Context) {

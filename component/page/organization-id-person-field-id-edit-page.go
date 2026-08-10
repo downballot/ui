@@ -26,6 +26,7 @@ type OrganizationIDPersonFieldIDEditPage struct {
 	loaded bool
 
 	Name               string
+	DisplayName        string
 	Type               string
 	AllowEmpty         bool
 	AllowedRegex       string
@@ -72,6 +73,7 @@ func (c *OrganizationIDPersonFieldIDEditPage) Reload(ctx app.Context) {
 			ctx.Dispatch(func(ctx app.Context) {
 				slog.DebugContext(ctx.Context, "OrganizationIDPersonFieldIDEditPage: Reload: Setting person field", "PersonField", output.PersonField)
 				c.Name = output.PersonField.Name
+				c.DisplayName = output.PersonField.DisplayName
 				c.Type = string(output.PersonField.Type)
 				c.AllowEmpty = output.PersonField.AllowEmpty
 				c.AllowedRegex = output.PersonField.AllowedRegex
@@ -106,6 +108,10 @@ func (c *OrganizationIDPersonFieldIDEditPage) Render() app.UI {
 					Label("Name").
 					Type("text").
 					Bind(&c.Name),
+				blazar.Input[string]().
+					Label("Display Name").
+					Type("text").
+					Bind(&c.DisplayName),
 				blazar.Select().
 					Label("Type").
 					AllowedValue(
@@ -154,6 +160,7 @@ func (c *OrganizationIDPersonFieldIDEditPage) Render() app.UI {
 				ctx.Async(func() {
 					input := downballotapi.PatchPersonFieldRequest{
 						Name:               &c.Name,
+						DisplayName:        &c.DisplayName,
 						Type:               (*downballotapi.PersonFieldDefinitionType)(&c.Type),
 						AllowEmpty:         &c.AllowEmpty,
 						AllowedRegex:       &c.AllowedRegex,
