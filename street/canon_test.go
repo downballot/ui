@@ -29,6 +29,11 @@ func TestCanon(t *testing.T) {
 			output:       "Main St 000000123#, Anytown, USA",
 		},
 		{
+			input:        "123A Main St, Anytown, USA",
+			splitEvenOdd: true,
+			output:       "Main St o000000123A#, Anytown, USA",
+		},
+		{
 			input:        "123 Main St #1, Anytown, USA",
 			splitEvenOdd: true,
 			output:       "Main St o000000123#000000001, Anytown, USA",

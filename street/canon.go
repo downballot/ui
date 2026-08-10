@@ -7,6 +7,7 @@ import (
 	"strings"
 )
 
+var addressNumberRegex = regexp.MustCompile(`^(\d+)(.*)$`)
 var apartmentNumberRegex = regexp.MustCompile(`^(\d+)(.*)$`)
 
 func Canon(address string, splitEvenOdd bool) string {
@@ -43,14 +44,19 @@ func Canon(address string, splitEvenOdd bool) string {
 	}
 	streetInfo := parts[1]
 	{
-		addressNumber, err := strconv.ParseInt(addressNumberString, 10, 64)
-		if err == nil {
-			addressNumberString = fmt.Sprintf("%09d", addressNumber)
-			if splitEvenOdd {
-				if addressNumber%2 == 0 {
-					addressNumberString = "e" + addressNumberString
-				} else {
-					addressNumberString = "o" + addressNumberString
+		addressNumberMatches := addressNumberRegex.FindStringSubmatch(addressNumberString)
+		if len(addressNumberMatches) == 3 {
+			mainAddressNumberString := addressNumberMatches[1]
+			suffixAddressNumberString := addressNumberMatches[2]
+			addressNumber, err := strconv.ParseInt(mainAddressNumberString, 10, 64)
+			if err == nil {
+				addressNumberString = fmt.Sprintf("%09d", addressNumber) + suffixAddressNumberString
+				if splitEvenOdd {
+					if addressNumber%2 == 0 {
+						addressNumberString = "e" + addressNumberString
+					} else {
+						addressNumberString = "o" + addressNumberString
+					}
 				}
 			}
 		}
