@@ -42,9 +42,11 @@ type OrganizationIDGroupIDCalltimePage struct {
 
 	PersonsTableColumns []blazar.TableColumn[*downballotapi.Person]
 
-	filterOpen bool
+	filterOpen  bool
+	detailsOpen bool
 
 	lastCalledVoterID string
+	newNotes          string
 }
 
 var _ app.Navigator = (*OrganizationIDGroupIDCalltimePage)(nil)
@@ -348,14 +350,9 @@ func (c *OrganizationIDGroupIDCalltimePage) Render() app.UI {
 			app.If(c.lastCalledVoterID == c.person.VoterID, func() app.UI {
 				return blazar.Form().
 					Class("no-print").
+					Style("font-size", "1.2em").
 					Spacer(false).
 					Action(
-						blazar.FormAction{
-							Name:   "Edit Person",
-							Icon:   component.IconExternalLink,
-							To:     fmt.Sprintf("/organization/%s/person/%s", c.organizationID, c.person.VoterID),
-							Target: "_blank",
-						},
 						blazar.FormAction{
 							Name:            "Bad Number",
 							Icon:            component.IconDelete,
@@ -405,7 +402,7 @@ func (c *OrganizationIDGroupIDCalltimePage) Render() app.UI {
 							},
 						},
 						blazar.FormAction{
-							Name:            "Called",
+							Name:            "Called (continue)",
 							Icon:            component.IconDone,
 							BackgroundColor: "green",
 							Function: func(ctx app.Context) {
@@ -446,6 +443,137 @@ func (c *OrganizationIDGroupIDCalltimePage) Render() app.UI {
 								c.search(ctx)
 							},
 						},
+					)
+			}),
+			app.If(c.lastCalledVoterID == c.person.VoterID, func() app.UI {
+				return blazar.Collapse().
+					Label("Additional Details").
+					Style("margin-top", "1em").
+					Bind(&c.detailsOpen).
+					Body(
+						app.FieldSet().
+							Body(
+								app.Legend().Text("Information"),
+								blazar.Form().
+									Class("no-print").
+									Spacer(false).
+									Body(
+										app.Text("For more details, click the link below."),
+									).
+									Action(
+										blazar.FormAction{
+											Name:   "Edit Person",
+											Icon:   component.IconExternalLink,
+											To:     fmt.Sprintf("/organization/%s/person/%s", c.organizationID, c.person.VoterID),
+											Target: "_blank",
+										},
+									),
+							),
+						app.FieldSet().
+							Body(
+								app.Legend().Text("Fields"),
+								blazar.InputWrapper().
+									Label("Connected (saves automatically)").
+									Body(
+										blazar.Form().
+											Class("no-print").
+											Style("font-size", "1.2em").
+											Spacer(false).
+											Action(
+												blazar.FormAction{
+													Name: "Yes, we spoke with this person",
+													Flat: c.person.Fields["candidate.connected"] != "true",
+													Function: func(ctx app.Context) {
+														if c.person.Fields["candidate.connected"] == "true" {
+															c.updatePerson(ctx, "candidate.connected", nil)
+														} else {
+															newValue := "true"
+															c.updatePerson(ctx, "candidate.connected", &newValue)
+														}
+													},
+												},
+											),
+									),
+								blazar.InputWrapper().
+									Label("Support (saves automatically)").
+									Body(
+										blazar.Form().
+											Class("no-print").
+											Style("font-size", "1.2em").
+											Spacer(false).
+											Action(
+												blazar.FormAction{
+													Name: "-2",
+													Flat: c.person.Fields["candidate.support"] != "-2",
+													Function: func(ctx app.Context) {
+														if c.person.Fields["candidate.support"] == "-2" {
+															c.updatePerson(ctx, "candidate.support", nil)
+														} else {
+															newValue := "-2"
+															c.updatePerson(ctx, "candidate.support", &newValue)
+														}
+													},
+												},
+												blazar.FormAction{
+													Name: "-1",
+													Flat: c.person.Fields["candidate.support"] != "-1",
+													Function: func(ctx app.Context) {
+														if c.person.Fields["candidate.support"] == "-1" {
+															c.updatePerson(ctx, "candidate.support", nil)
+														} else {
+															newValue := "-1"
+															c.updatePerson(ctx, "candidate.support", &newValue)
+														}
+													},
+												},
+												blazar.FormAction{
+													Name: "0",
+													Flat: c.person.Fields["candidate.support"] != "0",
+													Function: func(ctx app.Context) {
+														if c.person.Fields["candidate.support"] == "0" {
+															c.updatePerson(ctx, "candidate.support", nil)
+														} else {
+															newValue := "0"
+															c.updatePerson(ctx, "candidate.support", &newValue)
+														}
+													},
+												},
+												blazar.FormAction{
+													Name: "+1",
+													Flat: c.person.Fields["candidate.support"] != "+1",
+													Function: func(ctx app.Context) {
+														if c.person.Fields["candidate.support"] == "+1" {
+															c.updatePerson(ctx, "candidate.support", nil)
+														} else {
+															newValue := "+1"
+															c.updatePerson(ctx, "candidate.support", &newValue)
+														}
+													},
+												},
+												blazar.FormAction{
+													Name: "+2",
+													Flat: c.person.Fields["candidate.support"] != "+2",
+													Function: func(ctx app.Context) {
+														if c.person.Fields["candidate.support"] == "+2" {
+															c.updatePerson(ctx, "candidate.support", nil)
+														} else {
+															newValue := "+2"
+															c.updatePerson(ctx, "candidate.support", &newValue)
+														}
+													},
+												},
+											),
+									),
+								blazar.Input[string]().
+									Label("Notes").
+									Bind(&c.newNotes),
+								blazar.Button().
+									Label("Save Notes").
+									Icon(component.IconSave).
+									On("click", func(ctx app.Context, e app.Event) {
+										c.updatePerson(ctx, "candidate.notes", &c.newNotes)
+									}),
+							),
 					)
 			}),
 		)
@@ -553,6 +681,32 @@ func (c *OrganizationIDGroupIDCalltimePage) search(ctx app.Context) {
 	} else {
 		c.person = c.persons[0]
 	}
+
+	c.newNotes = c.person.Fields["candidate.notes"]
+
+	ctx.Update()
+}
+
+func (c *OrganizationIDGroupIDCalltimePage) updatePerson(ctx app.Context, field string, value *string) {
+	if c.person == nil {
+		return
+	}
+
+	input := downballotapi.PatchPersonRequest{
+		Fields: map[string]*string{
+			field: value,
+		},
+	}
+	var output downballotapi.GetPersonResponse
+	err := api.Do(ctx, http.MethodPatch, "/api/v1/organization/"+c.organizationID+"/person/"+c.person.VoterID, input, &output)
+	if err != nil {
+		slog.ErrorContext(ctx.Context, "OrganizationIDGroupIDCalltimePage: updatePerson: Could not patch person", "err", err)
+		return
+	}
+
+	c.person = output.Person
+
+	c.newNotes = c.person.Fields["candidate.notes"]
 
 	ctx.Update()
 }
