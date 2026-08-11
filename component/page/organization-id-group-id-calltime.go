@@ -651,6 +651,12 @@ func (c *OrganizationIDGroupIDCalltimePage) Render() app.UI {
 					Function: c.search,
 				},
 			),
+		app.If(len(personItems) == 0, func() app.UI {
+			return app.Div().
+				Body(
+					app.Text("All done!"),
+				)
+		}),
 		app.If(len(personItems) > 0, func() app.UI {
 			return app.Div().
 				Body(personItems...)
@@ -678,11 +684,11 @@ func (c *OrganizationIDGroupIDCalltimePage) search(ctx app.Context) {
 
 	if len(c.persons) == 0 {
 		c.person = nil
+		c.newNotes = ""
 	} else {
 		c.person = c.persons[0]
+		c.newNotes = c.person.Fields["candidate.notes"]
 	}
-
-	c.newNotes = c.person.Fields["candidate.notes"]
 
 	ctx.Update()
 }
