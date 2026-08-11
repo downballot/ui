@@ -120,6 +120,12 @@ func (c *OrganizationIDGroupIDPage) Render() app.UI {
 				Disabled: !c.permissionSet.Match(iam.IAMPersonRead),
 			},
 			component.PageAction{
+				Name:     "Call Time",
+				Icon:     component.IconPerson,
+				To:       fmt.Sprintf("/organization/%s/group/%s/calltime", c.organizationID, c.groupID),
+				Disabled: !c.permissionSet.Match(iam.IAMPersonRead),
+			},
+			component.PageAction{
 				Name:     "Edit",
 				Icon:     component.IconEdit,
 				To:       fmt.Sprintf("/organization/%s/group/%s/edit", c.organizationID, c.groupID),
@@ -168,6 +174,14 @@ func (c *OrganizationIDGroupIDPage) Render() app.UI {
 							return fmt.Sprintf("/organization/%s/group/%s/person", c.organizationID, row.ID)
 						},
 						Disabled: !c.permissionSet.Match(iam.IAMPersonRead),
+					},
+					blazar.RowAction[*downballotapi.Group]{
+						Name: "Call Time",
+						Icon: component.IconPhone,
+						To: func(row *downballotapi.Group) string {
+							return fmt.Sprintf("/organization/%s/group/%s/calltime", c.organizationID, row.ID)
+						},
+						Disabled: !c.permissionSet.Match(iam.IAMPersonUpdate),
 					},
 					blazar.RowAction[*downballotapi.Group]{
 						Name: "Edit",
