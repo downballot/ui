@@ -2,10 +2,8 @@ package page
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
 	"net/http"
-	"net/url"
 	"slices"
 	"strings"
 	"sync"
@@ -146,100 +144,9 @@ func (c *OrganizationIDPersonIDPage) Render() app.UI {
 			c.Reload(ctx)
 		})
 
-	icon := "circle-question"
-	switch c.person.Fields["candidate.support"] {
-	case "-2":
-		icon = "thumbs-down"
-	case "-1":
-		icon = "thumbs-down"
-	case "0":
-		icon = "circle-question"
-	case "+1":
-		icon = "thumbs-up"
-	case "+2":
-		icon = "thumbs-up"
-	}
-
-	summaryItems := []app.UI{
-		app.Div().
-			Class("person-summary-header").
-			Body(
-				blazar.Icon().
-					Icon(icon),
-				app.Div().
-					Text(c.person.Fields["name"]),
-			),
-		app.Div().
-			Class("person-summary-registration").
-			Text("Registered as " + c.person.Fields["political_party"] + ", living in " + c.person.Fields["district_representative"] + ", " + c.person.Fields["district_senate"]),
-		app.Div().
-			Class("person-summary-address").
-			Body(
-				app.A().
-					Href(fmt.Sprintf("https://www.google.com/maps/search/?api=1&query=%s", url.QueryEscape(c.person.Fields["residential_address"]))).
-					Target("_blank").
-					Text(c.person.Fields["residential_address"]),
-			),
-		app.Div().
-			Class("person-summary-phone").
-			Text(c.person.Fields["phone_number"]),
-		app.Div().
-			Class("person-summary-chips").
-			Body(
-				app.If(c.person.Fields["candidate.connected"] == "true", func() app.UI {
-					return app.Div().
-						Class("person-summary-chip").
-						Body(
-							blazar.Icon().
-								Icon("handshake"),
-							app.Text("Connected"),
-						)
-				}),
-				app.If(c.person.Fields["candidate.support"] != "", func() app.UI {
-					return app.Div().
-						Class("person-summary-chip").
-						Text("Support: " + c.person.Fields["candidate.support"])
-				}),
-				app.If(c.person.Fields["candidate.cat"] == "true", func() app.UI {
-					return app.Div().
-						Class("person-summary-chip").
-						Body(
-							blazar.Icon().
-								Icon("cat"),
-							app.Text("Cat"),
-						)
-				}),
-				app.If(c.person.Fields["candidate.dog"] == "true", func() app.UI {
-					return app.Div().
-						Class("person-summary-chip").
-						Body(
-							blazar.Icon().
-								Icon("dog"),
-							app.Text("Dog"),
-						)
-				}),
-				app.If(c.person.Fields["candidate.date_called"] != "", func() app.UI {
-					return app.Div().
-						Class("person-summary-chip").
-						Text("Called on " + c.person.Fields["candidate.date_called"])
-				}),
-				app.If(c.person.Fields["candidate.date_canvassed"] != "", func() app.UI {
-					return app.Div().
-						Class("person-summary-chip").
-						Text("Canvassed on " + c.person.Fields["candidate.date_canvassed"])
-				}),
-				app.If(c.person.Fields["candidate.date_texted"] != "", func() app.UI {
-					return app.Div().
-						Class("person-summary-chip").
-						Text("Texted on " + c.person.Fields["candidate.date_texted"])
-				}),
-			),
-	}
-
 	return c.EmbeddedPage.Wrap(
-		app.Div().
-			Class("person-summary").
-			Body(summaryItems...),
+		component.PersonSummary().
+			Person(c.person),
 		blazar.Table[Record]().
 			Title("Fields").
 			Rows(rows).
