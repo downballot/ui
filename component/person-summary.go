@@ -48,6 +48,20 @@ func (c *personSummary) Render() app.UI {
 		icon = "thumbs-up"
 	}
 
+	var registrationString string
+	if c.IPerson.Fields["computed.age"] != "" {
+		registrationString = c.IPerson.Fields["computed.age"] + " year-old"
+	} else {
+		registrationString = "Born in " + c.IPerson.Fields["birthday_year"]
+	}
+	registrationString += ", registered as " + c.IPerson.Fields["political_party"]
+
+	developmentString := "Lives in "
+	if c.IPerson.Fields["residential_address_development"] != "" {
+		developmentString += c.IPerson.Fields["residential_address_development"] + " "
+	}
+	developmentString += "(" + c.IPerson.Fields["district_representative"] + ", " + c.IPerson.Fields["district_senate"] + ")"
+
 	summaryItems := []app.UI{
 		app.Div().
 			Class("person-summary__header").
@@ -59,7 +73,7 @@ func (c *personSummary) Render() app.UI {
 			),
 		app.Div().
 			Class("person-summary__registration").
-			Text("Registered as " + c.IPerson.Fields["political_party"] + ", living in " + c.IPerson.Fields["district_representative"] + ", " + c.IPerson.Fields["district_senate"]),
+			Text(registrationString),
 		app.Div().
 			Class("person-summary__address").
 			Body(
@@ -68,12 +82,12 @@ func (c *personSummary) Render() app.UI {
 					Target("_blank").
 					Text(c.IPerson.Fields["residential_address"]),
 			),
-		app.If(c.IPerson.Fields["residential_address_development"] != "", func() app.UI {
+		app.If(developmentString != "", func() app.UI {
 			return app.Div().
 				Class("person-summary__address").
 				Body(
 					app.Span().
-						Text(c.IPerson.Fields["residential_address_development"]),
+						Text(developmentString),
 				)
 		}),
 		app.If(c.IPerson.Fields["phone_number"] != "", func() app.UI {
