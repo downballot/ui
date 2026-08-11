@@ -95,7 +95,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .person-summary {
-	.person-summary-header {
+	.person-summary__header {
 		display: flex;
 		flex-direction: row;
 		gap: 0.5em;
@@ -103,9 +103,17 @@ h1, h2, h3, h4, h5, h6 {
 		font-weight: bold;
 	}
 
-	.person-summary-registration {
+	.person-summary__registration {
 		font-size: 1.1em;
 		font-style: italic;
+	}
+
+	.person-summary__notes {
+		padding: 0.5em;
+		display: flex;
+		gap: 0.5em;
+		background-color: color-mix(in srgb, var(--blazar-theme-secondary) 20%, transparent);
+		margin-top: 0.5em;
 	}
 
 	/*.person-summary-address {}*/
