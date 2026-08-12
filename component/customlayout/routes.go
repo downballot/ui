@@ -279,6 +279,15 @@ var Routes = []router.Route{
 								},
 								Children: []router.Route{
 									{
+										Path: "/search",
+										Component: func() app.Composer {
+											return &page.OrganizationIDPersonSearchPage{}
+										},
+										Meta: map[string]string{
+											MetaTitle: "Search Persons",
+										},
+									},
+									{
 										Path:      "/:voter_id",
 										Component: nil,
 										PathVariables: func(ctx app.Context, variables map[string]string) {

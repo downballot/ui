@@ -74,13 +74,34 @@ func (c *OrganizationIDPage) Render() app.UI {
 	}
 
 	return c.EmbeddedPage.Wrap(
+		app.If(c.permissionSet.Match(iam.IAMPersonRead), func() app.UI {
+			return app.Div().
+				Body(
+					app.Div().Body(
+						app.A().
+							Href("/organization/"+c.organizationID+"/person/search").
+							Body(
+								blazar.Icon().
+									Icon(component.IconSearch),
+								app.Text(" Search"),
+							),
+					),
+					app.Div().Body(
+						app.Span().Text("Search for persons by name, address, phone number, etc."),
+					),
+				)
+		}),
 		app.If(c.permissionSet.Match(iam.IAMGroupRead), func() app.UI {
 			return app.Div().
 				Body(
 					app.Div().Body(
 						app.A().
-							Text("Groups").
-							Href("/organization/"+c.organizationID+"/group"),
+							Href("/organization/"+c.organizationID+"/group").
+							Body(
+								blazar.Icon().
+									Icon(component.IconGroup),
+								app.Text(" Groups"),
+							),
 					),
 					app.Div().Body(
 						app.Span().Text("View and manage groups, which are used to subdivide the persons.  They can also be used for user permissions."),
@@ -92,8 +113,12 @@ func (c *OrganizationIDPage) Render() app.UI {
 				Body(
 					app.Div().Body(
 						app.A().
-							Text("Filters").
-							Href("/organization/"+c.organizationID+"/filter"),
+							Href("/organization/"+c.organizationID+"/filter").
+							Body(
+								blazar.Icon().
+									Icon(component.IconFilter),
+								app.Text(" Filters"),
+							),
 					),
 					app.Div().Body(
 						app.Span().Text("View and manage filters, which can be used on top of groups to further limit the results."),
@@ -105,8 +130,12 @@ func (c *OrganizationIDPage) Render() app.UI {
 				Body(
 					app.Div().Body(
 						app.A().
-							Text("Person Fields").
-							Href("/organization/"+c.organizationID+"/person-field"),
+							Href("/organization/"+c.organizationID+"/person-field").
+							Body(
+								blazar.Icon().
+									Icon(component.IconPerson),
+								app.Text(" Person Fields"),
+							),
 					),
 					app.Div().Body(
 						app.Span().Text("View and manage person fields, which are the fields available for each person."),
@@ -118,8 +147,12 @@ func (c *OrganizationIDPage) Render() app.UI {
 				Body(
 					app.Div().Body(
 						app.A().
-							Text("Users").
-							Href("/organization/"+c.organizationID+"/user"),
+							Href("/organization/"+c.organizationID+"/user").
+							Body(
+								blazar.Icon().
+									Icon(component.IconUser),
+								app.Text(" Users"),
+							),
 					),
 					app.Div().Body(
 						app.Span().Text("View and manage users in this organization."),

@@ -35,6 +35,11 @@ var allMenuItems = []OrganizationMenuItem{
 		To:   "/organization/:organization_id",
 	},
 	{
+		Icon: component.IconSearch,
+		Name: "Search Persons",
+		To:   "/organization/:organization_id/person/search",
+	},
+	{
 		Icon: component.IconGroup,
 		Name: "Groups",
 		To:   "/organization/:organization_id/group",
