@@ -74,7 +74,7 @@ func (c *OrganizationIDPersonSearchPage) OnNav(ctx app.Context) {
 
 	c.Limit = 50
 	c.splitEvenOdd = true
-	c.mapOpen = true
+	c.mapOpen = false
 	c.resultsOpen = true
 
 	var persistLimit uint
@@ -508,6 +508,7 @@ func (c *OrganizationIDPersonSearchPage) Render() app.UI {
 	)
 }
 
+var allNumberRegex = regexp.MustCompile(`^[0-9]+$`)
 var phoneNumberRegex = regexp.MustCompile(`^[0-9() +-]+$`)
 
 func formatPhoneNumber(input string) string {
@@ -527,23 +528,31 @@ func formatPhoneNumber(input string) string {
 }
 
 func (c *OrganizationIDPersonSearchPage) computeFilter() string {
-	if c.Filter == "" {
+	filter := strings.TrimSpace(c.Filter)
+	if filter == "" {
 		return ""
 	}
 
-	if phoneNumberRegex.MatchString(c.Filter) {
-		slog.InfoContext(context.TODO(), "OrganizationIDPersonSearchPage: computeFilter: Phone number", "Filter", c.Filter)
-		phoneNumber := formatPhoneNumber(c.Filter)
+	var orParts []string
+	if allNumberRegex.MatchString(filter) {
+		slog.InfoContext(context.TODO(), "OrganizationIDPersonSearchPage: computeFilter: All number", "filter", filter)
+		orParts = append(orParts, "voter_id = '"+filter+"'")
+	}
+
+	if phoneNumberRegex.MatchString(filter) {
+		slog.InfoContext(context.TODO(), "OrganizationIDPersonSearchPage: computeFilter: Phone number", "filter", filter)
+		phoneNumber := formatPhoneNumber(filter)
 		slog.InfoContext(context.TODO(), "OrganizationIDPersonSearchPage: computeFilter: formatted phone number", "Phone number", phoneNumber)
 		if phoneNumber != "" {
-			return "phone_number = '" + phoneNumber + "'"
+			orParts = append(orParts, "phone_number = '"+phoneNumber+"'")
 		}
 	}
 
-	slog.InfoContext(context.TODO(), "OrganizationIDPersonSearchPage: computeFilter: Filter", "Filter", c.Filter)
-	var orParts []string
-	orParts = append(orParts, "residential_address ~ '"+c.Filter+"*'")
-	orParts = append(orParts, "name ~ '"+strings.Join(strings.Split(c.Filter, " "), "*")+"'")
+	slog.InfoContext(context.TODO(), "OrganizationIDPersonSearchPage: computeFilter: Filter", "filter", filter)
+	if strings.Count(filter, " ") > 0 {
+		orParts = append(orParts, "residential_address ~ '"+filter+"*'")
+	}
+	orParts = append(orParts, "name ~ '"+strings.Join(strings.Split(filter, " "), "*")+"'")
 	return strings.Join(orParts, " or ")
 }
 
