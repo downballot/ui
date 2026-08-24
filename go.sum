@@ -6,8 +6,12 @@ github.com/emicklei/go-restful/v3 v3.13.0 h1:C4Bl2xDndpU6nJ4bc1jXd+uTmYPVUwkD6bF
 github.com/emicklei/go-restful/v3 v3.13.0/go.mod h1:6n3XBCmQQb25CM2LCACGz8ukIrRry+4bhvbpWn3mrbc=
 github.com/go-app-blazar/blazar v0.1.45 h1:YM5mfv3Nz3pbXmzwnb/8xBhrPBwhwQqqXpapvvkBHFU=
 github.com/go-app-blazar/blazar v0.1.45/go.mod h1:0Xp0xmNI4zbclIDvxUGuHRW27ZYi7UvaoTv4lFXlkKU=
+github.com/go-app-blazar/blazar v0.1.47 h1:Onk5lagaE/SfX5FFbTo5bCJgaD0wWu6ZKJHfxnPhp+4=
+github.com/go-app-blazar/blazar v0.1.47/go.mod h1:XQSXQ4cw64Levy6uZmjGzk9/T9+tyC0uI0at0yY+ioE=
 github.com/go-app-blazar/router v0.1.1 h1:6vM6VJTOwqoMwhUUbx2P+j4glXEfEmMUKn40pxPAMG4=
 github.com/go-app-blazar/router v0.1.1/go.mod h1:yY7DcUn3ToFdcNAGeyx0v8LjikiTu3WJ1XkQiEIlJRY=
+github.com/go-app-blazar/router v0.1.2 h1:dKy+a3MZqKG/GNQ+Dg/3wcEVoIy4x4qwgdph02OvIOU=
+github.com/go-app-blazar/router v0.1.2/go.mod h1:yY7DcUn3ToFdcNAGeyx0v8LjikiTu3WJ1XkQiEIlJRY=
 github.com/google/uuid v1.6.0 h1:NIvaJDMOsjHA8n1jAhLSgzrAzy1Hgr+hNrb57e+94F0=
 github.com/google/uuid v1.6.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
 github.com/jinzhu/inflection v1.0.0 h1:K317FqzuhWc8YvSVlFMCCUb36O/S9MCKRDI7QkRKD/E=
