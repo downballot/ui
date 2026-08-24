@@ -536,7 +536,12 @@ func (c *OrganizationIDPersonSearchPage) computeFilter() string {
 	var orParts []string
 	if allNumberRegex.MatchString(filter) {
 		slog.InfoContext(context.TODO(), "OrganizationIDPersonSearchPage: computeFilter: All number", "filter", filter)
-		orParts = append(orParts, "voter_id = '"+filter+"'")
+		if slices.Contains(c.PossibleFields, "voter_id") {
+			orParts = append(orParts, "voter_id = '"+filter+"'")
+		}
+		if slices.Contains(c.PossibleFields, "melissa.mik") {
+			orParts = append(orParts, "melissa.mik = '"+filter+"'")
+		}
 	}
 
 	if phoneNumberRegex.MatchString(filter) {
@@ -544,15 +549,21 @@ func (c *OrganizationIDPersonSearchPage) computeFilter() string {
 		phoneNumber := formatPhoneNumber(filter)
 		slog.InfoContext(context.TODO(), "OrganizationIDPersonSearchPage: computeFilter: formatted phone number", "Phone number", phoneNumber)
 		if phoneNumber != "" {
-			orParts = append(orParts, "phone_number = '"+phoneNumber+"'")
+			if slices.Contains(c.PossibleFields, "phone_number") {
+				orParts = append(orParts, "phone_number = '"+phoneNumber+"'")
+			}
 		}
 	}
 
 	slog.InfoContext(context.TODO(), "OrganizationIDPersonSearchPage: computeFilter: Filter", "filter", filter)
 	if strings.Count(filter, " ") > 0 {
-		orParts = append(orParts, "residential_address ~ '"+filter+"*'")
+		if slices.Contains(c.PossibleFields, "residential_address") {
+			orParts = append(orParts, "residential_address ~ '"+filter+"*'")
+		}
 	}
-	orParts = append(orParts, "name ~ '"+strings.Join(strings.Split(filter, " "), "*")+"'")
+	if slices.Contains(c.PossibleFields, "name") {
+		orParts = append(orParts, "name ~ '"+strings.Join(strings.Split(filter, " "), "*")+"'")
+	}
 	return strings.Join(orParts, " or ")
 }
 
