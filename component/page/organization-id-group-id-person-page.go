@@ -496,9 +496,9 @@ func (c *OrganizationIDGroupIDPersonPage) Render() app.UI {
 				ctx.SetState("persist-organization-id-group-id-person-page-filter-open", open).Persist()
 			}).
 			SummaryText(func() string {
-				summary := "Filter: "
+				var summary string
 				if c.Filter == "" {
-					summary += "n/a"
+					summary += "Filter: n/a"
 				} else {
 					var namedFilter string
 					for _, filter := range c.Filters {

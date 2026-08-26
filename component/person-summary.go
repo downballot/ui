@@ -95,6 +95,11 @@ func (c *personSummary) Render() app.UI {
 				Class("person-summary__phone").
 				Text(c.IPerson.Fields["phone_number"])
 		}),
+		app.If(c.IPerson.Fields["email_address"] != "", func() app.UI {
+			return app.Div().
+				Class("person-summary__email").
+				Text(c.IPerson.Fields["email_address"])
+		}),
 		app.Div().
 			Class("person-summary-chips").
 			Body(
