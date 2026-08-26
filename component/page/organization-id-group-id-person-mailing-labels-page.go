@@ -197,9 +197,9 @@ func (c *OrganizationIDGroupIDPersonMailingLabelsPage) Render() app.UI {
 						Label("Filter").
 						Bind(&c.FilterOpen).
 						SummaryText(func() string {
-							summary := "Filter: "
+							var summary string
 							if c.Filter == "" {
-								summary += "n/a"
+								summary += "Filter: n/a"
 							} else {
 								var namedFilter string
 								for _, filter := range c.Filters {
