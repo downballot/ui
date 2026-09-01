@@ -8,6 +8,8 @@ github.com/go-app-blazar/blazar v0.1.45 h1:YM5mfv3Nz3pbXmzwnb/8xBhrPBwhwQqqXpapv
 github.com/go-app-blazar/blazar v0.1.45/go.mod h1:0Xp0xmNI4zbclIDvxUGuHRW27ZYi7UvaoTv4lFXlkKU=
 github.com/go-app-blazar/blazar v0.1.47 h1:Onk5lagaE/SfX5FFbTo5bCJgaD0wWu6ZKJHfxnPhp+4=
 github.com/go-app-blazar/blazar v0.1.47/go.mod h1:XQSXQ4cw64Levy6uZmjGzk9/T9+tyC0uI0at0yY+ioE=
+github.com/go-app-blazar/blazar v0.1.48 h1:waeIJ2JtTbZuNc+kQtzSrsSJ2hFsIOCpvVIeNsA4+dQ=
+github.com/go-app-blazar/blazar v0.1.48/go.mod h1:XQSXQ4cw64Levy6uZmjGzk9/T9+tyC0uI0at0yY+ioE=
 github.com/go-app-blazar/router v0.1.1 h1:6vM6VJTOwqoMwhUUbx2P+j4glXEfEmMUKn40pxPAMG4=
 github.com/go-app-blazar/router v0.1.1/go.mod h1:yY7DcUn3ToFdcNAGeyx0v8LjikiTu3WJ1XkQiEIlJRY=
 github.com/go-app-blazar/router v0.1.2 h1:dKy+a3MZqKG/GNQ+Dg/3wcEVoIy4x4qwgdph02OvIOU=

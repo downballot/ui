@@ -563,6 +563,7 @@ func (c *OrganizationIDPersonSearchPage) computeFilter() string {
 	}
 	if slices.Contains(c.PossibleFields, "name") {
 		orParts = append(orParts, "name ~ '"+strings.Join(strings.Split(filter, " "), "*")+"'")
+		orParts = append(orParts, "name ~ '"+strings.Join(strings.Split(filter, " "), "*")+", *'")
 	}
 	return strings.Join(orParts, " or ")
 }
