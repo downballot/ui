@@ -84,7 +84,6 @@ func (c *EmbeddedPage) Wrap(content ...app.UI) app.UI {
 			}
 		}
 		if len(actions) > 0 {
-			form := blazar.Form()
 			var formActions []blazar.FormAction
 			for _, action := range actions {
 				formActions = append(formActions, blazar.FormAction{
@@ -94,7 +93,10 @@ func (c *EmbeddedPage) Wrap(content ...app.UI) app.UI {
 					Function: action.Function,
 				})
 			}
-			form.Action(formActions...)
+
+			form := blazar.Form().
+				AutoSubmit(false).
+				Action(formActions...)
 			allElements = append(allElements, form)
 		}
 	}
