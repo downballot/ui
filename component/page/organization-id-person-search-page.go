@@ -414,34 +414,37 @@ func (c *OrganizationIDPersonSearchPage) Render() app.UI {
 		OrganizationID(c.organizationID)
 
 	return c.EmbeddedPage.Wrap(
-		app.Div().
-			Style("display", "flex").
-			Style("flex-direction", "column").
-			Body(
-				blazar.Input[string]().
-					Label("Search").
-					Type("text").
-					Placeholder("name, phone number, address, etc.").
-					Clearable(true).
-					Bind(&c.Filter).
-					On("change", func(ctx app.Context, e app.Event) {
-						ctx.SetState("persist-organization-id-person-search-page-filter", c.Filter).Persist()
-						ctx.Update() // Update so that the other input can be updated.
-					}),
-				blazar.Input[uint]().
-					Label("Limit").
-					Type("number").
-					Placeholder("1000").
-					Bind(&c.Limit).
-					On("change", func(ctx app.Context, e app.Event) {
-						ctx.SetState("persist-organization-id-person-search-page-limit", c.Limit).Persist()
-					}),
-			),
 		blazar.Form().
 			Class("no-print").
 			Spacer(false).
+			Body(
+				app.Div().
+					Style("display", "flex").
+					Style("flex-direction", "column").
+					Body(
+						blazar.Input[string]().
+							Label("Search").
+							Type("text").
+							Placeholder("name, phone number, address, etc.").
+							Clearable(true).
+							Bind(&c.Filter).
+							On("change", func(ctx app.Context, e app.Event) {
+								ctx.SetState("persist-organization-id-person-search-page-filter", c.Filter).Persist()
+								ctx.Update() // Update so that the other input can be updated.
+							}),
+						blazar.Input[uint]().
+							Label("Limit").
+							Type("number").
+							Placeholder("1000").
+							Bind(&c.Limit).
+							On("change", func(ctx app.Context, e app.Event) {
+								ctx.SetState("persist-organization-id-person-search-page-limit", c.Limit).Persist()
+							}),
+					),
+			).
 			Action(
 				blazar.FormAction{
+					Submit:   true,
 					Name:     "Search",
 					Icon:     component.IconSearch,
 					Function: c.search,

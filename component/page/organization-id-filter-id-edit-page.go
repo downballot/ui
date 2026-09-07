@@ -105,27 +105,35 @@ func (c *OrganizationIDFilterIDEditPage) Render() app.UI {
 					Type("text").
 					Bind(&c.Filter),
 			).
-			CancelLabel("Reset").
-			CancelFunction(c.Reload).
-			SubmitLabel("Save").
-			SubmitFunction(func(ctx app.Context) {
-				ctx.PreventUpdate()
+			Action(
+				blazar.FormAction{
+					Cancel:   true,
+					Name:     "Reset",
+					Function: c.Reload,
+				},
+				blazar.FormAction{
+					Submit: true,
+					Name:   "Save",
+					Function: func(ctx app.Context) {
+						ctx.PreventUpdate()
 
-				ctx.Async(func() {
-					input := downballotapi.PatchFilterRequest{
-						Name:        &c.Name,
-						Description: &c.Description,
-						Filter:      &c.Filter,
-					}
-					var output downballotapi.PatchFilterResponse
-					err := api.Do(ctx, http.MethodPatch, "/api/v1/organization/"+c.organizationID+"/filter/"+c.filterID, input, &output)
-					if err != nil {
-						slog.ErrorContext(ctx.Context, "Could not patch filter", "err", err)
-						return
-					}
+						ctx.Async(func() {
+							input := downballotapi.PatchFilterRequest{
+								Name:        &c.Name,
+								Description: &c.Description,
+								Filter:      &c.Filter,
+							}
+							var output downballotapi.PatchFilterResponse
+							err := api.Do(ctx, http.MethodPatch, "/api/v1/organization/"+c.organizationID+"/filter/"+c.filterID, input, &output)
+							if err != nil {
+								slog.ErrorContext(ctx.Context, "Could not patch filter", "err", err)
+								return
+							}
 
-					c.Reload(ctx)
-				})
-			}),
+							c.Reload(ctx)
+						})
+					},
+				},
+			),
 	)
 }

@@ -93,30 +93,35 @@ func (c *OrganizationIDPersonFieldNewPage) Render() app.UI {
 					Type("text").
 					Bind(&c.ComputedExpression),
 			).
-			SubmitLabel("Create").
-			SubmitFunction(func(ctx app.Context) {
-				ctx.PreventUpdate()
+			Action(
+				blazar.FormAction{
+					Submit: true,
+					Name:   "Create",
+					Function: func(ctx app.Context) {
+						ctx.PreventUpdate()
 
-				ctx.Async(func() {
-					input := downballotapi.CreatePersonFieldRequest{
-						Name:               c.Name,
-						DisplayName:        c.DisplayName,
-						Type:               downballotapi.PersonFieldDefinitionType(c.Type),
-						AllowEmpty:         c.AllowEmpty,
-						AllowedRegex:       c.AllowedRegex,
-						AllowedValues:      c.AllowedValues,
-						ComputedExpression: c.ComputedExpression,
-					}
-					var output downballotapi.CreatePersonFieldResponse
-					err := api.Do(ctx, http.MethodPost, "/api/v1/organization/"+c.organizationID+"/person-field", input, &output)
-					if err != nil {
-						slog.ErrorContext(ctx.Context, "Could not create person field", "err", err)
-						return
-					}
-					slog.InfoContext(ctx.Context, "OrganizationIDPersonFieldNewPage: Create button clicked: Navigating to person field page", "person_field_id", output.PersonField.ID)
-					ctx.Navigate(fmt.Sprintf("/organization/%s/person-field/%s", c.organizationID, output.PersonField.ID))
-				})
-			}),
+						ctx.Async(func() {
+							input := downballotapi.CreatePersonFieldRequest{
+								Name:               c.Name,
+								DisplayName:        c.DisplayName,
+								Type:               downballotapi.PersonFieldDefinitionType(c.Type),
+								AllowEmpty:         c.AllowEmpty,
+								AllowedRegex:       c.AllowedRegex,
+								AllowedValues:      c.AllowedValues,
+								ComputedExpression: c.ComputedExpression,
+							}
+							var output downballotapi.CreatePersonFieldResponse
+							err := api.Do(ctx, http.MethodPost, "/api/v1/organization/"+c.organizationID+"/person-field", input, &output)
+							if err != nil {
+								slog.ErrorContext(ctx.Context, "Could not create person field", "err", err)
+								return
+							}
+							slog.InfoContext(ctx.Context, "OrganizationIDPersonFieldNewPage: Create button clicked: Navigating to person field page", "person_field_id", output.PersonField.ID)
+							ctx.Navigate(fmt.Sprintf("/organization/%s/person-field/%s", c.organizationID, output.PersonField.ID))
+						})
+					},
+				},
+			),
 		app.If(c.Error != "", func() app.UI {
 			return app.Div().Body(
 				app.Span().Text(c.Error),

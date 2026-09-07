@@ -123,49 +123,55 @@ func (c *OrganizationIDUserIDGroupNewPage) Render() app.UI {
 					Label("Owner").
 					Bind(&c.owner),
 			).
-			SubmitLabel("Add User To Group").
-			SubmitIcon(component.IconSave).
-			SubmitFunction(func(ctx app.Context) {
-				ctx.PreventUpdate()
+			Action(
+				blazar.FormAction{
+					Submit: true,
+					Name:   "Add User To Group",
+					Icon:   component.IconSave,
+					Function: func(ctx app.Context) {
+						ctx.PreventUpdate()
 
-				ctx.Async(func() {
-					input := downballotapi.AddUserToGroupRequest{
-						GroupID: c.groupID,
-						Owner:   c.owner,
-					}
-					var output downballotapi.PatchGroupUserResponse
-					err := api.Do(ctx, http.MethodPost, "/api/v1/organization/"+c.organizationID+"/user/"+c.userID+"/group", input, &output)
-					if err != nil {
-						slog.ErrorContext(ctx.Context, "Could not add user to group", "err", err)
-						return
-					}
+						ctx.Async(func() {
+							input := downballotapi.AddUserToGroupRequest{
+								GroupID: c.groupID,
+								Owner:   c.owner,
+							}
+							var output downballotapi.PatchGroupUserResponse
+							err := api.Do(ctx, http.MethodPost, "/api/v1/organization/"+c.organizationID+"/user/"+c.userID+"/group", input, &output)
+							if err != nil {
+								slog.ErrorContext(ctx.Context, "Could not add user to group", "err", err)
+								return
+							}
 
-					ctx.Navigate("/organization/" + c.organizationID + "/user/" + c.userID)
-				})
-			}).
-			Action(blazar.FormAction{
-				Name: "Delete",
-				Icon: component.IconDelete,
-				Function: func(ctx app.Context) {
-					ctx.PreventUpdate()
+							ctx.Navigate("/organization/" + c.organizationID + "/user/" + c.userID)
+						})
+					},
+				},
+				blazar.FormAction{
+					Name:  "Delete",
+					Icon:  component.IconDelete,
+					Color: "red",
+					Function: func(ctx app.Context) {
+						ctx.PreventUpdate()
 
-					result := app.Window().Call("confirm", "Are you sure you want to remove this user from this group?")
-					slog.InfoContext(ctx.Context, "OrganizationIDUserIDGroupNewPage: Delete button clicked", "result", result.Bool())
-					if !result.Bool() {
-						slog.InfoContext(ctx.Context, "OrganizationIDUserIDGroupNewPage: Delete button clicked: User cancelled", "result", result.Bool())
-						return
-					}
-
-					ctx.Async(func() {
-						err := api.Do(ctx, http.MethodDelete, "/api/v1/organization/"+c.organizationID+"/group/"+c.groupID+"/user/"+c.userID, nil, nil)
-						if err != nil {
-							slog.ErrorContext(ctx.Context, "Could not delete user from group", "err", err)
+						result := app.Window().Call("confirm", "Are you sure you want to remove this user from this group?")
+						slog.InfoContext(ctx.Context, "OrganizationIDUserIDGroupNewPage: Delete button clicked", "result", result.Bool())
+						if !result.Bool() {
+							slog.InfoContext(ctx.Context, "OrganizationIDUserIDGroupNewPage: Delete button clicked: User cancelled", "result", result.Bool())
 							return
 						}
 
-						ctx.Navigate("/organization/" + c.organizationID + "/user/" + c.userID)
-					})
+						ctx.Async(func() {
+							err := api.Do(ctx, http.MethodDelete, "/api/v1/organization/"+c.organizationID+"/group/"+c.groupID+"/user/"+c.userID, nil, nil)
+							if err != nil {
+								slog.ErrorContext(ctx.Context, "Could not delete user from group", "err", err)
+								return
+							}
+
+							ctx.Navigate("/organization/" + c.organizationID + "/user/" + c.userID)
+						})
+					},
 				},
-			}),
+			),
 	)
 }

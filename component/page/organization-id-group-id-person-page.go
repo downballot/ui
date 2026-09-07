@@ -489,93 +489,96 @@ func (c *OrganizationIDGroupIDPersonPage) Render() app.UI {
 		OrganizationID(c.organizationID)
 
 	return c.EmbeddedPage.Wrap(
-		blazar.Collapse().
-			Label("Filter").
-			Bind(&c.filterOpen).
-			OnOpenChange(func(ctx app.Context, open bool) {
-				ctx.SetState("persist-organization-id-group-id-person-page-filter-open", open).Persist()
-			}).
-			SummaryText(func() string {
-				var summary string
-				if c.Filter == "" {
-					summary += "Filter: n/a"
-				} else {
-					var namedFilter string
-					for _, filter := range c.Filters {
-						if filter.Filter == c.Filter {
-							namedFilter = filter.Name
-							break
-						}
-					}
-					if namedFilter == "" {
-						summary += c.Filter
-					} else {
-						summary += namedFilter
-					}
-				}
-
-				summary += " | Limit: "
-				if c.Limit == 0 {
-					summary += "n/a"
-				} else {
-					summary += fmt.Sprintf("%d", c.Limit)
-				}
-
-				return summary
-			}()).
-			Body(
-				app.Div().
-					Style("display", "flex").
-					Style("flex-direction", "column").
-					Body(
-						blazar.Select().
-							Name("saved_filter").
-							Label("Saved Filter").
-							AllowedValue(func() []blazar.SelectOption {
-								var allowedValues []blazar.SelectOption
-								allowedValues = append(allowedValues, blazar.SelectOption{Label: "Select a filter or create your own", Value: ""})
-								for _, filter := range c.Filters {
-									allowedValues = append(allowedValues, blazar.SelectOption{Label: filter.Name, Value: filter.Filter})
-								}
-								return allowedValues
-							}()...).
-							Bind(&c.Filter).
-							On("change", func(ctx app.Context, e app.Event) {
-								c.ValueTo(&c.Filter)(ctx, e)
-								ctx.SetState("persist-organization-id-group-id-person-page-filter", c.Filter).Persist()
-								ctx.Update() // Update so that the other input can be updated.
-							}),
-						blazar.Input[string]().
-							Label("Filter").
-							Type("text").
-							Placeholder("key = 'value' or ...").
-							Clearable(true).
-							Bind(&c.Filter).
-							On("change", func(ctx app.Context, e app.Event) {
-								ctx.SetState("persist-organization-id-group-id-person-page-filter", c.Filter).Persist()
-								ctx.Update() // Update so that the other input can be updated.
-							}),
-						blazar.Input[uint]().
-							Label("Limit").
-							Type("number").
-							Placeholder("1000").
-							Bind(&c.Limit).
-							On("change", func(ctx app.Context, e app.Event) {
-								ctx.SetState("persist-organization-id-group-id-person-page-limit", c.Limit).Persist()
-							}),
-						blazar.Input[bool]().
-							Label("Split Even and Odd addresses").
-							Bind(&c.splitEvenOdd).
-							On("change", func(ctx app.Context, e app.Event) {
-								ctx.SetState("persist-organization-id-group-id-person-page-split-even-odd", c.splitEvenOdd).Persist()
-							}),
-					),
-			),
 		blazar.Form().
 			Class("no-print").
 			Spacer(false).
+			Body(
+				blazar.Collapse().
+					Label("Filter").
+					Bind(&c.filterOpen).
+					OnOpenChange(func(ctx app.Context, open bool) {
+						ctx.SetState("persist-organization-id-group-id-person-page-filter-open", open).Persist()
+					}).
+					SummaryText(func() string {
+						var summary string
+						if c.Filter == "" {
+							summary += "Filter: n/a"
+						} else {
+							var namedFilter string
+							for _, filter := range c.Filters {
+								if filter.Filter == c.Filter {
+									namedFilter = filter.Name
+									break
+								}
+							}
+							if namedFilter == "" {
+								summary += c.Filter
+							} else {
+								summary += namedFilter
+							}
+						}
+
+						summary += " | Limit: "
+						if c.Limit == 0 {
+							summary += "n/a"
+						} else {
+							summary += fmt.Sprintf("%d", c.Limit)
+						}
+
+						return summary
+					}()).
+					Body(
+						app.Div().
+							Style("display", "flex").
+							Style("flex-direction", "column").
+							Body(
+								blazar.Select().
+									Name("saved_filter").
+									Label("Saved Filter").
+									AllowedValue(func() []blazar.SelectOption {
+										var allowedValues []blazar.SelectOption
+										allowedValues = append(allowedValues, blazar.SelectOption{Label: "Select a filter or create your own", Value: ""})
+										for _, filter := range c.Filters {
+											allowedValues = append(allowedValues, blazar.SelectOption{Label: filter.Name, Value: filter.Filter})
+										}
+										return allowedValues
+									}()...).
+									Bind(&c.Filter).
+									On("change", func(ctx app.Context, e app.Event) {
+										c.ValueTo(&c.Filter)(ctx, e)
+										ctx.SetState("persist-organization-id-group-id-person-page-filter", c.Filter).Persist()
+										ctx.Update() // Update so that the other input can be updated.
+									}),
+								blazar.Input[string]().
+									Label("Filter").
+									Type("text").
+									Placeholder("key = 'value' or ...").
+									Clearable(true).
+									Bind(&c.Filter).
+									On("change", func(ctx app.Context, e app.Event) {
+										ctx.SetState("persist-organization-id-group-id-person-page-filter", c.Filter).Persist()
+										ctx.Update() // Update so that the other input can be updated.
+									}),
+								blazar.Input[uint]().
+									Label("Limit").
+									Type("number").
+									Placeholder("1000").
+									Bind(&c.Limit).
+									On("change", func(ctx app.Context, e app.Event) {
+										ctx.SetState("persist-organization-id-group-id-person-page-limit", c.Limit).Persist()
+									}),
+								blazar.Input[bool]().
+									Label("Split Even and Odd addresses").
+									Bind(&c.splitEvenOdd).
+									On("change", func(ctx app.Context, e app.Event) {
+										ctx.SetState("persist-organization-id-group-id-person-page-split-even-odd", c.splitEvenOdd).Persist()
+									}),
+							),
+					),
+			).
 			Action(
 				blazar.FormAction{
+					Submit:   true,
 					Name:     "Search",
 					Icon:     component.IconSearch,
 					Function: c.search,

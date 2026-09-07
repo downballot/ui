@@ -120,52 +120,61 @@ func (c *OrganizationIDGroupIDEditPage) Render() app.UI {
 					Type("text").
 					Bind(&c.Filter),
 			).
-			CancelLabel("Reset").
-			CancelFunction(c.Reload).
-			SubmitLabel("Save").
-			SubmitIcon(component.IconSave).
-			SubmitFunction(func(ctx app.Context) {
-				ctx.PreventUpdate()
+			Action(
+				blazar.FormAction{
+					Cancel:   true,
+					Name:     "Reset",
+					Function: c.Reload,
+				},
+				blazar.FormAction{
+					Submit: true,
+					Name:   "Save",
+					Icon:   component.IconSave,
+					Function: func(ctx app.Context) {
+						ctx.PreventUpdate()
 
-				ctx.Async(func() {
-					input := downballotapi.PatchGroupRequest{
-						Name:     &c.Name,
-						ParentID: &c.ParentID,
-						Filter:   &c.Filter,
-					}
-					var output downballotapi.PatchGroupResponse
-					err := api.Do(ctx, http.MethodPatch, "/api/v1/organization/"+c.organizationID+"/group/"+c.groupID, input, &output)
-					if err != nil {
-						slog.ErrorContext(ctx.Context, "Could not patch group", "err", err)
-						return
-					}
+						ctx.Async(func() {
+							input := downballotapi.PatchGroupRequest{
+								Name:     &c.Name,
+								ParentID: &c.ParentID,
+								Filter:   &c.Filter,
+							}
+							var output downballotapi.PatchGroupResponse
+							err := api.Do(ctx, http.MethodPatch, "/api/v1/organization/"+c.organizationID+"/group/"+c.groupID, input, &output)
+							if err != nil {
+								slog.ErrorContext(ctx.Context, "Could not patch group", "err", err)
+								return
+							}
 
-					c.Reload(ctx)
-				})
-			}).
-			Action(blazar.FormAction{
-				Name: "Delete",
-				Icon: component.IconDelete,
-				Function: func(ctx app.Context) {
-					ctx.PreventUpdate()
+							c.Reload(ctx)
+						})
+					},
+				},
+				blazar.FormAction{
+					Name:  "Delete",
+					Icon:  component.IconDelete,
+					Color: "red",
+					Function: func(ctx app.Context) {
+						ctx.PreventUpdate()
 
-					result := app.Window().Call("confirm", "Are you sure you want to delete this group?")
-					slog.InfoContext(ctx.Context, "OrganizationIDGroupIDEditPage: Delete button clicked", "result", result.Bool())
-					if !result.Bool() {
-						slog.InfoContext(ctx.Context, "OrganizationIDGroupIDEditPage: Delete button clicked: User cancelled", "result", result.Bool())
-						return
-					}
-
-					ctx.Async(func() {
-						err := api.Do(ctx, http.MethodDelete, "/api/v1/organization/"+c.organizationID+"/group/"+c.groupID, nil, nil)
-						if err != nil {
-							slog.ErrorContext(ctx.Context, "Could not delete group", "err", err)
+						result := app.Window().Call("confirm", "Are you sure you want to delete this group?")
+						slog.InfoContext(ctx.Context, "OrganizationIDGroupIDEditPage: Delete button clicked", "result", result.Bool())
+						if !result.Bool() {
+							slog.InfoContext(ctx.Context, "OrganizationIDGroupIDEditPage: Delete button clicked: User cancelled", "result", result.Bool())
 							return
 						}
 
-						ctx.Navigate("/organization/" + c.organizationID + "/group")
-					})
+						ctx.Async(func() {
+							err := api.Do(ctx, http.MethodDelete, "/api/v1/organization/"+c.organizationID+"/group/"+c.groupID, nil, nil)
+							if err != nil {
+								slog.ErrorContext(ctx.Context, "Could not delete group", "err", err)
+								return
+							}
+
+							ctx.Navigate("/organization/" + c.organizationID + "/group")
+						})
+					},
 				},
-			}),
+			),
 	)
 }

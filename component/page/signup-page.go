@@ -49,33 +49,38 @@ func (c *SignupPage) Render() app.UI {
 						Bad()
 				}),
 			).
-			SubmitLabel("Sign up").
-			SubmitFunction(func(ctx app.Context) {
-				ctx.PreventUpdate()
+			Action(
+				blazar.FormAction{
+					Submit: true,
+					Name:   "Sign up",
+					Function: func(ctx app.Context) {
+						ctx.PreventUpdate()
 
-				ctx.Async(func() {
-					client := downballotapi.New("/")
+						ctx.Async(func() {
+							client := downballotapi.New("/")
 
-					input := downballotapi.RegisterUserRequest{
-						Name:     c.name,
-						Username: c.username,
-					}
-					var output downballotapi.RegisterUserResponse
-					err := client.Do(ctx.Context, http.MethodPost, "/api/v1/user", input, &output)
-					if err != nil {
-						app.Log(err)
-						c.error = err.Error()
-						ctx.Update()
-						return
-					}
-					c.error = ""
+							input := downballotapi.RegisterUserRequest{
+								Name:     c.name,
+								Username: c.username,
+							}
+							var output downballotapi.RegisterUserResponse
+							err := client.Do(ctx.Context, http.MethodPost, "/api/v1/user", input, &output)
+							if err != nil {
+								app.Log(err)
+								c.error = err.Error()
+								ctx.Update()
+								return
+							}
+							c.error = ""
 
-					app.Logf("request response: %+v", output)
+							app.Logf("request response: %+v", output)
 
-					slog.InfoContext(ctx.Context, "SignupPage: Sign up button clicked: Navigating to login page")
-					ctx.Navigate("/login")
-				})
-			}),
+							slog.InfoContext(ctx.Context, "SignupPage: Sign up button clicked: Navigating to login page")
+							ctx.Navigate("/login")
+						})
+					},
+				},
+			),
 		app.Hr(),
 		app.Div().
 			Text("Already have an account?"),
