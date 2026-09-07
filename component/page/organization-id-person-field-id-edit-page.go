@@ -151,32 +151,40 @@ func (c *OrganizationIDPersonFieldIDEditPage) Render() app.UI {
 					Type("text").
 					Bind(&c.ComputedExpression),
 			).
-			CancelLabel("Reset").
-			CancelFunction(c.Reload).
-			SubmitLabel("Save").
-			SubmitFunction(func(ctx app.Context) {
-				ctx.PreventUpdate()
+			Action(
+				blazar.FormAction{
+					Cancel:   true,
+					Name:     "Reset",
+					Function: c.Reload,
+				},
+				blazar.FormAction{
+					Submit: true,
+					Name:   "Save",
+					Function: func(ctx app.Context) {
+						ctx.PreventUpdate()
 
-				ctx.Async(func() {
-					input := downballotapi.PatchPersonFieldRequest{
-						Name:               &c.Name,
-						DisplayName:        &c.DisplayName,
-						Type:               (*downballotapi.PersonFieldDefinitionType)(&c.Type),
-						AllowEmpty:         &c.AllowEmpty,
-						AllowedRegex:       &c.AllowedRegex,
-						AllowedValues:      c.AllowedValues,
-						ComputedExpression: &c.ComputedExpression,
-					}
-					var output downballotapi.PatchPersonFieldResponse
-					err := api.Do(ctx, http.MethodPatch, "/api/v1/organization/"+c.organizationID+"/person-field/"+c.personFieldID, input, &output)
-					if err != nil {
-						slog.ErrorContext(ctx.Context, "Could not create person field", "err", err)
-						return
-					}
-					slog.InfoContext(ctx.Context, "OrganizationIDPersonFieldIDEditPage: Create button clicked: Navigating to person field page", "person_field_id", output.PersonField.ID)
-					ctx.Navigate(fmt.Sprintf("/organization/%s/person-field/%s", c.organizationID, output.PersonField.ID))
-				})
-			}),
+						ctx.Async(func() {
+							input := downballotapi.PatchPersonFieldRequest{
+								Name:               &c.Name,
+								DisplayName:        &c.DisplayName,
+								Type:               (*downballotapi.PersonFieldDefinitionType)(&c.Type),
+								AllowEmpty:         &c.AllowEmpty,
+								AllowedRegex:       &c.AllowedRegex,
+								AllowedValues:      c.AllowedValues,
+								ComputedExpression: &c.ComputedExpression,
+							}
+							var output downballotapi.PatchPersonFieldResponse
+							err := api.Do(ctx, http.MethodPatch, "/api/v1/organization/"+c.organizationID+"/person-field/"+c.personFieldID, input, &output)
+							if err != nil {
+								slog.ErrorContext(ctx.Context, "Could not create person field", "err", err)
+								return
+							}
+							slog.InfoContext(ctx.Context, "OrganizationIDPersonFieldIDEditPage: Create button clicked: Navigating to person field page", "person_field_id", output.PersonField.ID)
+							ctx.Navigate(fmt.Sprintf("/organization/%s/person-field/%s", c.organizationID, output.PersonField.ID))
+						})
+					},
+				},
+			),
 		app.If(c.Error != "", func() app.UI {
 			return app.Div().Body(
 				app.Span().Text(c.Error),

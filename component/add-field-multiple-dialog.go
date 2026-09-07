@@ -206,30 +206,38 @@ func (c *htmlAddFieldMultipleDialog) Render() app.UI {
 			app.H2().Text("Add Field"),
 			blazar.Form().
 				Body(formBody...).
-				CancelFunction(c.Close).
-				SubmitLabel("Save").
-				SubmitFunction(func(ctx app.Context) {
-					slog.InfoContext(ctx.Context, "htmlAddFieldMultipleDialog: SubmitFunction", "selectedFieldName", c.selectedFieldName, "value", c.value)
+				Action(
+					blazar.FormAction{
+						Cancel:   true,
+						Function: c.Close,
+					},
+					blazar.FormAction{
+						Submit: true,
+						Name:   "Save",
+						Function: func(ctx app.Context) {
+							slog.InfoContext(ctx.Context, "htmlAddFieldMultipleDialog: SubmitFunction", "selectedFieldName", c.selectedFieldName, "value", c.value)
 
-					input := downballotapi.PostPersonUpdateRequest{
-						VoterIDs: c.voterIDs,
-						Fields:   map[string]*string{},
-					}
-					input.Fields[c.selectedFieldName] = &c.value
-					var output downballotapi.PostPersonUpdateResponse
-					err := api.Do(ctx, http.MethodPost, "/api/v1/organization/"+c.IOrganizationID+"/person/update", input, &output)
-					if err != nil {
-						slog.ErrorContext(ctx.Context, "Could not update persons", "err", err)
-						return
-					}
+							input := downballotapi.PostPersonUpdateRequest{
+								VoterIDs: c.voterIDs,
+								Fields:   map[string]*string{},
+							}
+							input.Fields[c.selectedFieldName] = &c.value
+							var output downballotapi.PostPersonUpdateResponse
+							err := api.Do(ctx, http.MethodPost, "/api/v1/organization/"+c.IOrganizationID+"/person/update", input, &output)
+							if err != nil {
+								slog.ErrorContext(ctx.Context, "Could not update persons", "err", err)
+								return
+							}
 
-					if c.IOnSubmit != nil {
-						c.IOnSubmit(ctx)
-					}
+							if c.IOnSubmit != nil {
+								c.IOnSubmit(ctx)
+							}
 
-					c.error = ""
-					c.Close(ctx)
-				}),
+							c.error = ""
+							c.Close(ctx)
+						},
+					},
+				),
 			app.If(c.error != "", func() app.UI {
 				return blazar.StatusBar().
 					Text(c.error).

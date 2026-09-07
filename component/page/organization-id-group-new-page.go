@@ -84,24 +84,29 @@ func (c *OrganizationIDGroupNewPage) Render() app.UI {
 					Value(c.Filter).
 					On("change", c.ValueTo(&c.Filter)),
 			).
-			SubmitLabel("Create").
-			SubmitFunction(func(ctx app.Context) {
-				ctx.PreventUpdate()
+			Action(
+				blazar.FormAction{
+					Submit: true,
+					Name:   "Create",
+					Function: func(ctx app.Context) {
+						ctx.PreventUpdate()
 
-				ctx.Async(func() {
-					var input downballotapi.CreateGroupRequest
-					input.Name = c.Name
-					input.ParentID = c.parentID
-					input.Filter = c.Filter
-					var output downballotapi.CreateGroupResponse
-					err := api.Do(ctx, http.MethodPost, "/api/v1/organization/"+c.organizationID+"/group", input, &output)
-					if err != nil {
-						slog.ErrorContext(ctx.Context, "Could not create group", "err", err)
-						return
-					}
-					slog.InfoContext(ctx.Context, "OrganizationIDGroupNewPage: Create button clicked: Navigating to group page", "group_id", output.ID)
-					ctx.Navigate(fmt.Sprintf("/organization/%s/group/%s", c.organizationID, output.ID))
-				})
-			}),
+						ctx.Async(func() {
+							var input downballotapi.CreateGroupRequest
+							input.Name = c.Name
+							input.ParentID = c.parentID
+							input.Filter = c.Filter
+							var output downballotapi.CreateGroupResponse
+							err := api.Do(ctx, http.MethodPost, "/api/v1/organization/"+c.organizationID+"/group", input, &output)
+							if err != nil {
+								slog.ErrorContext(ctx.Context, "Could not create group", "err", err)
+								return
+							}
+							slog.InfoContext(ctx.Context, "OrganizationIDGroupNewPage: Create button clicked: Navigating to group page", "group_id", output.ID)
+							ctx.Navigate(fmt.Sprintf("/organization/%s/group/%s", c.organizationID, output.ID))
+						})
+					},
+				},
+			),
 	)
 }

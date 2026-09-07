@@ -238,7 +238,7 @@ func (c *OrganizationIDGroupIDCalltimePage) Render() app.UI {
 							c.lastCalledVoterID = c.person.VoterID
 						}),
 					blazar.Copy().
-						Style("font-size", "1.2em").
+						Style("font-size", "1em").
 						Style("margin-top", "auto").
 						Style("margin-bottom", "auto").
 						Text(c.person.Fields["phone_number"]).
@@ -255,9 +255,9 @@ func (c *OrganizationIDGroupIDCalltimePage) Render() app.UI {
 					Spacer(false).
 					Action(
 						blazar.FormAction{
-							Name:            "Bad Number",
-							Icon:            component.IconDelete,
-							BackgroundColor: "red",
+							Name:  "Bad Number",
+							Icon:  component.IconDelete,
+							Color: "red",
 							Function: func(ctx app.Context) {
 								result := app.Window().Call("confirm", "Are you sure you want to mark this as a bad number?")
 								slog.InfoContext(ctx.Context, "OrganizationIDGroupIDCalltimePage: Bad Number button clicked", "result", result.Bool())
@@ -303,9 +303,9 @@ func (c *OrganizationIDGroupIDCalltimePage) Render() app.UI {
 							},
 						},
 						blazar.FormAction{
-							Name:            "Called (continue)",
-							Icon:            component.IconDone,
-							BackgroundColor: "green",
+							Name:  "Called (continue)",
+							Icon:  component.IconDone,
+							Color: "green",
 							Function: func(ctx app.Context) {
 								phoneNumber := c.person.Fields["phone_number"]
 								if phoneNumber != "" {
@@ -362,10 +362,12 @@ func (c *OrganizationIDGroupIDCalltimePage) Render() app.UI {
 											Class("no-print").
 											Style("font-size", "1.2em").
 											Spacer(false).
+											AutoSubmit(false).
 											Action(
 												blazar.FormAction{
-													Name: "Yes, we spoke with this person",
-													Flat: c.person.Fields["candidate.connected"] != "true",
+													Name:  "Yes, we spoke with this person",
+													Flat:  c.person.Fields["candidate.connected"] != "true",
+													Color: "var(--blazar-theme-primary)",
 													Function: func(ctx app.Context) {
 														if c.person.Fields["candidate.connected"] == "true" {
 															c.updatePerson(ctx, "candidate.connected", nil)
@@ -384,10 +386,12 @@ func (c *OrganizationIDGroupIDCalltimePage) Render() app.UI {
 											Class("no-print").
 											Style("font-size", "1.2em").
 											Spacer(false).
+											AutoSubmit(false).
 											Action(
 												blazar.FormAction{
-													Name: "-2",
-													Flat: c.person.Fields["candidate.support"] != "-2",
+													Name:  "-2",
+													Flat:  c.person.Fields["candidate.support"] != "-2",
+													Color: "var(--blazar-theme-primary)",
 													Function: func(ctx app.Context) {
 														if c.person.Fields["candidate.support"] == "-2" {
 															c.updatePerson(ctx, "candidate.support", nil)
@@ -398,8 +402,9 @@ func (c *OrganizationIDGroupIDCalltimePage) Render() app.UI {
 													},
 												},
 												blazar.FormAction{
-													Name: "-1",
-													Flat: c.person.Fields["candidate.support"] != "-1",
+													Name:  "-1",
+													Flat:  c.person.Fields["candidate.support"] != "-1",
+													Color: "var(--blazar-theme-primary)",
 													Function: func(ctx app.Context) {
 														if c.person.Fields["candidate.support"] == "-1" {
 															c.updatePerson(ctx, "candidate.support", nil)
@@ -410,8 +415,9 @@ func (c *OrganizationIDGroupIDCalltimePage) Render() app.UI {
 													},
 												},
 												blazar.FormAction{
-													Name: "0",
-													Flat: c.person.Fields["candidate.support"] != "0",
+													Name:  "0",
+													Flat:  c.person.Fields["candidate.support"] != "0",
+													Color: "var(--blazar-theme-primary)",
 													Function: func(ctx app.Context) {
 														if c.person.Fields["candidate.support"] == "0" {
 															c.updatePerson(ctx, "candidate.support", nil)
@@ -422,8 +428,9 @@ func (c *OrganizationIDGroupIDCalltimePage) Render() app.UI {
 													},
 												},
 												blazar.FormAction{
-													Name: "+1",
-													Flat: c.person.Fields["candidate.support"] != "+1",
+													Name:  "+1",
+													Flat:  c.person.Fields["candidate.support"] != "+1",
+													Color: "var(--blazar-theme-primary)",
 													Function: func(ctx app.Context) {
 														if c.person.Fields["candidate.support"] == "+1" {
 															c.updatePerson(ctx, "candidate.support", nil)
@@ -434,8 +441,9 @@ func (c *OrganizationIDGroupIDCalltimePage) Render() app.UI {
 													},
 												},
 												blazar.FormAction{
-													Name: "+2",
-													Flat: c.person.Fields["candidate.support"] != "+2",
+													Name:  "+2",
+													Flat:  c.person.Fields["candidate.support"] != "+2",
+													Color: "var(--blazar-theme-primary)",
 													Function: func(ctx app.Context) {
 														if c.person.Fields["candidate.support"] == "+2" {
 															c.updatePerson(ctx, "candidate.support", nil)
@@ -547,6 +555,7 @@ func (c *OrganizationIDGroupIDCalltimePage) Render() app.UI {
 			Spacer(false).
 			Action(
 				blazar.FormAction{
+					Submit:   true,
 					Name:     "Search",
 					Icon:     component.IconSearch,
 					Function: c.search,

@@ -52,25 +52,30 @@ func (c *OrganizationIDFilterNewPage) Render() app.UI {
 					Type("text").
 					Bind(&c.Filter),
 			).
-			SubmitLabel("Create").
-			SubmitFunction(func(ctx app.Context) {
-				ctx.PreventUpdate()
+			Action(
+				blazar.FormAction{
+					Submit: true,
+					Name:   "Create",
+					Function: func(ctx app.Context) {
+						ctx.PreventUpdate()
 
-				ctx.Async(func() {
-					input := downballotapi.CreateFilterRequest{
-						Name:        c.Name,
-						Description: c.Description,
-						Filter:      c.Filter,
-					}
-					var output downballotapi.CreateFilterResponse
-					err := api.Do(ctx, http.MethodPost, "/api/v1/organization/"+c.organizationID+"/filter", input, &output)
-					if err != nil {
-						slog.ErrorContext(ctx.Context, "Could not create filter", "err", err)
-						return
-					}
-					slog.InfoContext(ctx.Context, "OrganizationIDFilterNewPage: Create button clicked: Navigating to filter page", "filter_id", output.ID)
-					ctx.Navigate(fmt.Sprintf("/organization/%s/filter/%s", c.organizationID, output.ID))
-				})
-			}),
+						ctx.Async(func() {
+							input := downballotapi.CreateFilterRequest{
+								Name:        c.Name,
+								Description: c.Description,
+								Filter:      c.Filter,
+							}
+							var output downballotapi.CreateFilterResponse
+							err := api.Do(ctx, http.MethodPost, "/api/v1/organization/"+c.organizationID+"/filter", input, &output)
+							if err != nil {
+								slog.ErrorContext(ctx.Context, "Could not create filter", "err", err)
+								return
+							}
+							slog.InfoContext(ctx.Context, "OrganizationIDFilterNewPage: Create button clicked: Navigating to filter page", "filter_id", output.ID)
+							ctx.Navigate(fmt.Sprintf("/organization/%s/filter/%s", c.organizationID, output.ID))
+						})
+					},
+				},
+			),
 	)
 }

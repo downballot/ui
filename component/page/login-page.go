@@ -167,12 +167,20 @@ func (c *LoginPage) Render() app.UI {
 						Bad()
 				}),
 			).
-			CancelFunction(cancelFunction).
-			CancelLabel(cancelLabel).
-			CancelIcon(cancelIcon).
-			SubmitFunction(submitFunction).
-			SubmitLabel(submitLabel).
-			SubmitIcon(submitIcon),
+			Action(
+				blazar.FormAction{
+					Cancel:   true,
+					Name:     cancelLabel,
+					Icon:     cancelIcon,
+					Function: cancelFunction,
+				},
+				blazar.FormAction{
+					Submit:   true,
+					Name:     submitLabel,
+					Icon:     submitIcon,
+					Function: submitFunction,
+				},
+			),
 		app.Hr(),
 		app.Div().
 			Text("Don't have an account?"),

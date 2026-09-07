@@ -49,23 +49,29 @@ func (c *OrganizationIDUserNewPage) Render() app.UI {
 					Label("Owner").
 					Bind(&c.Owner),
 			).
-			SubmitLabel("Add User To Organization").
-			SubmitFunction(func(ctx app.Context) {
-				ctx.PreventUpdate()
+			Action(
+				blazar.FormAction{
+					Submit: true,
+					Name:   "Add User To Organization",
+					Icon:   component.IconSave,
+					Function: func(ctx app.Context) {
+						ctx.PreventUpdate()
 
-				ctx.Async(func() {
-					var input downballotapi.AddUserToOrganizationRequest
-					input.Username = c.EmailAddress
-					input.Owner = c.Owner
-					var output downballotapi.AddUserToOrganizationResponse
-					err := api.Do(ctx, http.MethodPost, "/api/v1/organization/"+c.organizationID+"/user", input, &output)
-					if err != nil {
-						slog.ErrorContext(ctx.Context, "Could not add user to organization", "err", err)
-						return
-					}
-					slog.InfoContext(ctx.Context, "OrganizationIDUserNewPage: Create button clicked: Navigating to user page")
-					ctx.Navigate(fmt.Sprintf("/organization/%s/user/%s", c.organizationID, output.UserID))
-				})
-			}),
+						ctx.Async(func() {
+							var input downballotapi.AddUserToOrganizationRequest
+							input.Username = c.EmailAddress
+							input.Owner = c.Owner
+							var output downballotapi.AddUserToOrganizationResponse
+							err := api.Do(ctx, http.MethodPost, "/api/v1/organization/"+c.organizationID+"/user", input, &output)
+							if err != nil {
+								slog.ErrorContext(ctx.Context, "Could not add user to organization", "err", err)
+								return
+							}
+							slog.InfoContext(ctx.Context, "OrganizationIDUserNewPage: Create button clicked: Navigating to user page")
+							ctx.Navigate(fmt.Sprintf("/organization/%s/user/%s", c.organizationID, output.UserID))
+						})
+					},
+				},
+			),
 	)
 }
