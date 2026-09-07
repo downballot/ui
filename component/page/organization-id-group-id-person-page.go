@@ -224,11 +224,45 @@ func (c *OrganizationIDGroupIDPersonPage) OnNav(ctx app.Context) {
 						break
 					}
 				}
+				switch name {
+				case "candidate.connected":
+					displayName = " "
+				case "candidate.support":
+					displayName = " "
+				case "computed.likely":
+					displayName = " "
+				}
 				c.PersonsTableColumns = append(c.PersonsTableColumns, blazar.TableColumn[*downballotapi.Person]{
 					Name:        name,
 					DisplayName: displayName,
 					Value: func(row *downballotapi.Person) any {
-						if name == "computed.likely" {
+						switch name {
+						case "candidate.cat":
+							if row.Fields[name] == "true" {
+								return blazar.Icon().Icon("cat")
+							}
+							return ""
+						case "candidate.connected":
+							if row.Fields[name] == "true" {
+								return blazar.Icon().Icon("handshake")
+							}
+							return ""
+						case "candidate.dog":
+							if row.Fields[name] == "true" {
+								return blazar.Icon().Icon("dog")
+							}
+							return ""
+						case "candidate.support":
+							switch row.Fields[name] {
+							case "-2", "-1":
+								return blazar.Icon().Icon("thumbs-down")
+							case "0":
+								return blazar.Icon().Icon("circle-question")
+							case "+1", "+2":
+								return blazar.Icon().Icon("thumbs-up")
+							}
+							return ""
+						case "computed.likely":
 							if row.Fields[name] == "true" {
 								return blazar.Icon().Icon("star")
 							}
@@ -258,8 +292,30 @@ func (c *OrganizationIDGroupIDPersonPage) OnNav(ctx app.Context) {
 			if fieldNameMap["computed.likely"] {
 				c.PersonsTableVisibleColumns = append(c.PersonsTableVisibleColumns, "computed.likely")
 			}
+			if fieldNameMap["candidate.connected"] {
+				c.PersonsTableVisibleColumns = append(c.PersonsTableVisibleColumns, "candidate.connected")
+			}
+			if fieldNameMap["candidate.support"] {
+				c.PersonsTableVisibleColumns = append(c.PersonsTableVisibleColumns, "candidate.support")
+			}
 			slices.Sort(c.PersonsTableVisibleColumns)
 			slog.InfoContext(ctx.Context, "OrganizationIDGroupIDPersonPage: OnNav: Async", "len(PersonsTableVisibleColumns)", len(c.PersonsTableVisibleColumns))
+
+			slices.SortFunc(c.PersonsTableColumns, func(left, right blazar.TableColumn[*downballotapi.Person]) int {
+				if left.Name == "Voter ID" {
+					return -1
+				} else if right.Name == "Voter ID" {
+					return 1
+				}
+				if left.DisplayName == " " && right.DisplayName == " " {
+					return strings.Compare(left.Name, right.Name)
+				} else if left.DisplayName == " " {
+					return -1
+				} else if right.DisplayName == " " {
+					return 1
+				}
+				return strings.Compare(left.Name, right.Name)
+			})
 		})
 		wg.Wait()
 
