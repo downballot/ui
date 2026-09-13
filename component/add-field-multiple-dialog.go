@@ -58,7 +58,7 @@ func (c *htmlAddFieldMultipleDialog) OrganizationID(organizationID string) *html
 }
 
 func (c *htmlAddFieldMultipleDialog) Open(ctx app.Context, voterIDs []string) {
-	slog.InfoContext(ctx.Context, "htmlAddFieldMultipleDialog: Open", "voterIDs", voterIDs)
+	slog.InfoContext(ctx.Context, "htmlAddFieldMultipleDialog: Open", "voterIDs", len(voterIDs))
 	slog.InfoContext(ctx.Context, "htmlAddFieldMultipleDialog: Open", "JSValue", c.JSValue(), "JSValue", app.Window().Get("JSON").Call("stringify", c.JSValue()))
 
 	ctx.NewActionWithValue(addFieldMultipleDialogEventOpen, voterIDs)
@@ -69,7 +69,7 @@ func (c *htmlAddFieldMultipleDialog) Close(ctx app.Context) {
 }
 
 func (c *htmlAddFieldMultipleDialog) Render() app.UI {
-	slog.InfoContext(context.TODO(), "htmlAddFieldMultipleDialog: Render", "IOrganizationID", c.IOrganizationID, "voterIDs", c.voterIDs)
+	slog.InfoContext(context.TODO(), "htmlAddFieldMultipleDialog: Render", "IOrganizationID", c.IOrganizationID, "voterIDs", len(c.voterIDs))
 
 	submitName := c.ISubmitName
 	if submitName == "" {
