@@ -112,8 +112,34 @@ func (c *OrganizationIDFilterIDEditPage) Render() app.UI {
 					Function: c.Reload,
 				},
 				blazar.FormAction{
+					Name:  "Delete",
+					Icon:  component.IconDelete,
+					Color: "red",
+					Function: func(ctx app.Context) {
+						ctx.PreventUpdate()
+
+						result := app.Window().Call("confirm", "Are you sure you want to delete this filter?")
+						slog.InfoContext(ctx.Context, "OrganizationIDFilterIDEditPage: Delete button clicked", "result", result.Bool())
+						if !result.Bool() {
+							slog.InfoContext(ctx.Context, "OrganizationIDFilterIDEditPage: Delete button clicked: User cancelled", "result", result.Bool())
+							return
+						}
+
+						ctx.Async(func() {
+							err := api.Do(ctx, http.MethodDelete, "/api/v1/organization/"+c.organizationID+"/filter/"+c.filterID, nil, nil)
+							if err != nil {
+								slog.ErrorContext(ctx.Context, "Could not delete filter", "err", err)
+								return
+							}
+
+							ctx.Navigate("/organization/" + c.organizationID + "/filter")
+						})
+					},
+				},
+				blazar.FormAction{
 					Submit: true,
 					Name:   "Save",
+					Icon:   component.IconSave,
 					Function: func(ctx app.Context) {
 						ctx.PreventUpdate()
 

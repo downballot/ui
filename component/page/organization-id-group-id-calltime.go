@@ -474,6 +474,7 @@ func (c *OrganizationIDGroupIDCalltimePage) Render() app.UI {
 									Body(
 										app.Text("For more details, click the link below."),
 									).
+									AutoSubmit(false).
 									Action(
 										blazar.FormAction{
 											Name:   "Edit Person",
