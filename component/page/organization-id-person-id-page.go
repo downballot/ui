@@ -148,7 +148,7 @@ func (c *OrganizationIDPersonIDPage) Render() app.UI {
 		component.PersonSummary().
 			Person(c.person),
 		blazar.Table[Record]().
-			Title("Fields").
+			Label("Fields").
 			Rows(rows).
 			Columns(columns).
 			Action(blazar.TableAction{
@@ -198,7 +198,7 @@ func (c *OrganizationIDPersonIDPage) Render() app.UI {
 			),
 		addFieldDialog,
 		blazar.Table[*downballotapi.PersonAudit]().
-			Title("Audit Log").
+			Label("Audit Log").
 			Rows(c.audits).
 			Columns([]blazar.TableColumn[*downballotapi.PersonAudit]{
 				{
