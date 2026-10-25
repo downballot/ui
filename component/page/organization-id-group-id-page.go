@@ -140,7 +140,7 @@ func (c *OrganizationIDGroupIDPage) Render() app.UI {
 		).
 		Wrap(
 			blazar.Table[*downballotapi.Group]().
-				Title("Sub-groups").
+				Label("Sub-groups").
 				Rows(c.children).
 				Columns([]blazar.TableColumn[*downballotapi.Group]{
 					{
