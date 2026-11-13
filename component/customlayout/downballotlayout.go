@@ -48,8 +48,8 @@ func (c *DownballotLayout) Render() app.UI {
 
 	mainLayout := blazar.MainLayout().
 		HeadlineText("Downballot").
-		SubtitleFunction(func() app.UI {
-			return app.Div().
+		SubtitleBody(
+			app.Div().
 				Class("downballotlayout-menu").
 				Body(
 					blazar.Item().
@@ -61,8 +61,8 @@ func (c *DownballotLayout) Render() app.UI {
 						Icon(component.IconUser).
 						Label("Profile").
 						To("/profile"),
-				)
-		})
+				),
+		)
 	mainLayout.SetRouterView(c.RouterView())
 
 	slog.InfoContext(context.TODO(), "DownballotLayout: Render", "mainLayout", mainLayout)

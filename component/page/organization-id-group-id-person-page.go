@@ -239,32 +239,32 @@ func (c *OrganizationIDGroupIDPersonPage) OnNav(ctx app.Context) {
 						switch name {
 						case "candidate.cat":
 							if row.Fields[name] == "true" {
-								return blazar.Icon().Icon("cat")
+								return blazar.Icon().Icon(component.IconPersonStatusCat)
 							}
 							return ""
 						case "candidate.connected":
 							if row.Fields[name] == "true" {
-								return blazar.Icon().Icon("handshake")
+								return blazar.Icon().Icon(component.IconPersonStatusContact)
 							}
 							return ""
 						case "candidate.dog":
 							if row.Fields[name] == "true" {
-								return blazar.Icon().Icon("dog")
+								return blazar.Icon().Icon(component.IconPersonStatusDog)
 							}
 							return ""
 						case "candidate.support":
 							switch row.Fields[name] {
 							case "-2", "-1":
-								return blazar.Icon().Icon("thumbs-down")
+								return blazar.Icon().Icon(component.IconPersonStatusThumbsDown)
 							case "0":
-								return blazar.Icon().Icon("circle-question")
+								return blazar.Icon().Icon(component.IconPersonStatusQuestion)
 							case "+1", "+2":
-								return blazar.Icon().Icon("thumbs-up")
+								return blazar.Icon().Icon(component.IconPersonStatusThumbsUp)
 							}
 							return ""
 						case "computed.likely":
 							if row.Fields[name] == "true" {
-								return blazar.Icon().Icon("star")
+								return blazar.Icon().Icon(component.IconPersonStatusImportant)
 							}
 							return ""
 						}

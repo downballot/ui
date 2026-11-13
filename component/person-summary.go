@@ -34,18 +34,18 @@ func (c *personSummary) Render() app.UI {
 		return nil
 	}
 
-	icon := "circle-question"
+	icon := IconPersonStatusQuestion
 	switch c.IPerson.Fields["candidate.support"] {
 	case "-2":
-		icon = "thumbs-down"
+		icon = IconPersonStatusThumbsDown
 	case "-1":
-		icon = "thumbs-down"
+		icon = IconPersonStatusThumbsDown
 	case "0":
-		icon = "circle-question"
+		icon = IconPersonStatusQuestion
 	case "+1":
-		icon = "thumbs-up"
+		icon = IconPersonStatusThumbsUp
 	case "+2":
-		icon = "thumbs-up"
+		icon = IconPersonStatusThumbsUp
 	}
 
 	var registrationString string
@@ -108,7 +108,7 @@ func (c *personSummary) Render() app.UI {
 						Class("person-summary-chip").
 						Body(
 							blazar.Icon().
-								Icon("handshake"),
+								Icon(IconPersonStatusContact),
 							app.Text("Connected"),
 						)
 				}),
@@ -122,7 +122,7 @@ func (c *personSummary) Render() app.UI {
 						Class("person-summary-chip").
 						Body(
 							blazar.Icon().
-								Icon("cat"),
+								Icon(IconPersonStatusCat),
 							app.Text("Cat"),
 						)
 				}),
@@ -131,7 +131,7 @@ func (c *personSummary) Render() app.UI {
 						Class("person-summary-chip").
 						Body(
 							blazar.Icon().
-								Icon("dog"),
+								Icon(IconPersonStatusDog),
 							app.Text("Dog"),
 						)
 				}),
@@ -161,8 +161,7 @@ func (c *personSummary) Render() app.UI {
 				Class("person-summary__notes").
 				Body(
 					blazar.Icon().
-						Solid(false).
-						Icon("note-sticky"),
+						Icon(IconPersonStatusNote),
 					app.Text(c.IPerson.Fields["candidate.notes"]),
 				)
 		}),
