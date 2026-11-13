@@ -4,29 +4,28 @@ go 1.26.2
 
 require (
 	github.com/downballot/downballot v0.1.9
-	github.com/go-app-blazar/blazar v0.2.1
+	github.com/go-app-blazar/blazar v0.4.0
 	github.com/go-app-blazar/router v0.1.2
+	github.com/go-app-blazar/tabler-font v0.1.2
 	github.com/google/uuid v1.6.0
 	github.com/joho/godotenv v1.5.1
 	github.com/lmittmann/tint v1.1.3
 	github.com/mattn/go-isatty v0.0.22
 	github.com/maxence-charriere/go-app/v11 v11.0.4
-	github.com/stretchr/testify v1.11.1
+	github.com/stretchr/testify v1.12.1
 	github.com/tekkamanendless/httperror v1.0.1
 	github.com/tekkamanendless/restapiclient v0.1.1
 )
 
 require (
-	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/emicklei/go-restful/v3 v3.13.0 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
-	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/tekkamanendless/httprequest v0.1.1 // indirect
 	github.com/tekkamanendless/restfulwrapper v0.2.0 // indirect
+	go.yaml.in/yaml/v3 v3.0.5 // indirect
 	golang.org/x/sys v0.45.0 // indirect
-	golang.org/x/text v0.38.0 // indirect
-	gopkg.in/yaml.v3 v3.0.1 // indirect
+	golang.org/x/text v0.43.0 // indirect
 	gorm.io/gorm v1.31.1 // indirect
 )
 

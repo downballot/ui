@@ -173,7 +173,7 @@ func (c *OrganizationIDGroupIDCalltimePage) OnNav(ctx app.Context) {
 					Value: func(row *downballotapi.Person) any {
 						if name == "computed.likely" {
 							if row.Fields[name] == "true" {
-								return blazar.Icon().Icon("star")
+								return blazar.Icon().Icon(component.IconPersonStatusImportant)
 							}
 							return ""
 						}

@@ -98,31 +98,32 @@ func (c *OrganizationLayout) OnNav(ctx app.Context) {
 func (c *OrganizationLayout) Render() app.UI {
 	slog.InfoContext(context.TODO(), "OrganizationLayout: Render", "OrganizationID", c.organizationID, "OrganizationName", c.organizationName)
 
+	bodyItems := []app.UI{}
+	for _, crumb := range c.crumbs {
+		if len(bodyItems) > 0 {
+			bodyItems = append(bodyItems,
+				app.Text(" / "),
+			)
+		}
+		bodyItems = append(bodyItems,
+			app.Span().Body(
+				app.A().Href(crumb.To).Text(crumb.Name),
+			),
+		)
+	}
+
 	mainLayout := blazar.MainLayout().
 		HeadlineText(c.organizationName).
-		HeadlineFunction(func() app.UI {
-			bodyItems := []app.UI{}
-			for _, crumb := range c.crumbs {
-				if len(bodyItems) > 0 {
-					bodyItems = append(bodyItems,
-						app.Text(" / "),
-					)
-				}
-				bodyItems = append(bodyItems,
-					app.Span().Body(
-						app.A().Href(crumb.To).Text(crumb.Name),
-					),
-				)
-			}
-			return app.Div().Body(
+		HeadlineBody(
+			app.Div().Body(
 				bodyItems...,
-			)
-		}).
-		DrawerFunction(func() app.UI {
-			return &OrganizationMenu{
+			),
+		).
+		DrawerBody(
+			&OrganizationMenu{
 				OrganizationID: c.organizationID,
-			}
-		})
+			},
+		)
 	mainLayout.SetRouterView(c.RouterView())
 
 	return mainLayout
